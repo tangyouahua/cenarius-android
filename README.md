@@ -71,7 +71,11 @@ Cenarius 使用 uri 来标识页面。提供一个正确的 uri 就可以创建�
 ```
 
 开发模式允许 H5 人员通过替换文件的方式迅速更新文件。
-启用开发模式后，路由功能将失效。url 加载目录为 SD/<APPName>/www
+启用开发模式后，路由功能将失效。url 加载目录为
+
+```
+SD/<APPName>/www
+```
 
 ### 使用 CNRSViewActivity
 
