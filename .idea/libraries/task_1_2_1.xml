@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="task-1.2.1">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/core/build/intermediates/exploded-aar/com.mcxiaoke.next/task/1.2.1/res" />
+      <root url="jar://$PROJECT_DIR$/core/build/intermediates/exploded-aar/com.mcxiaoke.next/task/1.2.1/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.mcxiaoke.next/task/1.2.1/181cbbace10fba0d9e132072ac35c8b77deb1695/task-1.2.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
