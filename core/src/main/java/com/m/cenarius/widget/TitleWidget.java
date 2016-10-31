@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 public class TitleWidget implements CenariusWidget {
 
-
     static final String KEY_TITLE = "title";
 
     @Override
