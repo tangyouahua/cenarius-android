@@ -1,6 +1,7 @@
 package com.m.cenarius.example;
 
 import android.app.Application;
+import android.widget.ImageView;
 
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.resourceproxy.ResourceProxy;
@@ -35,11 +36,12 @@ public class MainApplication extends Application {
 //        // 设置local api
 //        CenariusContainerAPIHelper.registerAPIs(FrodoContainerAPIs.sAPIs);
 //        // 设置自定义的OkHttpClient
-//        Cenarius.setOkHttpClient(new OkHttpClient().newBuilder()
-//                .retryOnConnectionFailure(true)
-//                .addNetworkInterceptor(new AuthInterceptor())
-//                .build());
+        Cenarius.setOkHttpClient(new OkHttpClient().newBuilder()
+                .retryOnConnectionFailure(true)
+                .addNetworkInterceptor(new AuthInterceptor())
+                .build());
 //        Cenarius.setHostUserAgent(" Cenarius/1.2.x ");
+
     }
 
 }
