@@ -1,6 +1,5 @@
 package com.m.cenarius.resourceproxy;
 
-import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.resourceproxy.network.HtmlHelper;
 import com.m.cenarius.resourceproxy.network.INetwork;
@@ -22,7 +21,6 @@ public class ResourceProxy {
     private List<String> mProxyHosts = new ArrayList<>();
 
     private ResourceProxy(){
-        CacheHelper.getInstance().registerCache(AssetCache.getInstance());
     }
     public static ResourceProxy getInstance() {
         if (null == sInstance) {

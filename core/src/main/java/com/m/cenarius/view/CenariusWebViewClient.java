@@ -144,7 +144,7 @@ public class CenariusWebViewClient extends WebViewClient {
 //                requestUrl = requestUrl.substring(Constants.FILE_AUTHORITY.length());
 //            }
             Route route = RouteManager.getInstance().findRoute(uri);
-            final CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(route);
+            final CacheEntry cacheEntry = CacheHelper.getInstance().findCache(route);
 
             if (null != cacheEntry && cacheEntry.isValid())
             {

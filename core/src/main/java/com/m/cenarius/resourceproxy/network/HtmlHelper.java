@@ -51,7 +51,7 @@ public class HtmlHelper {
                 try {
                     if (response.isSuccessful()) {
                         // 1. 存储到本地
-                        boolean result = CacheHelper.getInstance().saveHtmlCache(route, IOUtils.toByteArray(response.body()
+                        boolean result = CacheHelper.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
                                 .byteStream()));
                         // 存储失败，则失败
                         if (!result) {
@@ -92,7 +92,7 @@ public class HtmlHelper {
         // 重新下载
         mDownloadingProcess.clear();
         for (final Route route : routes) {
-            CacheEntry htmlFile = CacheHelper.getInstance().findHtmlCache(route);
+            CacheEntry htmlFile = CacheHelper.getInstance().findCache(route);
             if (null == htmlFile) {
                 if (!mDownloadingProcess.contains(route.getHtmlFile())) {
                     mDownloadingProcess.add(route.getHtmlFile());

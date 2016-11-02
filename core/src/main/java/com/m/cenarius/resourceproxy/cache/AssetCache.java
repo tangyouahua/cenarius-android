@@ -1,5 +1,6 @@
 package com.m.cenarius.resourceproxy.cache;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
 
@@ -11,6 +12,7 @@ import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.GsonHelper;
 import com.m.cenarius.utils.LogUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -51,9 +53,7 @@ public class AssetCache implements ICache {
                     if (presetRoute.equals(route)) {
                         //资源文件路径
                         String pathString = mFilePath + "/" + presetRoute.uri;
-                        AssetManager assetManager = AppContext.getInstance()
-                                .getResources()
-                                .getAssets();
+                        AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
                         try {
                             InputStream inputStream = assetManager.open(pathString);
                             CacheEntry cacheEntry = new CacheEntry(0, inputStream);
@@ -75,6 +75,25 @@ public class AssetCache implements ICache {
     public boolean removeCache(Route route) {
         // do nothing
         return true;
+    }
+
+    /**
+     * 存储目录
+     *
+     * @return 存储目录
+     */
+    private File fileDir() {
+        return new File("file:///android_asset/");
+    }
+
+    /**
+     * 单个存储文件路径
+     *
+     * @param route route
+     * @return html对应的存储文件
+     */
+    public File file(Route route) {
+        return new File(fileDir(), route.uri);
     }
 
 }

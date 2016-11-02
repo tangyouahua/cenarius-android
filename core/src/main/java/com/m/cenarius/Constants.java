@@ -28,6 +28,8 @@ public class Constants {
     public static final String DEFAULT_DISK_FILE_PATH = "cache";
     // disk中html的存储目录
     public static final String DEFAULT_DISK_HTML_FILE_PATH = "html";
+    // disk中缓存目录
+    public static final String DEFAULT_DISK_INTERNAL_FILE_PATH = DEFAULT_ASSET_FILE_PATH;
     // disk中routers.json文件
     public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "routes.json";
 

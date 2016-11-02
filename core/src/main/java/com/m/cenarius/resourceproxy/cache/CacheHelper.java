@@ -4,11 +4,11 @@ import android.content.Context;
 
 import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
+import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
+import com.m.cenarius.utils.LogUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.File;
 
 public class CacheHelper {
 
@@ -20,8 +20,8 @@ public class CacheHelper {
         if (null == mInternalCache) {
             mInternalCache = new InternalCache();
         }
-        if (null == mInternalHtmlCache) {
-            mInternalHtmlCache = new HtmlFileCache();
+        if (null == mAssetCache){
+            mAssetCache = AssetCache.getInstance();
         }
     }
 
@@ -36,29 +36,63 @@ public class CacheHelper {
         return sInstance;
     }
 
-    /**
-     * internal cache
-     */
     private InternalCache mInternalCache;
-    private HtmlFileCache mInternalHtmlCache;
-    /**
-     * register cache
-     */
-    private List<ICache> mCaches = new ArrayList<>();
+    private AssetCache mAssetCache;
+//    /**
+//     * register cache
+//     */
+//    private List<ICache> mCaches = new ArrayList<>();
     /**
      * 是否使用缓存
      */
     private boolean mCacheEnabled = true;
 
+//    /**
+//     * Register additional readable cache
+//     *
+//     * @param cache
+//     */
+//    public void registerCache(ICache cache) {
+//        if (null != cache) {
+//            mCaches.add(cache);
+//        }
+//    }
+
     /**
-     * Register additional readable cache
-     *
-     * @param cache
+     * 查找 uri 对应的本地 html 文件 URL。先查 Cache，再查 asset
      */
-    public void registerCache(ICache cache) {
-        if (null != cache) {
-            mCaches.add(cache);
+    public String localHtmlURLForURI(String uri){
+        Route route = RouteManager.getInstance().findRoute(uri);
+        if (null == route)
+        {
+            LogUtils.i(TAG, "route not found");
         }
+        else {
+            File cacheFile = mInternalCache.file(route);
+            if (cacheFile.exists() && cacheFile.canRead()){
+                return cacheFile.getPath();
+            }
+            File assetFile = mAssetCache.file(route);
+            if (assetFile.exists() && assetFile.canRead()){
+                return assetFile.getPath();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 查找 uri 对应的服务器上 html 文件。
+     */
+    public String remoteHtmlURLForURI(String uri){
+        Route route = RouteManager.getInstance().findRoute(uri);
+        if (null == route)
+        {
+            LogUtils.i(TAG, "route not found");
+        }
+        else {
+            return route.getHtmlFile();
+        }
+        return null;
     }
 
     /**
@@ -68,84 +102,82 @@ public class CacheHelper {
      * @return
      */
     public CacheEntry findCache(Route route) {
-        // 如果是html文件，则查找html缓存
-        if (route.uri.contains(Constants.EXTENSION_HTML)) {
-            return findHtmlCache(route);
-        }
-        CacheEntry result = null;
-        // 遍历内部缓存
-        result = mInternalCache.findCache(route);
-        if (null != result) {
-            return result;
-        }
-        // 遍历外部缓存
-        for (ICache cache : mCaches) {
-            result = cache.findCache(route);
-            if (null != result && result.isValid()) {
-                return result;
-            }
-        }
+//        // 查找缓存
+//        if (route.uri.contains(Constants.EXTENSION_HTML)) {
+//            return findHtmlCache(route);
+//        }
+//        CacheEntry result = null;
+//        // 遍历内部缓存
+//        result = mInternalCache.findCache(route);
+//        if (null != result) {
+//            return result;
+//        }
+//        // 遍历外部缓存
+//        for (ICache cache : mCaches) {
+//            result = cache.findCache(route);
+//            if (null != result && result.isValid()) {
+//                return result;
+//            }
+//        }
+//        return result;
+        CacheEntry result = mInternalCache.findCache(route);
         return result;
     }
 
-    /**
-     * 查找html缓存
-     *
-     * @param route
-     * @return
-     */
-    public CacheEntry findHtmlCache(Route route) {
-        CacheEntry result;
-        // 遍历外部缓存
-        for (ICache cache : mCaches) {
-            result = cache.findCache(route);
-            if (null != result && result.isValid()) {
-                return result;
-            }
-        }
-        // 遍历内部缓存
-        result = mInternalHtmlCache.findCache(route);
-        if (null != result) {
-            return result;
-        }
-        return null;
-    }
+//    /**
+//     * 查找html缓存
+//     *
+//     * @param route
+//     * @return
+//     */
+//    public CacheEntry findHtmlCache(Route route) {
+//        CacheEntry result;
+//        // 遍历外部缓存
+//        for (ICache cache : mCaches) {
+//            result = cache.findCache(route);
+//            if (null != result && result.isValid()) {
+//                return result;
+//            }
+//        }
+//        // 遍历内部缓存
+//        result = mInternalHtmlCache.findCache(route);
+//        if (null != result) {
+//            return result;
+//        }
+//        return null;
+//    }
+
+//    /**
+//     * Just save to internalCache
+//     *
+//     * @param route
+//     * @param bytes
+//     */
+//    public void saveCache(Route route, byte[] bytes) {
+//        if (null == bytes || bytes.length == 0) {
+//            return;
+//        }
+//        mInternalCache.putCache(route, bytes);
+//    }
 
     /**
-     * Just save to internalCache
-     *
-     * @param route
-     * @param bytes
-     */
-    public void saveCache(Route route, byte[] bytes) {
-        if (null == bytes || bytes.length == 0) {
-            return;
-        }
-        mInternalCache.putCache(route, bytes);
-    }
-
-    /**
-     * Just save html file
+     * 保存
      *
      * @param route route
      * @param bytes
      */
-    public boolean saveHtmlCache(Route route, byte[] bytes) {
+    public boolean saveCache(Route route, byte[] bytes) {
         if (null == bytes || bytes.length == 0) {
             return false;
         }
-        return mInternalHtmlCache.saveCache(route, bytes);
+        return mInternalCache.saveCache(route, bytes);
     }
 
     /**
      * Clear caches
      */
     public void clearCache() {
-        // clear file caches
         mInternalCache.clear();
-        mInternalCache = new InternalCache();
-        // clear html files
-        mInternalHtmlCache.clear();
     }
 
     /**
@@ -153,18 +185,18 @@ public class CacheHelper {
      *
      * @param route 资源地址
      */
-    public void removeInternalCache(Route route) {
+    public void removeCache(Route route) {
         mInternalCache.removeCache(route);
     }
 
-    /**
-     * 删除单个html缓存
-     *
-     * @param route route
-     */
-    public void removeHtmlCache(Route route) {
-        mInternalHtmlCache.removeCache(route);
-    }
+//    /**
+//     * 删除单个html缓存
+//     *
+//     * @param route route
+//     */
+//    public void removeHtmlCache(Route route) {
+//        mInternalHtmlCache.removeCache(route);
+//    }
 
 //    /**
 //     * 是否能够缓存
@@ -233,31 +265,4 @@ public class CacheHelper {
         return "file:///android_asset/";
     }
 
-//    /**
-//     * 根据fileHash获取缓存的key
-//     *
-//     * @param fileHash
-//     * @return
-//     */
-//    public String urlToKey(String fileHash) {
-//        // fileHash为空,返回null
-//        if (TextUtils.isEmpty(fileHash)) {
-//            return null;
-//        }
-//        try {
-//            // 如果只有文件名
-//            if (!url.contains(File.separator)) {
-//                return url;
-//            }
-//            Uri uri = Uri.parse(url);
-//            String path = uri.getPath();
-//            String key = Utils.hash(path);
-//            LogUtils.i(TAG, "url : " + url + " ; key : " + key);
-//            return key;
-//        } catch (Exception e) {
-//            LogUtils.e(TAG, e.getMessage());
-//        }
-//
-//        return null;
-//    }
 }

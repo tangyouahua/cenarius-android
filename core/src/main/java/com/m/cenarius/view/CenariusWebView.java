@@ -138,22 +138,6 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
         mCore.loadUri(uri, this);
     }
 
-    public void loadPartialUri(String uri) {
-        mCore.loadPartialUri(uri);
-        this.mUri = uri;
-        this.mUsePage = false;
-    }
-
-    public void loadPartialUri(String uri, final CenariusWebViewCore.UriLoadCallback callback) {
-        this.mUri = uri;
-        this.mUsePage = false;
-        if (null != callback) {
-            this.mUriLoadCallback = new WeakReference<CenariusWebViewCore.UriLoadCallback>(callback);
-        }
-
-        mCore.loadPartialUri(uri, this);
-    }
-
     @Override
     public boolean onStartLoad() {
         post(new Runnable() {

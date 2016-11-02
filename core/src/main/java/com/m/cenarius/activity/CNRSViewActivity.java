@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.R;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
+import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.view.CenariusWidget;
 import com.m.cenarius.widget.AlertDialogWidget;
@@ -169,36 +170,35 @@ public class CNRSViewActivity extends AppCompatActivity {
         //读取sd目录
         if (Cenarius.DevelopModeEnable)
         {
-            return getSDFile(uri);
+            return getSDFile(uri, htmlFileURL);
         }
         return cnrs_htmlURL(uri, htmlFileURL);
     }
 
     private String cnrs_htmlURL(String uri, String htmlFileURL) {
         if (htmlFileURL == null) {
-            try {
-                URL url = new URL(uri);
-                if (url.getQuery().length() != 0 || url.getRef().length() != 0)
-                {
-                    LogUtils.i(TAG, "local html 's format is not right! Url has query and fragment.");
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+            htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
+            if (htmlFileURL == null){
+                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
             }
         }
         return htmlFileURL;
     }
 
     // 获取sdcard目录
-    private String getSDFile(String uri){
-        if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-            File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
-            String applicationName = getApplicationName();
-            File fileDir =  new File(sdCardDir,applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
-            String url = "file://" + fileDir.getPath();
-            return url;
+    private String getSDFile(String uri, String htmlFileURL)
+    {
+        if (htmlFileURL == null){
+            if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+                File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
+                String applicationName = getApplicationName();
+                File fileDir =  new File(sdCardDir,applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
+                String url = "file://" + fileDir.getPath();
+                htmlFileURL = url;
+            }
         }
-        return null;
+
+        return htmlFileURL;
     }
 
     private String getApplicationName() {
@@ -214,23 +214,5 @@ public class CNRSViewActivity extends AppCompatActivity {
                 (String) packageManager.getApplicationLabel(applicationInfo);
         return applicationName;
     }
-
-//    public void setMenuItems(List<MenuItem> menuItems) {
-//        if (null == menuItems || menuItems.size() == 0) {
-//            return;
-//        }
-//        mMenuItems.clear();
-//        mMenuItems.addAll(menuItems);
-//        invalidateOptionsMenu();
-//    }
-//
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        for (MenuItem menuItem : mMenuItems) {
-//            menuItem.getMenuView(menu, this);
-//        }
-//        return super.onCreateOptionsMenu(menu);
-//    }
-
 
 }

@@ -1,146 +1,133 @@
 package com.m.cenarius.resourceproxy.cache;
 
 import android.content.Context;
-import android.text.TextUtils;
 
+import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.utils.AppContext;
-import com.m.cenarius.utils.io.IOUtils;
-import com.m.cenarius.Constants;
 import com.m.cenarius.utils.LogUtils;
-import com.jakewharton.disklrucache.DiskLruCache;
+import com.m.cenarius.utils.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 /**
- * 默认缓存池，js，css，png等资源会用默认缓存池来存储，是有大小限制的{@code DiskLruCache}
+ * 缓存资源文件
  *
- * 存储位置在/data/data/cache下
+ * 存储位置默认在/data/data/www下
+ *
  */
-class InternalCache implements ICache {
 
-    public static final String TAG = InternalCache.class.getSimpleName();
+public class InternalCache implements ICache {
 
-    private DiskLruCache mDiskCache;
+    public static final String TAG = "InternalCache";
 
     public InternalCache() {
-        File directory = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
-                Context.MODE_PRIVATE), Constants.DEFAULT_DISK_FILE_PATH);
-        try {
-            mDiskCache = DiskLruCache.open(directory, Constants.VERSION, 2,
-                    Constants.CACHE_SIZE);
-        } catch (IOException e) {
-            LogUtils.e(TAG, e.getMessage());
-        }
     }
 
-    public boolean putCache(Route route, byte[] bytes) {
-        if (null == mDiskCache) {
-            return false;
-        }
-        DiskLruCache.Editor editor = null;
-        String key = route.fileHash;
-        // 如果存在，则先删掉之前的缓存
-        removeCache(route);
-        OutputStream outputStream = null;
-        try {
-            editor = mDiskCache.edit(key);
-            if (null == editor) {
-                return false;
-            }
-            editor.set(0, String.valueOf(bytes.length));
-            outputStream = editor.newOutputStream(1);
-            outputStream.write(bytes);
-            outputStream.flush();
-            editor.commit();
-            editor = null;
-            return true;
-        } catch (Exception e) {
-            LogUtils.e(TAG, e.getMessage());
+    @Override
+    public CacheEntry findCache(Route route) {
+        File file = file(route);
+        if (file.exists() && file.canRead()) {
             try {
-                mDiskCache.remove(key);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        } finally {
-            if (null != editor) {
-                try {
-                    editor.commit();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (null != outputStream) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return false;
-    }
-
-    public CacheEntry getCache(Route route) {
-        if (null == mDiskCache) {
-            return null;
-        }
-        InputStream inputStream = null;
-        try {
-            DiskLruCache.Snapshot snapshot = mDiskCache.get(route.fileHash);
-            if (null == snapshot) {
-                return null;
-            }
-            LogUtils.i(TAG, "hit");
-            long length = 0;
-            String storedLength = snapshot.getString(0);
-            if (!TextUtils.isEmpty(storedLength)) {
-                length = Long.parseLong(storedLength);
-            }
-            inputStream = snapshot.getInputStream(1);
-            return new CacheEntry(length, new ByteArrayInputStream(IOUtils.toByteArray(inputStream)));
-        } catch (Exception e) {
-            LogUtils.e(TAG, e.getMessage());
-        } finally {
-            if (null != inputStream) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                FileInputStream fileInputStream = new FileInputStream(file);
+                byte[] bytes = IOUtils.toByteArray(fileInputStream);
+                CacheEntry cacheEntry = new CacheEntry(file.length(), new ByteArrayInputStream(bytes));
+                fileInputStream.close();
+                LogUtils.i(TAG, "hit");
+                return cacheEntry;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return null;
     }
 
-    public void clear() {
-        if (null != mDiskCache) {
-            try {
-                mDiskCache.delete();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public CacheEntry findCache(Route route) {
-        return getCache(route);
-    }
-
     @Override
     public boolean removeCache(Route route) {
-        try {
-            LogUtils.i(TAG, "remove cache  : url " + route.uri);
-            return mDiskCache.remove(route.fileHash);
-        } catch (IOException e) {
-            e.printStackTrace();
+        LogUtils.i(TAG, "remove cache  : url " + route.uri);
+        File file = file(route);
+        return file.exists() && file.delete();
+    }
+
+    /**
+     * 保存文件缓存
+     *
+     * @param route route
+     * @param bytes 数据
+     */
+    public boolean saveCache(Route route, byte[] bytes) {
+        if (null == bytes || bytes.length == 0) {
             return false;
         }
+        File fileDir = fileDir();
+        if (!fileDir.exists()) {
+            if (!fileDir.mkdirs()) {
+                return false;
+            }
+        }
+        // 如果存在，则先删掉之前的缓存
+        removeCache(route);
+        File saveFile = null;
+        try {
+            saveFile = file(route);
+            OutputStream outputStream = new FileOutputStream(saveFile);
+            outputStream.write(bytes);
+            outputStream.flush();
+            outputStream.close();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (null != saveFile && saveFile.exists()) {
+                saveFile.exists();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 清除缓存
+     *
+     * @return whether clear cache successfully
+     */
+    public boolean clear() {
+        File htmlDir = fileDir();
+        if (!htmlDir.exists()) {
+            return true;
+        }
+        File[] htmlFiles = htmlDir.listFiles();
+        if (null == htmlFiles) {
+            return true;
+        }
+        boolean processed = true;
+        for (File file : htmlFiles) {
+            if (!file.delete()) {
+                processed = false;
+            }
+        }
+        return processed;
+    }
+
+    /**
+     * 存储目录
+     *
+     * @return 存储目录
+     */
+    private File fileDir() {
+        return new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
+    }
+
+    /**
+     * 单个存储文件路径
+     *
+     * @param route route
+     * @return html对应的存储文件
+     */
+    public File file(Route route) {
+        return new File(fileDir(), route.uri);
     }
 
 }
