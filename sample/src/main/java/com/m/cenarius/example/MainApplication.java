@@ -27,7 +27,7 @@ public class MainApplication extends Application {
         // 初始化cenarius
         Cenarius.initialize(this);
         Cenarius.setDebug(BuildConfig.DEBUG);
-        Cenarius.setDevelopModeEnable(true);//开启调试模式，会禁用路由表，从SD卡读取。
+//        Cenarius.setDevelopModeEnable(true);//开启调试模式，会禁用路由表，从SD卡读取。
         // 设置并刷新route
         RouteManager.getInstance().setRemoteFolderUrl("http://172.20.70.80/hybrid222");
         RouteManager.getInstance().refreshRoute(null);

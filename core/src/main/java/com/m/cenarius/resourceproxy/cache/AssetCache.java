@@ -52,7 +52,7 @@ public class AssetCache implements ICache {
                 for (Route presetRoute : mRoutes) {
                     if (presetRoute.equals(route)) {
                         //资源文件路径
-                        String pathString = mFilePath + "/" + presetRoute.uri;
+                        String pathString = filePath(presetRoute);
                         AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
                         try {
                             InputStream inputStream = assetManager.open(pathString);
@@ -71,29 +71,29 @@ public class AssetCache implements ICache {
         return null;
     }
 
-    @Override
-    public boolean removeCache(Route route) {
-        // do nothing
-        return true;
-    }
 
-    /**
-     * 存储目录
-     *
-     * @return 存储目录
-     */
-    private File fileDir() {
-        return new File("file:///android_asset/");
+    private String filePath(Route route){
+        return  mFilePath + "/" + route.uri;
     }
 
     /**
      * 单个存储文件路径
-     *
-     * @param route route
-     * @return html对应的存储文件
      */
-    public File file(Route route) {
-        return new File(fileDir(), route.uri);
+    public String fileUrl(Route route){
+        return assetsPath() + filePath(route);
+    }
+
+    /**
+     * 获取assets目录
+     */
+    public String assetsPath(){
+        return "file:///android_asset/";
+    }
+
+    @Override
+    public boolean removeCache(Route route) {
+        // do nothing
+        return true;
     }
 
 }

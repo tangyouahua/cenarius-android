@@ -72,9 +72,9 @@ public class CacheHelper {
             if (cacheFile.exists() && cacheFile.canRead()){
                 return cacheFile.getPath();
             }
-            File assetFile = mAssetCache.file(route);
-            if (assetFile.exists() && assetFile.canRead()){
-                return assetFile.getPath();
+            CacheEntry cacheEntry = mAssetCache.findCache(route);
+            if (cacheEntry != null){
+                return mAssetCache.fileUrl(route);
             }
         }
         return null;
@@ -258,11 +258,6 @@ public class CacheHelper {
                 Context.MODE_PRIVATE).getPath() + "/";
     }
 
-    /**
-     * 获取assets目录
-     */
-    public String assetsPath(){
-        return "file:///android_asset/";
-    }
+
 
 }

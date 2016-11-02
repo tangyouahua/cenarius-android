@@ -13,6 +13,7 @@ import android.webkit.WebViewClient;
 import com.m.cenarius.Constants;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.resourceproxy.ResourceProxy;
+import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheEntry;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.route.Route;
@@ -290,7 +291,7 @@ public class CenariusWebViewClient extends WebViewClient {
             return uri;
         }
         //resource
-        String assetsPath = CacheHelper.getInstance().assetsPath();
+        String assetsPath = AssetCache.getInstance().assetsPath();
         uri = deleteString(assetsPath, url);
         if (uri != null) {
             return uri;
