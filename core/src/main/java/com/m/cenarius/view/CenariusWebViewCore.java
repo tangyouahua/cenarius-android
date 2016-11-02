@@ -255,69 +255,50 @@ public class CenariusWebViewCore extends SafeWebView {
         super.setWebChromeClient(client);
     }
 
-    /**
-     * Load Page
-     *
-     * @param uri
-     */
-    public void loadUri(String uri) {
-        loadUri(uri, null);
-    }
-
-    /**
-     * Load Page
-     *
-     * @param uri
-     * @param callback
-     */
-    public void loadUri(String uri, UriLoadCallback callback) {
-        loadUri(uri, callback, true);
-    }
-
-    /**
-     * Load Part
-     *
-     * @param uri
-     */
-    public void loadPartialUri(String uri) {
-        loadUri(uri, null);
-    }
-
-    /**
-     * Load Part
-     *
-     * @param uri
-     * @param callback
-     */
-    public void loadPartialUri(String uri, UriLoadCallback callback) {
-        loadUri(uri, callback, false);
-    }
-
-    /**
-     * Cenarius entry
-     * <p>
-     * 如果map能够匹配上，则
-     */
-    private void loadUri(final String uri, final UriLoadCallback callback, boolean page) {
-        LogUtils.i(TAG, "loadUri , uri = " + (null != uri ? uri : "null"));
-        if (TextUtils.isEmpty(uri)) {
-            throw new IllegalArgumentException("[CenariusWebView] [loadUri] uri can not be null");
-        }
-
-        Route route = RouteManager.getInstance().findRoute(uri);
-        if (null == route) {
-            LogUtils.i(TAG, "route not found");
-            if (null != callback) {
-                callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
-            }
-            return;
-        }
-        if (null != callback) {
-            callback.onStartLoad();
-        }
-        loadUrl(route.getHtmlFile());
-
-
+//    /**
+//     * Load Page
+//     *
+//     * @param uri
+//     */
+//    public void loadUri(String uri) {
+//        loadUri(uri, null);
+//    }
+//
+//    /**
+//     * Load Page
+//     *
+//     * @param uri
+//     * @param callback
+//     */
+//    public void loadUri(String uri, UriLoadCallback callback) {
+//        loadUri(uri, callback, true);
+//    }
+//
+//    /**
+//     * Cenarius entry
+//     * <p>
+//     * 如果map能够匹配上，则
+//     */
+//    private void loadUri(final String uri, final UriLoadCallback callback, boolean page) {
+//        LogUtils.i(TAG, "loadUri , uri = " + (null != uri ? uri : "null"));
+//        if (TextUtils.isEmpty(uri)) {
+//            throw new IllegalArgumentException("[CenariusWebView] [loadUri] uri can not be null");
+//        }
+//
+//        Route route = RouteManager.getInstance().findRoute(uri);
+//        if (null == route) {
+//            LogUtils.i(TAG, "route not found");
+//            if (null != callback) {
+//                callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
+//            }
+//            return;
+//        }
+//        if (null != callback) {
+//            callback.onStartLoad();
+//        }
+//        loadUrl(route.getHtmlFile());
+//
+//
 //        final Route route;
 //        if (page) {
 //            route = RouteManager.getInstance().findRoute(uri);
@@ -382,12 +363,12 @@ public class CenariusWebViewCore extends SafeWebView {
 //                }
 //            });
 //        }
-    }
-
-    private void doLoadCache(String uri, Route route) {
-        LogUtils.i(TAG, "file cache , doLoadCache cache file");
-        // using file schema to doLoadCache
-        // 4.0的版本加载本地文件不能传递parameters，所以html文本需要替换内容
-        loadUrl(Constants.FILE_AUTHORITY + route.getHtmlFile() + "?uri=" + Uri.encode(uri));
-    }
+//    }
+//
+//    private void doLoadCache(String uri, Route route) {
+//        LogUtils.i(TAG, "file cache , doLoadCache cache file");
+//        // using file schema to doLoadCache
+//        // 4.0的版本加载本地文件不能传递parameters，所以html文本需要替换内容
+//        loadUrl(Constants.FILE_AUTHORITY + route.getHtmlFile() + "?uri=" + Uri.encode(uri));
+//    }
 }

@@ -38,7 +38,6 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
     private ProgressBar mProgressBar;
 
     private String mUri;
-    private boolean mUsePage;
     private WeakReference<CenariusWebViewCore.UriLoadCallback> mUriLoadCallback = new WeakReference<CenariusWebViewCore.UriLoadCallback>(null);
 
     public CenariusWebView(Context context) {
@@ -122,21 +121,19 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
         mCore.setWebChromeClient(client);
     }
 
-    public void loadUri(String uri) {
-        mCore.loadUri(uri);
-        this.mUri = uri;
-        this.mUsePage = true;
-    }
-
-    public void loadUri(String uri, final CenariusWebViewCore.UriLoadCallback callback) {
-        this.mUri = uri;
-        this.mUsePage = true;
-        if (null != callback) {
-            this.mUriLoadCallback = new WeakReference<CenariusWebViewCore.UriLoadCallback>(callback);
-        }
-
-        mCore.loadUri(uri, this);
-    }
+//    public void loadUri(String uri) {
+//        mCore.loadUri(uri);
+//        this.mUri = uri;
+//    }
+//
+//    public void loadUri(String uri, final CenariusWebViewCore.UriLoadCallback callback) {
+//        this.mUri = uri;
+//        if (null != callback) {
+//            this.mUriLoadCallback = new WeakReference<CenariusWebViewCore.UriLoadCallback>(callback);
+//        }
+//
+//        mCore.loadUri(uri, this);
+//    }
 
     @Override
     public boolean onStartLoad() {
@@ -283,10 +280,7 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
      * 重新加载页面
      */
     public void reload() {
-        if (mUsePage) {
-            mCore.loadUri(mUri, this);
-        } else {
-            mCore.loadPartialUri(mUri, this);
-        }
+//        mCore.loadUri(mUri, this);
+        mCore.reload();
     }
 }

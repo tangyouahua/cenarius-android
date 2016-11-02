@@ -177,10 +177,11 @@ public class CNRSViewActivity extends AppCompatActivity {
 
     private String cnrs_htmlURL(String uri, String htmlFileURL) {
         if (htmlFileURL == null) {
-            htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
-            if (htmlFileURL == null){
-                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
-            }
+//            htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
+//            if (htmlFileURL == null){
+//                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+//            }
+            htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
         }
         return htmlFileURL;
     }
