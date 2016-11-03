@@ -14,6 +14,9 @@ public class Cenarius {
     public static final String TAG = Cenarius.class.getSimpleName();
     public static boolean DEBUG = false;
     public static boolean DevelopModeEnable = false;
+    public static String LoginService;
+    public static String LoginAppKey;
+    public static String LoginAppSecret;
 
     /**
      * 可以额外设置主app的user-agent
@@ -35,8 +38,17 @@ public class Cenarius {
         DEBUG = debug;
     }
 
+    /**
+     * 设置开发模式
+     */
     public static void setDevelopModeEnable(boolean enable){
         DevelopModeEnable = enable;
+    }
+
+    public static void setLogin(String service, String appKey, String appSecret){
+        LoginService = service;
+        LoginAppKey = appKey;
+        LoginAppSecret = appSecret;
     }
 
     /**
