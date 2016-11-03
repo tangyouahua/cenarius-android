@@ -80,15 +80,12 @@ public class HtmlHelper {
     }
 
     /**
-     * 空闲时间下载html文件
+     * 空闲时间下载h5文件
      */
     public static void prepareHtmlFiles(ArrayList<Route> routes) {
         if (null == routes || routes.isEmpty()) {
             return;
         }
-//        ArrayList<Route> validRoutes = new ArrayList<>();
-//        validRoutes.addAll(routes.items);
-//        validRoutes.addAll(routes.partialItems);
         // 重新下载
         mDownloadingProcess.clear();
         for (final Route route : routes) {

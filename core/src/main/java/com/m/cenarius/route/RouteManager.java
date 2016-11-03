@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
 
+import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.utils.AppContext;
@@ -65,7 +66,7 @@ public class RouteManager {
     private RouteRefreshCallback mRouteRefreshCallback;
 
     /**
-     * 等待route刷新的callback
+     * 远程目录 url
      */
     public String remoteFolderUrl;
 
@@ -98,7 +99,7 @@ public class RouteManager {
      */
     public void setRemoteFolderUrl(String remoteFolderUrl) {
         this.remoteFolderUrl = remoteFolderUrl;
-        setRouteApi(remoteFolderUrl + "/routes.json");
+        setRouteApi(remoteFolderUrl + "/" + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
     }
 
     /**
@@ -170,20 +171,8 @@ public class RouteManager {
         return null;
     }
 
-//    /**
-//     * 找到能够解析uri的局部Route
-//     *
-//     * @param uri 需要处理的uri
-//     * @return 能够处理uri的Route，如果没有则为null
-//     */
-//    public Route findPartialRoute(String uri) {
-//
-//        return null;
-//    }
-
-
     /**
-     * 刷新路由
+     * 刷新路由表
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
@@ -191,7 +180,7 @@ public class RouteManager {
             public void onSuccess(String data) {
                 mCheckingRouteString = data;
                 mRouteRefreshCallback = callback;
-                // prepare html files
+                // prepare h5 files
                 try {
                     ArrayList<Route> routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<ArrayList<Route>>() {
                     }.getType());

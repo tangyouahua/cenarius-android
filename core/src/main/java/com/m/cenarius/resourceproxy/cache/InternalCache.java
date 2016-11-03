@@ -63,17 +63,17 @@ public class InternalCache implements ICache {
         if (null == bytes || bytes.length == 0) {
             return false;
         }
-        File fileDir = fileDir();
-        if (!fileDir.exists()) {
-            if (!fileDir.mkdirs()) {
-                return false;
-            }
-        }
         // 如果存在，则先删掉之前的缓存
         removeCache(route);
         File saveFile = null;
         try {
             saveFile = file(route);
+            File fileDir = saveFile.getParentFile();
+            if (!fileDir.exists()) {
+                if (!fileDir.mkdirs()) {
+                    return false;
+                }
+            }
             OutputStream outputStream = new FileOutputStream(saveFile);
             outputStream.write(bytes);
             outputStream.flush();

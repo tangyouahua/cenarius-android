@@ -27,7 +27,7 @@ class RouteFetcher {
     public static final String TAG = RouteFetcher.class.getSimpleName();
 
     /**
-     * 更新Routes的远程地址
+     * Routes的远程地址
      */
     private static String sRouteApi;
 

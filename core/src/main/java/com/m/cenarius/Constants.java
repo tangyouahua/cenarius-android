@@ -18,10 +18,12 @@ public class Constants {
      */
     public static final String CONTAINER_WIDGET_BASE = "cenarius://cenarius-container/widget";
 
+    // disk中routers.json文件
+    public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "routes.json";
     // 本地asset的存储目录
     public static final String DEFAULT_ASSET_FILE_PATH = "www";
     // 本地asset的routes.json
-    public static final String PRESET_ROUTE_FILE_PATH = DEFAULT_ASSET_FILE_PATH + "/routes.json";
+    public static final String PRESET_ROUTE_FILE_PATH = DEFAULT_ASSET_FILE_PATH + "/" + DEFAULT_DISK_ROUTES_FILE_NAME;
     // cache home
     public static final String CACHE_HOME_DIR = "cenarius";
     // disk中缓存文件的存储目录
@@ -30,8 +32,6 @@ public class Constants {
     public static final String DEFAULT_DISK_HTML_FILE_PATH = "html";
     // disk中缓存目录
     public static final String DEFAULT_DISK_INTERNAL_FILE_PATH = DEFAULT_ASSET_FILE_PATH;
-    // disk中routers.json文件
-    public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "routes.json";
 
     public static final String SCHEMAS_FILE = "file";
 
