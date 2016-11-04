@@ -1,7 +1,9 @@
 package com.m.cenarius.resourceproxy.cache;
 
 import android.content.Context;
+import android.net.Uri;
 
+import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
@@ -20,7 +22,7 @@ public class CacheHelper {
         if (null == mInternalCache) {
             mInternalCache = new InternalCache();
         }
-        if (null == mAssetCache){
+        if (null == mAssetCache) {
             mAssetCache = AssetCache.getInstance();
         }
     }
@@ -58,39 +60,74 @@ public class CacheHelper {
 //        }
 //    }
 
+    private String routeFileURLForRoute(Route route) {
+        if (route == null) {
+            LogUtils.i(TAG, "route not found");
+            return null;
+        }
+        String cacheRouteFileURL = cacheRouteFileURLForRoute(route);
+        if (cacheRouteFileURL != null) {
+            return cacheRouteFileURL;
+        }
+        String resourceRouteFileURL = resourceRouteFileURLForRoute(route);
+        if (resourceRouteFileURL != null) {
+            return resourceRouteFileURL;
+        }
+        return null;
+    }
+
+    private String cacheRouteFileURLForRoute(Route route) {
+        File cacheFile = mInternalCache.file(route);
+        if (cacheFile.exists() && cacheFile.canRead()) {
+            return "file://" + cacheFile.getPath();
+        }
+        return null;
+    }
+
+    private String resourceRouteFileURLForRoute(Route route) {
+        CacheEntry cacheEntry = mAssetCache.findCache(route);
+        if (cacheEntry != null) {
+            return mAssetCache.fileUrl(route);
+        }
+        return null;
+    }
+
+    private String finalUrl(String url, Uri uri) {
+        if (url != null) {
+            String query = uri.getQuery();
+            String fragment = uri.getFragment();
+            if (query.length() > 0) {
+                url = url + "?" + query;
+            }
+            if (fragment.length() > 0) {
+                url = url + "#" + fragment;
+            }
+        }
+
+        return url;
+    }
+
     /**
      * 查找 uri 对应的本地 html 文件 URL。先查 Cache，再查 asset
      */
-    public String localHtmlURLForURI(String uri){
-        Route route = RouteManager.getInstance().findRoute(uri);
-        if (null == route)
-        {
-            LogUtils.i(TAG, "route not found");
-        }
-        else {
-            File cacheFile = mInternalCache.file(route);
-            if (cacheFile.exists() && cacheFile.canRead()){
-                return cacheFile.getPath();
-            }
-            CacheEntry cacheEntry = mAssetCache.findCache(route);
-            if (cacheEntry != null){
-                return mAssetCache.fileUrl(route);
-            }
-        }
-        return null;
+    public String localHtmlURLForURI(String uriString) {
+        Uri finalUri = Uri.parse(uriString);
+        String UriString = finalUri.getPath();
+        Route route = RouteManager.getInstance().findRoute(UriString);
+        String urlString = routeFileURLForRoute(route);
+        String finalUrl = finalUrl(urlString, finalUri);
+        return finalUrl;
     }
 
     /**
      * 查找 uri 对应的服务器上 html 文件。
      */
-    public String remoteHtmlURLForURI(String uri){
+    public String remoteHtmlURLForURI(String uri) {
         Route route = RouteManager.getInstance().findRoute(uri);
-        if (null == route)
-        {
+        if (null == route) {
             LogUtils.i(TAG, "route not found");
-        }
-        else {
-            return route.getHtmlFile();
+        } else {
+            return finalUrl(route.getHtmlFile(), Uri.parse(uri));
         }
         return null;
     }
@@ -253,11 +290,10 @@ public class CacheHelper {
     /**
      * 获取缓存目录
      */
-    public String cachePath(){
+    public String cachePath() {
         return AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
                 Context.MODE_PRIVATE).getPath() + "/";
     }
-
 
 
 }

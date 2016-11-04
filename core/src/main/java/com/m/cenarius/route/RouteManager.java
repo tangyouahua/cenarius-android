@@ -17,6 +17,9 @@ import com.google.gson.reflect.TypeToken;
 import com.mcxiaoke.next.task.SimpleTaskCallback;
 import com.mcxiaoke.next.task.TaskBuilder;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -316,6 +319,7 @@ public class RouteManager {
         });
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(BusProvider.BusEvent event) {
         if (null == event) {
             return;

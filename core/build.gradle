@@ -28,11 +28,10 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:25.0.0'
     compile 'com.android.support:appcompat-v7:25.0.0'
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
-    compile 'com.jakewharton:disklrucache:2.0.2'
-    compile 'com.mcxiaoke.next:task:1.2.+'
-    compile 'com.google.code.gson:gson:2.3.1'
-    compile 'de.greenrobot:eventbus:2.4.1'
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    compile 'com.mcxiaoke.next:task:1.4.+'
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'org.greenrobot:eventbus:3.0.0'
 
 
 //    compile 'com.squareup.okhttp3:okhttp:3.4.1'

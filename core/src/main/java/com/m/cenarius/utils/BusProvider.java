@@ -2,7 +2,7 @@ package com.m.cenarius.utils;
 
 import android.os.Bundle;
 
-import de.greenrobot.event.EventBus;
+import org.greenrobot.eventbus.EventBus;
 
 public final class BusProvider {
 

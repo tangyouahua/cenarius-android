@@ -26,7 +26,7 @@ public class MainActivity extends CNRSViewActivity {
     }
 
     public void openH5(View view){
-        openWebPage("build/index.html", null);
+        openWebPage("build/index.html?query=value#ref", null);
     }
 
     public void openCordova(View view){
