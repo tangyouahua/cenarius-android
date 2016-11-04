@@ -3,7 +3,6 @@ package com.m.cenarius.resourceproxy.cache;
 import android.content.Context;
 import android.net.Uri;
 
-import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
@@ -81,6 +80,7 @@ public class CacheHelper {
         if (cacheFile.exists() && cacheFile.canRead()) {
             return "file://" + cacheFile.getPath();
         }
+        CacheHelper.getInstance().removeCache(route);
         return null;
     }
 
@@ -112,8 +112,8 @@ public class CacheHelper {
      */
     public String localHtmlURLForURI(String uriString) {
         Uri finalUri = Uri.parse(uriString);
-        String UriString = finalUri.getPath();
-        Route route = RouteManager.getInstance().findRoute(UriString);
+        String baseUri = finalUri.getPath();
+        Route route = RouteManager.getInstance().findRoute(baseUri);
         String urlString = routeFileURLForRoute(route);
         String finalUrl = finalUrl(urlString, finalUri);
         return finalUrl;
