@@ -16,6 +16,7 @@ import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.view.CenariusWidget;
 import com.m.cenarius.widget.AlertDialogWidget;
 import com.m.cenarius.widget.CordovaWidget;
+import com.m.cenarius.widget.LoginWidget;
 import com.m.cenarius.widget.NativeWidget;
 import com.m.cenarius.widget.PullToRefreshWidget;
 import com.m.cenarius.widget.TitleWidget;
@@ -112,11 +113,16 @@ public class CNRSViewActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-//    public static void startActivity(Activity activity, String uri) {
-//        Intent intent = new Intent(activity, CNRSViewActivity.class);
-//        intent.setData(Uri.parse(uri));
-//        activity.startActivity(intent);
-//    }
+    /**
+     登录
+
+     @param username   用户名
+     @param password   密码
+     @param callback   登录后将执行这个 callback
+     */
+    public static void login(String username, String password, LoginWidget.LoginCallback callback){
+        LoginWidget.login(username, password, callback);
+    }
 
 
     /**

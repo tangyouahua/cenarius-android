@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.m.cenarius.activity.CNRSViewActivity;
+import com.m.cenarius.widget.LoginWidget;
 
 public class MainActivity extends CNRSViewActivity {
 
@@ -31,5 +32,19 @@ public class MainActivity extends CNRSViewActivity {
 
     public void openCordova(View view){
         openCordovaPage("build/index.html", null);
+    }
+
+    public void login(View view){
+        login("0009704", "Admin123", new LoginWidget.LoginCallback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFail() {
+
+            }
+        });
     }
 }
