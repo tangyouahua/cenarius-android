@@ -135,15 +135,22 @@ public class CenariusWebViewClient extends WebViewClient {
             return super.shouldInterceptRequest(webView, requestUrl);
         }
 
-        // html直接返回
-        if (Helper.isHtmlResource(requestUrl) ||Helper.isJsResource(requestUrl)) {
-            String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
-            if (htmlFileURL == null) {
-                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
-            }
-            return super.shouldInterceptRequest(webView, htmlFileURL);
+        String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
+        if (htmlFileURL == null) {
+            htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
+        }
+        return super.shouldInterceptRequest(webView, htmlFileURL);
+    }
 
-
+        // html js 直接返回
+//        if (Helper.isHtmlResource(requestUrl) || Helper.isJsResource(requestUrl)) {
+//            String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
+//            if (htmlFileURL == null) {
+//                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
+//            }
+//            return super.shouldInterceptRequest(webView, htmlFileURL);
+//
+//
 //            final CacheEntry cacheEntry = CacheHelper.getInstance().findCache(route);
 //            if (null == cacheEntry) {
 //                // 没有cache，
@@ -172,8 +179,8 @@ public class CenariusWebViewClient extends WebViewClient {
 //                }
 //                return new WebResourceResponse(Constants.MIME_TYPE_HTML, "utf-8", IOUtils.toInputStream(data));
 //            }
-        }
-
+//        }
+//
 //        // js直接返回
 //        if (Helper.isJsResource(requestUrl)) {
 //            final CacheEntry cacheEntry = CacheHelper.getInstance().findCache(route);
@@ -200,38 +207,38 @@ public class CenariusWebViewClient extends WebViewClient {
 //                return new WebResourceResponse(Constants.MIME_TYPE_HTML, "utf-8", IOUtils.toInputStream(data));
 //            }
 //        }
-
-        // 图片等其他资源使用先返回空流，异步写数据
-        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
-        String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
-        try {
-            LogUtils.i(TAG, "start load async :" + requestUrl);
-            final PipedOutputStream out = new PipedOutputStream();
-            final PipedInputStream in = new PipedInputStream(out);
-            WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-            if (Utils.hasLollipop()) {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Access-Control-Allow-Origin", "*");
-                xResponse.setResponseHeaders(headers);
-            }
-            final String url = requestUrl;
-            webView.post(new Runnable() {
-                @Override
-                public void run() {
-                    new Thread(new ResourceRequest(url, out, in)).start();
-                }
-            });
-            return xResponse;
-        } catch (IOException e) {
-            e.printStackTrace();
-            LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-            return super.shouldInterceptRequest(webView, requestUrl);
-        } catch (Throwable e) {
-            e.printStackTrace();
-            LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-            return super.shouldInterceptRequest(webView, requestUrl);
-        }
-    }
+//
+//        // 图片等其他资源使用先返回空流，异步写数据
+//        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
+//        String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
+//        try {
+//            LogUtils.i(TAG, "start load async :" + requestUrl);
+//            final PipedOutputStream out = new PipedOutputStream();
+//            final PipedInputStream in = new PipedInputStream(out);
+//            WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+//            if (Utils.hasLollipop()) {
+//                Map<String, String> headers = new HashMap<>();
+//                headers.put("Access-Control-Allow-Origin", "*");
+//                xResponse.setResponseHeaders(headers);
+//            }
+//            final String url = requestUrl;
+//            webView.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    new Thread(new ResourceRequest(url, out, in)).start();
+//                }
+//            });
+//            return xResponse;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
+//            return super.shouldInterceptRequest(webView, requestUrl);
+//        } catch (Throwable e) {
+//            e.printStackTrace();
+//            LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
+//            return super.shouldInterceptRequest(webView, requestUrl);
+//        }
+//    }
 
     /**
      * html或js加载错误，页面无法渲染，通知{@link CenariusWebView}显示错误界面，重新加载
