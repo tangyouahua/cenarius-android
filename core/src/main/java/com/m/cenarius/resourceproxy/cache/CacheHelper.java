@@ -96,10 +96,10 @@ public class CacheHelper {
         if (url != null) {
             String query = uri.getQuery();
             String fragment = uri.getFragment();
-            if (query.length() > 0) {
+            if (query != null) {
                 url = url + "?" + query;
             }
-            if (fragment.length() > 0) {
+            if (fragment != null) {
                 url = url + "#" + fragment;
             }
         }
