@@ -24,24 +24,25 @@ android {
         abortOnError false
     }
 
-    productFlavors {
-        armv7 {
-            versionCode defaultConfig.versionCode + 2
-            ndk {
-                abiFilters "armeabi-v7a", ""
-            }
-        }
-        x86 {
-            versionCode defaultConfig.versionCode + 4
-            ndk {
-                abiFilters "x86", ""
-            }
-        }
-    }
+//    productFlavors {
+//        armv7 {
+//            versionCode defaultConfig.versionCode + 2
+//            ndk {
+//                abiFilters "armeabi-v7a", ""
+//            }
+//        }
+//        x86 {
+//            versionCode defaultConfig.versionCode + 4
+//            ndk {
+//                abiFilters "x86", ""
+//            }
+//        }
+//    }
+
 }
 
 repositories {
-    mavenLocal()
+//    mavenLocal()
     maven {
         url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2'
     }

@@ -4,7 +4,7 @@ import android.net.http.SslError;
 import android.webkit.ValueCallback;
 
 import org.apache.cordova.cordovautil.WebViewClientListener;
-import org.apache.cordova.BuildConfig;
+//import org.apache.cordova.BuildConfig;
 import org.crosswalk.engine.XWalkCordovaResourceClient;
 import org.crosswalk.engine.XWalkWebViewEngine;
 import org.xutils.common.util.LogUtil;
@@ -88,10 +88,10 @@ public class XWalkBaseWebViewClient extends XWalkCordovaResourceClient {
     public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
         super.onReceivedSslError(view, callback, error);
         LogUtil.v("此时的shouldOverrideUrlLoading: "+error!=null?error.getUrl():" 链接为空");
-        if (BuildConfig.DEBUG){
-            callback.onReceiveValue(true);// debug = true
-        }else{
-            callback.onReceiveValue(false);// debug = false
-        }
+//        if (BuildConfig.DEBUG){
+//            callback.onReceiveValue(true);// debug = true
+//        }else{
+//            callback.onReceiveValue(false);// debug = false
+//        }
     }
 }

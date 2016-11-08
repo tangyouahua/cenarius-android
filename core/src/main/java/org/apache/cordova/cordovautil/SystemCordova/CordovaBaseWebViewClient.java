@@ -7,7 +7,7 @@ import android.webkit.WebView;
 
 import org.apache.cordova.cordovautil.WebViewClientListener;
 
-import org.apache.cordova.BuildConfig;
+//import org.apache.cordova.BuildConfig;
 import org.apache.cordova.engine.SystemWebViewClient;
 import org.apache.cordova.engine.SystemWebViewEngine;
 import org.xutils.common.util.LogUtil;
@@ -81,8 +81,8 @@ public class CordovaBaseWebViewClient extends SystemWebViewClient {
     }
     @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-        if (BuildConfig.DEBUG){
-            handler.proceed();
-        }
+//        if (BuildConfig.DEBUG){
+//            handler.proceed();
+//        }
     }
 }

@@ -1,7 +1,4 @@
 <resources>
     <string name="app_name">CenariusAndroid</string>
-    <string name="clear">清除缓存</string>
-    <string name="title_partial_cenarius">Demo(局部cenarius)</string>
     <string name="title_open_light_app">打开轻应用</string>
-    <string name="success_cleard_cache">缓存清除成功</string>
 </resources>
