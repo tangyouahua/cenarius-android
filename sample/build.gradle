@@ -23,5 +23,4 @@ android {
 
 dependencies {
     compile(project(':core'))
-    compile 'com.android.support:appcompat-v7:24.2.1'
 }

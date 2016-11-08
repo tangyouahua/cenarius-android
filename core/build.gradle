@@ -23,6 +23,28 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    productFlavors {
+        armv7 {
+            versionCode defaultConfig.versionCode + 2
+            ndk {
+                abiFilters "armeabi-v7a", ""
+            }
+        }
+        x86 {
+            versionCode defaultConfig.versionCode + 4
+            ndk {
+                abiFilters "x86", ""
+            }
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url 'https://download.01.org/crosswalk/releases/crosswalk/android/maven2'
+    }
 }
 
 dependencies {
@@ -32,12 +54,6 @@ dependencies {
     compile 'com.mcxiaoke.next:task:1.4.+'
     compile 'com.google.code.gson:gson:2.7'
     compile 'org.greenrobot:eventbus:3.0.0'
-
-
-//    compile 'com.squareup.okhttp3:okhttp:3.4.1'
-//    compile 'com.jakewharton:disklrucache:2.0.2'
-//    compile 'com.mcxiaoke.next:task:1.4.+'
-//    compile 'com.google.code.gson:gson:2.7'
-//    compile 'org.greenrobot:eventbus:3.0.0'
-//    compile 'com.jakewharton:butterknife:8.4.0'
+    compile 'org.xutils:xutils:3.3.36'
+    compile 'org.xwalk:xwalk_core_library:22.52.561.4'
 }
