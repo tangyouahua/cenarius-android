@@ -2,6 +2,9 @@ package org.apache.cordova.cordovautil;
 
 import android.graphics.Bitmap;
 import android.view.View;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
 
 /**
  * ********************************************
@@ -19,4 +22,7 @@ public interface WebViewClientListener {
     int shouldOverrideUrlLoading(View view, String url);
     void onPageStarted(View view, String url, Bitmap favicon);
     void onReceivedError(View view, int errorCode, String description, String failingUrl);
+
+     WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) ;
+     WebResourceResponse shouldInterceptRequest(WebView view, String url) ;
 }
