@@ -27,8 +27,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'org.xwalk:xwalk_core_library:22.52.561.4'
-    compile 'com.android.support:support-v4:23.0.1'
-    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.android.support:support-v4:25.0.0'
+    compile 'com.android.support:appcompat-v7:25.0.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.mcxiaoke.next:task:1.4.+'
     compile 'com.google.code.gson:gson:2.7'

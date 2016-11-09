@@ -21,6 +21,8 @@ package org.apache.cordova;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -66,7 +68,9 @@ public class CordovaWebViewImpl implements CordovaWebView {
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
 
-    /** custom view created by the browser (a video player for example) */
+    /**
+     * custom view created by the browser (a video player for example)
+     */
     private View mCustomView;
     private WebChromeClient.CustomViewCallback mCustomViewCallback;
 
@@ -74,6 +78,11 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
         String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
+        //修改：cpu是x86的就使用系统webview
+        if (((!TextUtils.isEmpty(Build.CPU_ABI) && Build.CPU_ABI.toLowerCase().contains("x86"))) //
+                || ((!TextUtils.isEmpty(Build.CPU_ABI2) && Build.CPU_ABI2.toLowerCase().contains("x86")))) {
+            className = SystemWebViewEngine.class.getCanonicalName();
+        }
         try {
             Class<?> webViewClass = Class.forName(className);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class, CordovaPreferences.class);
@@ -312,26 +321,32 @@ public class CordovaWebViewImpl implements CordovaWebView {
     public PluginManager getPluginManager() {
         return pluginManager;
     }
+
     @Override
     public CordovaPreferences getPreferences() {
         return preferences;
     }
+
     @Override
     public ICordovaCookieManager getCookieManager() {
         return engine.getCookieManager();
     }
+
     @Override
     public CordovaResourceApi getResourceApi() {
         return resourceApi;
     }
+
     @Override
     public CordovaWebViewEngine getEngine() {
         return engine;
     }
+
     @Override
     public View getView() {
         return engine.getView();
     }
+
     @Override
     public Context getContext() {
         return engine.getView().getContext();
@@ -339,7 +354,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     private void sendJavascriptEvent(String event) {
         if (appPlugin == null) {
-            appPlugin = (CoreAndroid)pluginManager.getPlugin(CoreAndroid.PLUGIN_NAME);
+            appPlugin = (CoreAndroid) pluginManager.getPlugin(CoreAndroid.PLUGIN_NAME);
         }
 
         if (appPlugin == null) {
@@ -423,6 +438,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
             this.pluginManager.onNewIntent(intent);
         }
     }
+
     @Override
     public void handlePause(boolean keepRunning) {
         if (!isInitialized()) {
@@ -438,6 +454,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
             engine.setPaused(true);
         }
     }
+
     @Override
     public void handleResume(boolean keepRunning) {
         if (!isInitialized()) {
@@ -455,6 +472,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
             sendJavascriptEvent("resume");
         }
     }
+
     @Override
     public void handleStart() {
         if (!isInitialized()) {
@@ -462,6 +480,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
         pluginManager.onStart();
     }
+
     @Override
     public void handleStop() {
         if (!isInitialized()) {
@@ -469,6 +488,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
         pluginManager.onStop();
     }
+
     @Override
     public void handleDestroy() {
         if (!isInitialized()) {
