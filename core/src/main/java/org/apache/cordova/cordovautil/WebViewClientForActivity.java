@@ -2,16 +2,8 @@ package org.apache.cordova.cordovautil;
 
 import android.graphics.Bitmap;
 import android.view.View;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebView;
-
-import com.m.cenarius.view.CenariusWidget;
 
 import org.apache.cordova.engine.SystemWebView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * ********************************************
@@ -26,19 +18,6 @@ import java.util.List;
 public class WebViewClientForActivity implements WebViewClientListener {
 
 
-
-    private List<CenariusWidget> mWidgets = new ArrayList<>();
-
-    /**
-     * 自定义url拦截处理
-     *
-     * @param widget
-     */
-    public void addCenariusWidget(CenariusWidget widget) {
-        if (null != widget) {
-            mWidgets.add(widget);
-        }
-    }
     @Override
     public void onPageFinished(View view, String url) {
         if (view instanceof SystemWebView){
@@ -71,13 +50,4 @@ public class WebViewClientForActivity implements WebViewClientListener {
 
     }
 
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        return null;
-    }
-
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        return null;
-    }
 }

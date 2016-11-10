@@ -23,6 +23,4 @@ public interface WebViewClientListener {
     void onPageStarted(View view, String url, Bitmap favicon);
     void onReceivedError(View view, int errorCode, String description, String failingUrl);
 
-     WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) ;
-     WebResourceResponse shouldInterceptRequest(WebView view, String url) ;
 }
