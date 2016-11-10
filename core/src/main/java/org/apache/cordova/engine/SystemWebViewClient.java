@@ -36,6 +36,7 @@ import android.webkit.WebViewClient;
 import com.m.cenarius.Constants;
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.utils.LogUtils;
+import com.m.cenarius.view.CenariusWebViewClient;
 import com.m.cenarius.view.CenariusWidget;
 
 import org.apache.cordova.AuthenticationToken;
@@ -57,7 +58,9 @@ import java.util.Hashtable;
  * shouldOverrideUrlLoading(), etc. Related to but different than
  * CordovaChromeClient.
  */
-public class SystemWebViewClient extends WebViewClient {
+
+//修改：原来继承自 WebViewClient
+public class SystemWebViewClient extends CenariusWebViewClient {
 
     private static final String TAG = "SystemWebViewClient";
     protected final SystemWebViewEngine parentEngine;
@@ -83,21 +86,6 @@ public class SystemWebViewClient extends WebViewClient {
      */
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        //修改：
-        LogUtils.i(TAG, "[shouldOverrideUrlLoading] : url = " + url);
-        if (url.startsWith(Constants.CONTAINER_WIDGET_BASE)) {
-            CNRSViewActivity cnrsViewActivity = (CNRSViewActivity) parentEngine.cordova.getActivity();
-            boolean handled;
-            for (CenariusWidget widget : cnrsViewActivity.widgets) {
-                if (null != widget) {
-                    handled = widget.handle(view, url);
-                    if (handled) {
-                        return true;
-                    }
-                }
-            }
-        }
-
         return parentEngine.client.onNavigationAttempt(url);
     }
 
