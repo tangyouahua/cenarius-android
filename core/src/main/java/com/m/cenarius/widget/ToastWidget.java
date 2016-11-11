@@ -1,5 +1,6 @@
 package com.m.cenarius.widget;
 
+import android.view.View;
 import android.webkit.WebView;
 import android.widget.Toast;
 
@@ -22,7 +23,7 @@ public class ToastWidget implements CenariusWidget {
     }
 
     @Override
-    public boolean handle(WebView view, String url) {
+    public boolean handle(View view, String url) {
         HashMap dataMap = GsonHelper.getDataMap(url, getPath());
         if (dataMap != null){
             String message = (String) dataMap.get(KEY_MESSAGE);

@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.content.DialogInterface;
 
 import android.net.Uri;
-import android.support.annotation.Keep;
 import android.text.TextUtils;
+import android.view.View;
 import android.webkit.WebView;
 
 import com.m.cenarius.utils.GsonHelper;
 import com.m.cenarius.view.CenariusWidget;
+
+import org.crosswalk.engine.XWalkCordovaView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +26,7 @@ public class AlertDialogWidget implements CenariusWidget {
     }
 
     @Override
-    public boolean handle(WebView view, String url) {
+    public boolean handle(View view, String url) {
         if (TextUtils.isEmpty(url)) {
             return false;
         }
@@ -52,7 +54,7 @@ public class AlertDialogWidget implements CenariusWidget {
      * @param data
      * @return
      */
-    private static boolean renderDialog(Activity activity, final WebView webView, Data data) {
+    private static boolean renderDialog(Activity activity, final View webView, Data data) {
         if (null == data) {
             return false;
         }
@@ -82,7 +84,7 @@ public class AlertDialogWidget implements CenariusWidget {
                 builder.setPositiveButton(positive.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + positive.action);
+                        loadUrl(webView,"javascript:" + positive.action);
                     }
                 });
                 break;
@@ -94,13 +96,13 @@ public class AlertDialogWidget implements CenariusWidget {
                 builder.setPositiveButton(positive.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + positive.action);
+                        loadUrl(webView,"javascript:" + positive.action);
                     }
                 });
                 builder.setNegativeButton(negative.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + negative.action);
+                        loadUrl(webView,"javascript:" + negative.action);
                     }
                 });
                 break;
@@ -113,25 +115,25 @@ public class AlertDialogWidget implements CenariusWidget {
                 builder.setPositiveButton(positive.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + positive.action);
+                        loadUrl(webView,"javascript:" + positive.action);
                     }
                 });
                 builder.setNegativeButton(negative.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + negative.action);
+                        loadUrl(webView,"javascript:" + negative.action);
                     }
                 });
                 builder.setPositiveButton(positive.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + positive.action);
+                        loadUrl(webView,"javascript:" + positive.action);
                     }
                 });
                 builder.setNeutralButton(neutral.text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        webView.loadUrl("javascript:" + neutral.action);
+                        loadUrl(webView,"javascript:" + neutral.action);
                     }
                 });
                 break;
@@ -145,7 +147,6 @@ public class AlertDialogWidget implements CenariusWidget {
         return true;
     }
 
-    @Keep
     static class Button {
         String text;
         String action;
@@ -153,7 +154,6 @@ public class AlertDialogWidget implements CenariusWidget {
         public Button() {}
     }
 
-    @Keep
     static class Data {
         String title;
         String message;
@@ -171,4 +171,15 @@ public class AlertDialogWidget implements CenariusWidget {
             return true;
         }
     }
+
+    private static void loadUrl(View webView, String url){
+        if (webView instanceof WebView)
+        {
+            ((WebView)webView).loadUrl(url);
+        }
+        else if (webView instanceof XWalkCordovaView){
+            ((XWalkCordovaView)webView).load(url, null);
+        }
+    }
+
 }

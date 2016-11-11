@@ -181,6 +181,15 @@ public class CNRSViewActivity extends AppCompatActivity {
         return cnrs_htmlURL(uri, htmlFileURL);
     }
 
+    /**
+     * 添加自定义的 widget
+     */
+    public void addCenariusWidget(CenariusWidget widget) {
+        if (null != widget) {
+            widgets.add(widget);
+        }
+    }
+
     private String cnrs_htmlURL(String uri, String htmlFileURL) {
         if (htmlFileURL == null) {
             htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);

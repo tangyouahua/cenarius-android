@@ -1,6 +1,6 @@
 package com.m.cenarius.view;
 
-import android.webkit.WebView;
+import android.view.View;
 
 public interface CenariusWidget {
 
@@ -17,6 +17,6 @@ public interface CenariusWidget {
      * @param url
      * @return
      */
-    boolean handle(WebView view, String url);
+    boolean handle(View view, String url);
 
 }

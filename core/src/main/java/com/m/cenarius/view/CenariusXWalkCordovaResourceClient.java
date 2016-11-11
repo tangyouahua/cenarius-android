@@ -3,11 +3,13 @@ package com.m.cenarius.view;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
+import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheEntry;
@@ -18,7 +20,6 @@ import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.IOUtils;
 
-import org.apache.cordova.cordovautil.XWalkCordova.XWalkBaseWebViewClient;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.crosswalk.engine.XWalkCordovaResourceClient;
 import org.crosswalk.engine.XWalkWebViewEngine;
@@ -33,6 +34,7 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +50,36 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
 
     public CenariusXWalkCordovaResourceClient(XWalkWebViewEngine parentEngine) {
         super(parentEngine);
+    }
+
+    private ArrayList<CenariusWidget> mWidgets;
+
+
+    public ArrayList<CenariusWidget> getCenariusWidgets(View view) {
+        if (mWidgets == null){
+            if (null != view && view.getContext() instanceof CNRSViewActivity) {
+                mWidgets = ((CNRSViewActivity) view.getContext()).widgets;
+            }
+        }
+        return mWidgets;
+    }
+
+    @Override
+    public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
+        LogUtil.v("[shouldOverrideUrlLoading] : url = " + url);
+        if (url.startsWith(Constants.CONTAINER_WIDGET_BASE)) {
+            boolean handled;
+            mWidgets = getCenariusWidgets(view);
+            for (CenariusWidget widget : mWidgets) {
+                if (null != widget) {
+                    handled = widget.handle(view, url);
+                    if (handled) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return super.shouldOverrideUrlLoading(view, url);
     }
 
     @Override
@@ -428,7 +460,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
 
                 // request network
                 Response response = ResourceProxy.getInstance().getNetwork()
-                        .handle(XWalkBaseWebViewClient.Helper.buildRequest(mUrl));
+                        .handle(Helper.buildRequest(mUrl));
                 // write cache
                 if (response.isSuccessful()) {
                     InputStream inputStream = null;
@@ -449,7 +481,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
                     }
                 } else {
                     LogUtil.i("load async failed :" + mUrl);
-                    if (XWalkBaseWebViewClient.Helper.isJsResource(mUrl)) {
+                    if (Helper.isJsResource(mUrl)) {
                         showError(CenariusWebViewCore.RxLoadError.JS_CACHE_INVALID.type);
                         return;
                     }
@@ -488,7 +520,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
             } catch (Exception e) {
                 e.printStackTrace();
                 LogUtil.i("load async exception :" + mUrl + " ; " + e.getMessage());
-                if (XWalkBaseWebViewClient.Helper.isJsResource(mUrl)) {
+                if (Helper.isJsResource(mUrl)) {
                     showError(CenariusWebViewCore.RxLoadError.JS_CACHE_INVALID.type);
                     return;
                 }

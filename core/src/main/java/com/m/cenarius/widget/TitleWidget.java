@@ -1,11 +1,8 @@
 package com.m.cenarius.widget;
 
 import android.app.Activity;
-import android.net.Uri;
-import android.text.TextUtils;
-import android.webkit.WebView;
+import android.view.View;
 
-import com.google.gson.reflect.TypeToken;
 import com.m.cenarius.utils.GsonHelper;
 import com.m.cenarius.view.CenariusWidget;
 
@@ -21,7 +18,7 @@ public class TitleWidget implements CenariusWidget {
     }
 
     @Override
-    public boolean handle(WebView view, String url) {
+    public boolean handle(View view, String url) {
         HashMap dataMap = GsonHelper.getDataMap(url, getPath());
         if (dataMap != null){
             if (null != view && view.getContext() instanceof Activity) {

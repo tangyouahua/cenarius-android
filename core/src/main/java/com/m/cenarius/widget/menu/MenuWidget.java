@@ -3,7 +3,7 @@ package com.m.cenarius.widget.menu;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.webkit.WebView;
+import android.view.View;
 import android.widget.Toast;
 
 import com.m.cenarius.R;
@@ -29,7 +29,7 @@ public class MenuWidget implements CenariusWidget {
     }
 
     @Override
-    public boolean handle(final WebView view, String url) {
+    public boolean handle(final View view, String url) {
         if (TextUtils.isEmpty(url)) {
             return false;
         }

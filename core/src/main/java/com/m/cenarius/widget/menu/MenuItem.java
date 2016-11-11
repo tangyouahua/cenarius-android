@@ -3,7 +3,6 @@ package com.m.cenarius.widget.menu;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
-import android.support.annotation.Keep;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.Toast;
 
 import com.m.cenarius.R;
 
-@Keep
 public class MenuItem {
 
     public String type;

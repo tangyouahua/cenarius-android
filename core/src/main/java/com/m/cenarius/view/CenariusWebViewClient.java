@@ -26,6 +26,7 @@ import com.m.cenarius.utils.io.IOUtils;
 
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONObject;
+import org.xutils.common.util.LogUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +70,7 @@ public class CenariusWebViewClient extends WebViewClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        LogUtils.i(TAG, "[shouldOverrideUrlLoading] : url = " + url);
+        LogUtil.v("[shouldOverrideUrlLoading] : url = " + url);
         if (url.startsWith(Constants.CONTAINER_WIDGET_BASE)) {
             boolean handled;
             for (CenariusWidget widget : mWidgets) {

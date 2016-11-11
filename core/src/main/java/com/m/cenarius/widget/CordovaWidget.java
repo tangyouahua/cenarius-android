@@ -1,5 +1,6 @@
 package com.m.cenarius.widget;
 
+import android.view.View;
 import android.webkit.WebView;
 
 import com.m.cenarius.activity.CNRSViewActivity;
@@ -16,7 +17,7 @@ public class CordovaWidget implements CenariusWidget {
     }
 
     @Override
-    public boolean handle(WebView view, String url) {
+    public boolean handle(View view, String url) {
         HashMap dataMap = GsonHelper.getDataMap(url, getPath());
         if (dataMap != null){
             if (null != view && view.getContext() instanceof CNRSViewActivity) {

@@ -2,6 +2,7 @@ package com.m.cenarius.widget;
 
 import android.net.Uri;
 import android.text.TextUtils;
+import android.view.View;
 import android.webkit.WebView;
 
 import com.m.cenarius.view.CenariusWebView;
@@ -21,7 +22,7 @@ public class PullToRefreshWidget implements CenariusWidget {
     }
 
     @Override
-    public boolean handle(WebView view, String url) {
+    public boolean handle(View view, String url) {
         if (TextUtils.isEmpty(url)) {
             return false;
         }
