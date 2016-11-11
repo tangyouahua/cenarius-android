@@ -7,16 +7,20 @@ import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
 
+import java.util.ArrayList;
+
 import okhttp3.OkHttpClient;
 
 public class Cenarius {
 
     public static final String TAG = Cenarius.class.getSimpleName();
+
     public static boolean DEBUG = false;
     public static boolean DevelopModeEnable = false;
     public static String LoginService;
     public static String LoginAppKey;
     public static String LoginAppSecret;
+    public static ArrayList<String> routesWhiteList;
 
     /**
      * 可以额外设置主app的user-agent
@@ -88,4 +92,12 @@ public class Cenarius {
         }
         return mOkHttpClient;
     }
+
+    /**
+     设置路由表白名单
+     */
+    public static void setRoutesWhiteList(ArrayList<String> whiteList){
+        routesWhiteList = whiteList;
+    }
+
 }

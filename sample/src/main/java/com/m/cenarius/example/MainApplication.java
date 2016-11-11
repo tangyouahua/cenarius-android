@@ -28,6 +28,9 @@ public class MainApplication extends Application {
         Cenarius.initialize(this);
         Cenarius.setDebug(BuildConfig.DEBUG);
         Cenarius.setLogin("https://uim-test.infinitus.com.cn/oauth20/accessToken", "BUPM", "rfGd23Yhjd92JkpWe");
+        ArrayList<String> whiteList = new ArrayList<>();
+        whiteList.add("cordova");
+        Cenarius.setRoutesWhiteList(whiteList);
 //        Cenarius.setDevelopModeEnable(true);//开启调试模式，会禁用路由表，从SD卡读取。
         // 设置并刷新route
         RouteManager.getInstance().setRemoteFolderUrl("http://172.20.70.80/hybrid");

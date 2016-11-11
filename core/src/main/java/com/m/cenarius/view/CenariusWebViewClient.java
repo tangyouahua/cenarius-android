@@ -98,23 +98,23 @@ public class CenariusWebViewClient extends WebViewClient {
         return handleResourceRequest(view, url);
     }
 
-    @Override
-    public void onPageStarted(WebView view, String url, Bitmap favicon) {
-        super.onPageStarted(view, url, favicon);
-        LogUtils.i(TAG, "onPageStarted");
-    }
-
-    @Override
-    public void onPageFinished(WebView view, String url) {
-        super.onPageFinished(view, url);
-        LogUtils.i(TAG, "onPageFinished");
-    }
-
-    @Override
-    public void onLoadResource(WebView view, String url) {
-        super.onLoadResource(view, url);
-        LogUtils.i(TAG, "onLoadResource : " + url);
-    }
+//    @Override
+//    public void onPageStarted(WebView view, String url, Bitmap favicon) {
+//        super.onPageStarted(view, url, favicon);
+//        LogUtils.i(TAG, "onPageStarted");
+//    }
+//
+//    @Override
+//    public void onPageFinished(WebView view, String url) {
+//        super.onPageFinished(view, url);
+//        LogUtils.i(TAG, "onPageFinished");
+//    }
+//
+//    @Override
+//    public void onLoadResource(WebView view, String url) {
+//        super.onLoadResource(view, url);
+//        LogUtils.i(TAG, "onLoadResource : " + url);
+//    }
 
     /**
      * 拦截资源请求，部分资源需要返回本地资源
@@ -130,19 +130,27 @@ public class CenariusWebViewClient extends WebViewClient {
         String uriString = uriForUrl(requestUrl);
         Uri finalUri = Uri.parse(uriString);
         String baseUri = finalUri.getPath();
-        Route route = RouteManager.getInstance().findRoute(baseUri);
-        if (route == null) {
-            return super.shouldInterceptRequest(webView, requestUrl);
+
+        //拦截在路由表中的uri
+        RouteManager routeManager = RouteManager.getInstance();
+        if (routeManager.isInRoutes(baseUri)) {
+            String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
+            if (htmlFileURL == null) {
+                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
+                return super.shouldInterceptRequest(webView, htmlFileURL);
+            }
         }
 
-        String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
-        if (htmlFileURL == null) {
-            htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
+        //拦截在白名单中的uri
+        if (routeManager.isInWhiteList(baseUri)) {
+            String htmlFileURL = AssetCache.getInstance().fileUrl(baseUri);
+            return super.shouldInterceptRequest(webView, htmlFileURL);
         }
-        return super.shouldInterceptRequest(webView, htmlFileURL);
+
+        return super.shouldInterceptRequest(webView, requestUrl);
     }
 
-        // html js 直接返回
+    // html js 直接返回
 //        if (Helper.isHtmlResource(requestUrl) || Helper.isJsResource(requestUrl)) {
 //            String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
 //            if (htmlFileURL == null) {

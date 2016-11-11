@@ -155,6 +155,29 @@ public class RouteManager {
     }
 
     /**
+     * uri 是否在路由表中
+     */
+    public boolean isInRoutes(String uri) {
+        Route route = findRoute(uri);
+        if (route != null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * uri 是否在白名单中
+     */
+    public boolean isInWhiteList(String uri) {
+        for (String path : Cenarius.routesWhiteList) {
+            if (uri.startsWith(path)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 找到能够解析uri的Route
      *
      * @param uri 需要处理的uri
