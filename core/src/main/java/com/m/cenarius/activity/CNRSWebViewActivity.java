@@ -11,7 +11,7 @@ public class CNRSWebViewActivity extends CNRSViewActivity {
 
     public static final String TAG = CNRSWebViewActivity.class.getSimpleName();
 
-    public CenariusWebView mCenariusWebView;
+    public CenariusWebView cenariusWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,15 +19,15 @@ public class CNRSWebViewActivity extends CNRSViewActivity {
         setContentView(R.layout.cnrs_web_view_activity);
 
 
-        mCenariusWebView = (CenariusWebView) findViewById(R.id.webView);
+        cenariusWebView = (CenariusWebView) findViewById(R.id.webView);
 
         // add widget
         for(CenariusWidget widget: widgets){
-            mCenariusWebView.addCenariusWidget(widget);
+            cenariusWebView.addCenariusWidget(widget);
         }
 
         String htmlUrl = htmlURL();
-        mCenariusWebView.loadUrl(htmlUrl);
+        cenariusWebView.loadUrl(htmlUrl);
     }
 
 //    private void loadUrl(String url)

@@ -128,23 +128,25 @@ public class CenariusWebViewClient extends WebViewClient {
     private WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
         LogUtils.i(TAG, "[handleResourceRequest] url =  " + requestUrl);
         String uriString = uriForUrl(requestUrl);
-        Uri finalUri = Uri.parse(uriString);
-        String baseUri = finalUri.getPath();
+        if (uriString != null) {
+            Uri finalUri = Uri.parse(uriString);
+            String baseUri = finalUri.getPath();
 
-        //拦截在路由表中的uri
-        RouteManager routeManager = RouteManager.getInstance();
-        if (routeManager.isInRoutes(baseUri)) {
-            String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
-            if (htmlFileURL == null) {
-                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
+            //拦截在路由表中的uri
+            RouteManager routeManager = RouteManager.getInstance();
+            if (routeManager.isInRoutes(baseUri)) {
+                String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
+                if (htmlFileURL == null) {
+                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
+                    return super.shouldInterceptRequest(webView, htmlFileURL);
+                }
+            }
+
+            //拦截在白名单中的uri
+            if (routeManager.isInWhiteList(baseUri)) {
+                String htmlFileURL = AssetCache.getInstance().fileUrl(baseUri);
                 return super.shouldInterceptRequest(webView, htmlFileURL);
             }
-        }
-
-        //拦截在白名单中的uri
-        if (routeManager.isInWhiteList(baseUri)) {
-            String htmlFileURL = AssetCache.getInstance().fileUrl(baseUri);
-            return super.shouldInterceptRequest(webView, htmlFileURL);
         }
 
         return super.shouldInterceptRequest(webView, requestUrl);

@@ -287,4 +287,12 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
 //        mCore.loadUri(mUri, this);
         mCore.reload();
     }
+
+    public boolean canGoBack(){
+        return mCore.canGoBack();
+    }
+
+    public void goBack(){
+        mCore.goBack();
+    }
 }
