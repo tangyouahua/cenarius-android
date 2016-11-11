@@ -57,8 +57,8 @@ public class CNRSViewActivity extends AppCompatActivity {
     /**
      * 打开轻应用
      *
-     * @param htmlFileURL        网址
-     * @param parameters 参数
+     * @param htmlFileURL 网址
+     * @param parameters  参数
      */
     public void openLightApp(String htmlFileURL, HashMap parameters) {
         Intent intent = new Intent(this, CNRSWebViewActivity.class);
@@ -114,13 +114,13 @@ public class CNRSViewActivity extends AppCompatActivity {
     }
 
     /**
-     登录
-
-     @param username   用户名
-     @param password   密码
-     @param callback   登录后将执行这个 callback
+     * 登录
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @param callback 登录后将执行这个 callback
      */
-    public static void login(String username, String password, LoginWidget.LoginCallback callback){
+    public static void login(String username, String password, LoginWidget.LoginCallback callback) {
         LoginWidget.login(username, password, callback);
     }
 
@@ -173,11 +173,6 @@ public class CNRSViewActivity extends AppCompatActivity {
     }
 
     public String htmlURL() {
-        //读取sd目录
-        if (Cenarius.DevelopModeEnable)
-        {
-            return getSDFile(uri, htmlFileURL);
-        }
         return cnrs_htmlURL(uri, htmlFileURL);
     }
 
@@ -192,28 +187,32 @@ public class CNRSViewActivity extends AppCompatActivity {
 
     private String cnrs_htmlURL(String uri, String htmlFileURL) {
         if (htmlFileURL == null) {
-            htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
-            if (htmlFileURL == null) {
-                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+            //读取sd目录
+            if (Cenarius.DevelopModeEnable)
+            {
+                return getSDFile(uri);
+            }
+            else {
+                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
+                if (htmlFileURL == null) {
+                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+                }
             }
         }
         return htmlFileURL;
     }
 
     // 获取sdcard目录
-    private String getSDFile(String uri, String htmlFileURL)
-    {
-        if (htmlFileURL == null){
-            if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-                File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
-                String applicationName = getApplicationName();
-                File fileDir =  new File(sdCardDir,applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
-                String url = "file://" + fileDir.getPath();
-                htmlFileURL = url;
-            }
+    private String getSDFile(String uri) {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
+            String applicationName = getApplicationName();
+            File fileDir = new File(sdCardDir, applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
+            String url = "file://" + fileDir.getPath();
+            return url;
         }
 
-        return htmlFileURL;
+        return null;
     }
 
     private String getApplicationName() {

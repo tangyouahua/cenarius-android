@@ -130,7 +130,8 @@ public class RouteManager {
                     try {
                         String routeContent = readPresetRoutes();
                         if (!TextUtils.isEmpty(routeContent)) {
-                            mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>(){}.getType());
+                            mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
+                            }.getType());
                         }
                     } catch (Exception e) {
                         LogUtils.i(TAG, e.getMessage());
@@ -160,6 +161,7 @@ public class RouteManager {
      * @return 能够处理uri的Route，如果没有则为null
      */
     public Route findRoute(String uri) {
+        uri = cnrs_deleteSlash(uri);
         if (TextUtils.isEmpty(uri)) {
             return null;
         }
@@ -172,6 +174,20 @@ public class RouteManager {
             }
         }
         return null;
+    }
+
+    /**
+     * 删除多余 /
+     */
+    private String cnrs_deleteSlash(String uri) {
+        if (uri.contains("//")) {
+            uri = uri.replace("//", "/");
+            uri = cnrs_deleteSlash(uri);
+        }
+        if (uri.startsWith("/")) {
+            uri = uri.substring(1);
+        }
+        return uri;
     }
 
     /**

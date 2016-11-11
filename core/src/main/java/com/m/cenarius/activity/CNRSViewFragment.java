@@ -172,11 +172,6 @@ public class CNRSViewFragment extends Fragment {
     private List<MenuItem> mMenuItems = new ArrayList<>();
 
     public String htmlURL() {
-        //读取sd目录
-        if (Cenarius.DevelopModeEnable)
-        {
-            return getSDFile(uri, htmlFileURL);
-        }
         return cnrs_htmlURL(uri, htmlFileURL);
     }
 
@@ -191,28 +186,32 @@ public class CNRSViewFragment extends Fragment {
 
     private String cnrs_htmlURL(String uri, String htmlFileURL) {
         if (htmlFileURL == null) {
-            htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
-            if (htmlFileURL == null) {
-                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+            //读取sd目录
+            if (Cenarius.DevelopModeEnable)
+            {
+                return getSDFile(uri);
+            }
+            else {
+                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
+                if (htmlFileURL == null) {
+                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+                }
             }
         }
         return htmlFileURL;
     }
 
     // 获取sdcard目录
-    private String getSDFile(String uri, String htmlFileURL)
-    {
-        if (htmlFileURL == null){
-            if(Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
-                File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
-                String applicationName = getApplicationName();
-                File fileDir =  new File(sdCardDir,applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
-                String url = "file://" + fileDir.getPath();
-                htmlFileURL = url;
-            }
+    private String getSDFile(String uri) {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
+            String applicationName = getApplicationName();
+            File fileDir = new File(sdCardDir, applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
+            String url = "file://" + fileDir.getPath();
+            return url;
         }
 
-        return htmlFileURL;
+        return null;
     }
 
     private String getApplicationName() {
