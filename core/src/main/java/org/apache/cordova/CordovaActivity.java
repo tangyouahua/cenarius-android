@@ -76,7 +76,7 @@ import com.m.cenarius.activity.CNRSViewActivity;
  * deprecated in favor of the config.xml file.
  *
  */
-//修改：原来继承自Activity
+//修改：原来继承自 Activity
 public class CordovaActivity extends CNRSViewActivity {
     public static String TAG = "CordovaActivity";
 

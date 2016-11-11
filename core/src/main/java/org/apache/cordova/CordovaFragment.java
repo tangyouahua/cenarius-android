@@ -37,6 +37,8 @@ import android.view.WindowManager;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import com.m.cenarius.activity.CNRSViewFragment;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,7 +76,9 @@ import java.util.Locale;
  * deprecated in favor of the config.xml file.
  *
  */
-public class CordovaFragment extends Fragment {
+
+//修改：原来继承自 Fragment
+public class CordovaFragment extends CNRSViewFragment {
     
     public static String TAG = "CordovaFragment";
 

@@ -4,4 +4,7 @@
     <string name="error_msg_refreshing">正在刷新</string>
     <string name="error_html_load_fail">资源加载失败</string>
     <string name="error_partial_cenarius_menu">局部cenarius页面不支持设置menu</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
