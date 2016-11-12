@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.ResourceProxy;
+import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.GsonHelper;
@@ -217,29 +218,31 @@ public class RouteManager {
      * 刷新路由表
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
+        mRouteRefreshCallback = callback;
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
-                mCheckingRouteString = data;
-                mRouteRefreshCallback = callback;
-                // prepare h5 files
-                try {
-                    ArrayList<Route> routes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<ArrayList<Route>>() {
-                    }.getType());
-                    ResourceProxy.getInstance().prepareHtmlFiles(routes);
-                } catch (Exception e) {
-                    LogUtils.e(TAG, e.getMessage());
-                    if (null != callback) {
-                        callback.onFail();
-                    }
+                if (TextUtils.isEmpty(data))
+                {
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+                }
+                else {
+                    mCheckingRouteString = data;
+                    saveCachedRoutes(mCheckingRouteString);
+//                mRouteRefreshCallback = callback;
+                    // prepare h5 files
+//                callback.onSuccess(mCheckingRouteString);
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+                    ResourceProxy.getInstance().prepareHtmlFiles(mRoutes);
                 }
             }
 
             @Override
             public void onFail() {
-                if (null != callback) {
-                    callback.onFail();
-                }
+//                if (null != callback) {
+//                    callback.onFail();
+//                }
+                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
             }
         });
     }
@@ -258,25 +261,86 @@ public class RouteManager {
      * @param content route内容
      */
     private void saveCachedRoutes(final String content) {
-        TaskBuilder.create(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                File file = getCachedRoutesFile();
-                if (file.exists()) {
-                    file.delete();
-                }
-                try {
-                    if (TextUtils.isEmpty(content)) {
-                        // 如果内容为空，则只删除文件
-                        return null;
-                    }
-                    FileUtils.write(file, content);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return null;
+//        TaskBuilder.create(new Callable<Void>() {
+//            @Override
+//            public Void call() throws Exception {
+//                try {
+//                    if (TextUtils.isEmpty(content)) {
+//                        // 如果内容为空，则只删除文件
+//                        return null;
+//                    }
+//                    //删除不用的和更新的文件
+//                    ArrayList<Route> newRoutes = GsonHelper.getInstance().fromJson(content, new TypeToken<ArrayList<Route>>() {
+//                    }.getType());
+//                    String oldRoutesString = readCachedRoutes();
+//                    if (oldRoutesString != null) {
+//                        ArrayList<Route> oldRoutes = GsonHelper.getInstance().fromJson(oldRoutesString, new TypeToken<ArrayList<Route>>() {
+//                        }.getType());
+//                        deleteOldFiles(newRoutes, oldRoutes);
+//                    }
+//
+//                    //保存新routes
+//                    File file = getCachedRoutesFile();
+//                    if (file.exists()) {
+//                        file.delete();
+//                    }
+//                    FileUtils.write(file, content);
+//                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                return null;
+//            }
+//        }, null, this).start();
+
+        //删除不用的和更新的文件
+        try {
+            //删除不用的和更新的文件
+            ArrayList<Route> newRoutes = GsonHelper.getInstance().fromJson(content, new TypeToken<ArrayList<Route>>() {
+            }.getType());
+            String oldRoutesString = readCachedRoutes();
+            if (oldRoutesString != null) {
+                ArrayList<Route> oldRoutes = GsonHelper.getInstance().fromJson(oldRoutesString, new TypeToken<ArrayList<Route>>() {
+                }.getType());
+                deleteOldFiles(newRoutes, oldRoutes);
             }
-        }, null, this).start();
+
+            //保存新routes
+            File file = getCachedRoutesFile();
+            if (file.exists()) {
+                file.delete();
+            }
+            FileUtils.write(file, content);
+            mRoutes = newRoutes;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void deleteOldFiles(ArrayList<Route> newRoutes, ArrayList<Route> oldRoutes) {
+        //找到需要删除的和更新的文件
+        ArrayList<Route> changedRoutes = new ArrayList<>();
+        ArrayList<Route> deletedRoutes = new ArrayList<>();
+        for (Route oldRoute:oldRoutes) {
+            boolean isDeleted = true;
+            for (Route newRoute:newRoutes) {
+                if (oldRoute.uri.equals(newRoute.uri)){
+                    isDeleted = false;
+                    if (!newRoute.fileHash.equals(oldRoute.fileHash)){
+                        changedRoutes.add(oldRoute);
+                    }
+                }
+            }
+            if (isDeleted){
+                deletedRoutes.add(oldRoute);
+            }
+        }
+
+        deletedRoutes.addAll(changedRoutes);
+        for (Route route:deletedRoutes) {
+            CacheHelper.getInstance().removeCache(route);
+        }
     }
 
     /**
@@ -364,8 +428,8 @@ public class RouteManager {
             return;
         }
 
-        if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_VALID && !TextUtils.isEmpty(mCheckingRouteString)) {
-            saveCachedRoutes(mCheckingRouteString);
+        if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_VALID) {
+//            saveCachedRoutes(mCheckingRouteString);
             try {
                 mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<ArrayList<Route>>() {
                 }.getType());
@@ -376,6 +440,9 @@ public class RouteManager {
                 mRouteRefreshCallback.onSuccess(mCheckingRouteString);
             }
             LogUtils.i(TAG, "new route effective");
+        }
+        else if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_INVALID){
+            mRouteRefreshCallback.onFail();
         }
     }
 }

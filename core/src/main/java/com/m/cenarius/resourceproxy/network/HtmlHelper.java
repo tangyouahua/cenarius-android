@@ -108,7 +108,7 @@ public class HtmlHelper {
                             // 如果全部文件下载成功，则发送校验成功事件
                             if (mDownloadingProcess.isEmpty()) {
                                 LogUtils.i(TAG, "download html complete");
-                                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+//                                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
                             }
                         }
                     });

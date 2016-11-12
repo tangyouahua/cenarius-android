@@ -100,6 +100,7 @@ public class Constants {
     public static final String KEY_ERROR_TYPE = "key_error_type";
 
     public static final int BUS_EVENT_ROUTE_CHECK_VALID = 1000;
+    public static final int BUS_EVENT_ROUTE_CHECK_INVALID = 2000;
 
     /**
      * 'Content-Encoding' header name
