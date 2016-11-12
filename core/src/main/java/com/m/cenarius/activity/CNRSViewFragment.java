@@ -1,6 +1,7 @@
 package com.m.cenarius.activity;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -147,8 +148,8 @@ public class CNRSViewFragment extends Fragment {
      @param password   密码
      @param callback   登录后将执行这个 callback
      */
-    public static void login(String username, String password, LoginWidget.LoginCallback callback){
-        LoginWidget.login(username, password, callback);
+    public static void login(Context context, String username, String password, LoginWidget.LoginCallback callback){
+        LoginWidget.login(context, username, password, callback);
     }
 
 

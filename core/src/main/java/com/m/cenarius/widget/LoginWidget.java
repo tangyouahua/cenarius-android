@@ -1,6 +1,8 @@
 package com.m.cenarius.widget;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
 import android.webkit.WebView;
 
@@ -28,13 +30,14 @@ import okhttp3.Response;
 public class LoginWidget implements CenariusWidget {
 
     public static final String TAG = CenariusWidget.class.getSimpleName();
-    static final String KEY_TITLE = "title";
-    static final String TerminalType = "mobile";
+
+    private static final String PREF_FILE_NAME = "cenarius_login";
+    private static final String TOKEN_KEY = "access_token";
 
     public interface LoginCallback {
-        void onSuccess();
+        void onSuccess(String accessToken);
 
-        void onFail();
+        void onFail(String errorMessage);
     }
 
     @Override
@@ -46,22 +49,21 @@ public class LoginWidget implements CenariusWidget {
     public boolean handle(View view, String url) {
         HashMap dataMap = GsonHelper.getDataMap(url, getPath());
         if (dataMap != null) {
-            if (null != view && view.getContext() instanceof Activity) {
-                ((Activity) view.getContext()).setTitle((String) dataMap.get(KEY_TITLE));
-            }
+//            if (null != view && view.getContext() instanceof Activity) {
+//                ((Activity) view.getContext()).setTitle((String) dataMap.get(KEY_TITLE));
+//            }
             return true;
         }
         return false;
     }
 
-    public static void login(String username, String password, LoginCallback callback) {
+    public static void login(final Context context, String username, String password, final LoginCallback callback) {
         String service = Cenarius.LoginService;
         String appKey = Cenarius.LoginAppKey;
         String appSecret = Cenarius.LoginAppSecret;
         if (service == null || appKey == null || appSecret == null) {
-            LogUtils.e(TAG, "先设置 service appKey appSecret");
             if (callback != null) {
-                callback.onFail();
+                callback.onFail("先设置 service appKey appSecret");
             }
             return;
         }
@@ -92,20 +94,75 @@ public class LoginWidget implements CenariusWidget {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-
+                if (callback != null) {
+                    callback.onFail("系统错误");
+                }
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()){
-                    String result = response.body().string();
-
+                if (response.isSuccessful()) {
+                    String dataJson = response.body().string();
+                    HashMap dataMap = GsonHelper.getInstance().fromJson(dataJson, HashMap.class);
+                    String token = (String) dataMap.get("access_token");
+                    String error_msg = (String) dataMap.get("error_msg");
+                    if (token != null && token.length() > 0) {
+                        saveAccessToken(token, context);
+                        if (callback != null) {
+                            callback.onSuccess(token);
+                        }
+                    } else {
+                        if (callback != null) {
+                            if (error_msg != null && error_msg.length() > 0){
+                                callback.onFail(error_msg);
+                            }
+                            else {
+                                callback.onFail("系统错误");
+                            }
+                        }
+                    }
                 }
             }
         });
     }
 
-    private static String md5Signature(TreeMap<String, String> params, String secret) {
+    /**
+     * 登出
+     */
+    public static void logout(final Context context){
+        deleteAccessToken(context);
+    }
+
+    /**
+     * 保存 AccessToken
+     */
+    private static void saveAccessToken(String accessToken, final Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(PREF_FILE_NAME, 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(TOKEN_KEY, accessToken);
+        editor.commit();
+    }
+
+    /**
+     * 获取 AccessToken
+     */
+    public static String getAccessToken(final Context context){
+        SharedPreferences preferences = context.getSharedPreferences(PREF_FILE_NAME, 0);
+        String token = preferences.getString(TOKEN_KEY, null);
+        return token;
+    }
+
+    private static void deleteAccessToken(final Context context){
+        SharedPreferences preferences = context.getSharedPreferences(PREF_FILE_NAME, 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.commit();
+    }
+
+    /**
+     * md5 签名
+     */
+    public static String md5Signature(TreeMap<String, String> params, String secret) {
         String result = null;
         StringBuffer orgin = getBeforeSign(params, new StringBuffer(secret));
         if (orgin == null) {

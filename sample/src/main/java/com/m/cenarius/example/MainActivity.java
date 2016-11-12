@@ -35,14 +35,14 @@ public class MainActivity extends CNRSViewActivity {
     }
 
     public void login(View view){
-        login("0009704", "Admin123", new LoginWidget.LoginCallback() {
+        login(this, "0009704", "Admin123", new LoginWidget.LoginCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(String accessToken) {
 
             }
 
             @Override
-            public void onFail() {
+            public void onFail(String errorMessage) {
 
             }
         });
