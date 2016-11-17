@@ -34,6 +34,16 @@ public class RouteManager {
 
     public static final String TAG = RouteManager.class.getSimpleName();
 
+    public static class RouteConfig {
+        public String routeApi;
+        public String routeCacheFileName;
+
+        public RouteConfig(String routeApi, String cacheFileName) {
+            this.routeApi = routeApi;
+            this.routeCacheFileName = cacheFileName;
+        }
+    }
+
     public interface RouteRefreshCallback {
         /**
          * @param data raw data
@@ -48,9 +58,9 @@ public class RouteManager {
     }
 
     private static RouteManager sInstance;
-
+    private static RouteConfig sRouteConfig;
     private RouteManager() {
-        loadCachedRoutes();
+        loadLocalRoutes();
         BusProvider.getInstance().register(this);
     }
 
@@ -68,6 +78,20 @@ public class RouteManager {
      * 等待route刷新的callback
      */
     private RouteRefreshCallback mRouteRefreshCallback;
+
+    /**
+     * 配置Route 策略
+     *
+     * @param routeConfig 策略
+     */
+    public static void config(RouteConfig routeConfig) {
+        if (null != routeConfig) {
+            sRouteConfig = routeConfig;
+            if (!TextUtils.isEmpty(sRouteConfig.routeApi)) {
+                RouteFetcher.setRouteApi(sRouteConfig.routeApi);
+            }
+        }
+    }
 
     /**
      * 远程目录 url
@@ -111,7 +135,7 @@ public class RouteManager {
      * 1. 优先加载本地缓存；
      * 2. 如果没有本地缓存，则加载asset中预置的routes
      */
-    private void loadCachedRoutes() {
+    private void loadLocalRoutes() {
         TaskBuilder.create(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -252,7 +276,11 @@ public class RouteManager {
      */
     public boolean deleteCachedRoutes() {
         File file = getCachedRoutesFile();
-        return file.exists() && file.delete();
+        boolean result = file.exists() && file.delete();
+        if (result) {
+            loadLocalRoutes();
+        }
+        return result;
     }
 
     /**
@@ -385,7 +413,8 @@ public class RouteManager {
         if (!fileDir.exists()) {
             fileDir.mkdirs();
         }
-        return new File(fileDir, Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
+        String cacheFileName = (null != sRouteConfig && !TextUtils.isEmpty(sRouteConfig.routeCacheFileName)) ? sRouteConfig.routeCacheFileName : Constants.DEFAULT_DISK_ROUTES_FILE_NAME;
+        return new File(fileDir, cacheFileName);
     }
 
     /**
