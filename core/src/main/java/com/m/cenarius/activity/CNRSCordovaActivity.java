@@ -26,7 +26,12 @@ public class CNRSCordovaActivity extends CordovaActivity {
         LogUtil.v("loadUri , uri = " + (null != uri ? uri : "null"));
 
         String htmlUrl = htmlURL();
-        loadUrl(htmlUrl);
+        if (htmlUrl != null){
+            loadUrl(htmlUrl);
+        }
+        else {
+            LogUtil.v("htmlUrl 为空");
+        }
     }
 
     /**

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <script src="../jquery.js"></script>
+    <script>
+        $.ajax({
+            url: 'https://gateway-dev.infinitus.com.cn/api/gbss/dealer/dealers/161891690/sponsor',
+            type: 'GET',
+            headers: {
+                "X-Requested-With": "OpenAPIRequest"
+            },
+            success: function(data) {
+                console.log(data)
+            }
+        })
+    </script>
+</body>
+</html>

@@ -1,10 +1,18 @@
 [
   {
     "file": "build/index.html",
-    "hash": "8c16c85d8e2ca8b7088c68be17ea8b61"
+    "hash": "66f8d78feea6219794f47df008f57fcb"
   },
   {
     "file": "build/index.js",
-    "hash": "70c84eebd1833611da8dd65d5dedc3ff"
+    "hash": "41fb948f641735b2d2e9449b7c956fca"
+  },
+  {
+    "file": "jquery.js",
+    "hash": "f6c08787df2410f75c66343734b322eb"
+  },
+  {
+    "file": "sign/sign.html",
+    "hash": "32e67051c241ca19112633347c531246"
   }
 ]

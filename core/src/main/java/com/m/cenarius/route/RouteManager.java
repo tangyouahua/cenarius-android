@@ -471,7 +471,9 @@ public class RouteManager {
             LogUtils.i(TAG, "new route effective");
         }
         else if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_INVALID){
-            mRouteRefreshCallback.onFail();
+            if (null != mRouteRefreshCallback) {
+                mRouteRefreshCallback.onFail();
+            }
         }
     }
 }
