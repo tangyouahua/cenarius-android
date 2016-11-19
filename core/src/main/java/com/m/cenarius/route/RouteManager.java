@@ -60,7 +60,8 @@ public class RouteManager {
     private static RouteManager sInstance;
     private static RouteConfig sRouteConfig;
     private RouteManager() {
-        loadLocalRoutes();
+        //每次从网络读最新的路由表
+//        loadLocalRoutes();
         BusProvider.getInstance().register(this);
     }
 
@@ -252,6 +253,7 @@ public class RouteManager {
                 }
                 else {
                     mCheckingRouteString = data;
+                    //设置mRoutes
                     saveCachedRoutes(mCheckingRouteString);
 //                mRouteRefreshCallback = callback;
                     // prepare h5 files
@@ -458,13 +460,6 @@ public class RouteManager {
         }
 
         if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_VALID) {
-//            saveCachedRoutes(mCheckingRouteString);
-            try {
-                mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<ArrayList<Route>>() {
-                }.getType());
-            } catch (Exception e) {
-                LogUtils.e(TAG, e.getMessage());
-            }
             if (null != mRouteRefreshCallback) {
                 mRouteRefreshCallback.onSuccess(mCheckingRouteString);
             }
