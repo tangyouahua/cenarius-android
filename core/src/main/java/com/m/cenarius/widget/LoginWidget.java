@@ -168,10 +168,8 @@ public class LoginWidget implements CenariusWidget {
         if (orgin == null) {
             return result;
         }
-        System.out.println("orgin:" + orgin);
         // secret last
         orgin.append(secret);
-        System.out.println("orgin2:" + orgin);
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             result = byte2hex(md.digest(orgin.toString().getBytes("utf-8")));

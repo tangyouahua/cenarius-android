@@ -253,12 +253,14 @@ public class RouteManager {
                 }
                 else {
                     mCheckingRouteString = data;
-                    //设置mRoutes
-                    saveCachedRoutes(mCheckingRouteString);
-//                mRouteRefreshCallback = callback;
-                    // prepare h5 files
-//                callback.onSuccess(mCheckingRouteString);
+
+                    //先更新内存中的 routes
+                    mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<ArrayList<Route>>() {
+                    }.getType());
                     BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+
+                    //然后下载最新 routes 中的资源文件
+                    saveCachedRoutes(mCheckingRouteString);
                     ResourceProxy.getInstance().prepareHtmlFiles(mRoutes);
                 }
             }
@@ -279,9 +281,9 @@ public class RouteManager {
     public boolean deleteCachedRoutes() {
         File file = getCachedRoutesFile();
         boolean result = file.exists() && file.delete();
-        if (result) {
-            loadLocalRoutes();
-        }
+//        if (result) {
+//            loadLocalRoutes();
+//        }
         return result;
     }
 
@@ -326,13 +328,11 @@ public class RouteManager {
         //删除不用的和更新的文件
         try {
             //删除不用的和更新的文件
-            ArrayList<Route> newRoutes = GsonHelper.getInstance().fromJson(content, new TypeToken<ArrayList<Route>>() {
-            }.getType());
             String oldRoutesString = readCachedRoutes();
             if (oldRoutesString != null) {
                 ArrayList<Route> oldRoutes = GsonHelper.getInstance().fromJson(oldRoutesString, new TypeToken<ArrayList<Route>>() {
                 }.getType());
-                deleteOldFiles(newRoutes, oldRoutes);
+                deleteOldFiles(mRoutes, oldRoutes);
             }
 
             //保存新routes
@@ -341,12 +341,10 @@ public class RouteManager {
                 file.delete();
             }
             FileUtils.write(file, content);
-            mRoutes = newRoutes;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
     private void deleteOldFiles(ArrayList<Route> newRoutes, ArrayList<Route> oldRoutes) {
         //找到需要删除的和更新的文件
