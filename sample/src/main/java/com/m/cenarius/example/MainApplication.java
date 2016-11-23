@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
+import org.xutils.x;
 
 public class MainApplication extends Application {
 
@@ -23,6 +24,11 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+//        x.Ext.init(this);
+//        x.Ext.setDebug(BuildConfig.DEBUG);
+//
+//        XXX.onTestBaidu2Click();
 
         // 初始化cenarius
         Cenarius.initialize(this);

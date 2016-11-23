@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 
 import com.m.cenarius.Cenarius;
@@ -158,6 +159,25 @@ public class LoginWidget implements CenariusWidget {
         editor.clear();
         editor.commit();
     }
+
+//    //   将所有请求参数除sign和图片等除外放入TreeMap
+//    WebResourceRequest request = new WebResourceRequest;
+//    TreeMap<String, String> params = new TreeMap<String, String>();
+//    Enumeration<?> names = request.getParameterNames();
+//    while (names.hasMoreElements()) {
+//        String name = (String) names.nextElement();
+//        if (!SIGN.equals(name)) {
+//            String[] values = request.getParameterValues(name);
+//            if (values != null) {
+//                StringBuffer str = new StringBuffer(values[0]);
+//                // 多值合并
+//                for (int i = 1; i < values.length; i++) {
+//                    str.append(name).append(values[i]);
+//                }
+//                params.put(name, str.toString());
+//            }
+//        }
+//    }
 
     /**
      * md5 签名

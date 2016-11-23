@@ -60,8 +60,7 @@ public class RouteManager {
     private static RouteManager sInstance;
     private static RouteConfig sRouteConfig;
     private RouteManager() {
-        //每次从网络读最新的路由表
-//        loadLocalRoutes();
+        loadLocalRoutes();
         BusProvider.getInstance().register(this);
     }
 
@@ -79,6 +78,11 @@ public class RouteManager {
      * 等待route刷新的callback
      */
     private RouteRefreshCallback mRouteRefreshCallback;
+
+    /**
+     * 正在下载路由表
+     */
+    private boolean updatingRoutes;
 
     /**
      * 配置Route 策略
@@ -244,12 +248,18 @@ public class RouteManager {
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
         mRouteRefreshCallback = callback;
+        if (updatingRoutes){
+            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+            return;
+        }
+        updatingRoutes = true;
         RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {
                 if (TextUtils.isEmpty(data))
                 {
                     BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+                    updatingRoutes = false;
                 }
                 else {
                     mCheckingRouteString = data;
@@ -261,16 +271,15 @@ public class RouteManager {
 
                     //然后下载最新 routes 中的资源文件
                     saveCachedRoutes(mCheckingRouteString);
+                    updatingRoutes = false;
                     ResourceProxy.getInstance().prepareHtmlFiles(mRoutes);
                 }
             }
 
             @Override
             public void onFail() {
-//                if (null != callback) {
-//                    callback.onFail();
-//                }
                 BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+                updatingRoutes = false;
             }
         });
     }
@@ -374,7 +383,7 @@ public class RouteManager {
     /**
      * @return 读取缓存的route
      */
-    private String readCachedRoutes() {
+    public String readCachedRoutes() {
         File file = getCachedRoutesFile();
         if (!file.exists()) {
             return null;
@@ -469,4 +478,9 @@ public class RouteManager {
             }
         }
     }
+
+    public boolean isUpdatingRoutes(){
+        return updatingRoutes;
+    }
+
 }

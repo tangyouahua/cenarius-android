@@ -3,13 +3,16 @@ package com.m.cenarius.resourceproxy.cache;
 import android.content.Context;
 import android.net.Uri;
 
+import com.google.gson.reflect.TypeToken;
 import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
+import com.m.cenarius.utils.GsonHelper;
 import com.m.cenarius.utils.LogUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class CacheHelper {
 
@@ -76,6 +79,26 @@ public class CacheHelper {
     }
 
     private String cacheRouteFileURLForRoute(Route route) {
+        //路由表正在更新的时候需要对比 hash
+        RouteManager routeManager = RouteManager.getInstance();
+        if (routeManager.isUpdatingRoutes()) {
+            String cachedRoutesString = routeManager.readCachedRoutes();
+            if (cachedRoutesString != null) {
+                ArrayList<Route> cacheRoutes = GsonHelper.getInstance().fromJson(cachedRoutesString, new TypeToken<ArrayList<Route>>() {
+                }.getType());
+                for (Route cacheRoute : cacheRoutes) {
+                    if (cacheRoute.uri.equals(route.uri) && cacheRoute.fileHash.equals(route.fileHash)) {
+                        return cacheRouteFilePathForRoute(route);
+                    }
+                }
+            }
+            return null;
+        } else {
+            return cacheRouteFilePathForRoute(route);
+        }
+    }
+
+    private String cacheRouteFilePathForRoute(Route route){
         File cacheFile = mInternalCache.file(route);
         if (cacheFile.exists() && cacheFile.canRead()) {
             return "file://" + cacheFile.getPath();
