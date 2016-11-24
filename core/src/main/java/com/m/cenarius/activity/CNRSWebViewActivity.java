@@ -25,7 +25,8 @@ public class CNRSWebViewActivity extends CNRSViewActivity {
         for(CenariusWidget widget: widgets){
             cenariusWebView.addCenariusWidget(widget);
         }
-
+        htmlFileURL = "https://emcsdev.infinitus.com.cn/h5/www222/build/index.html";
+//        htmlFileURL = "file:///android_asset/www/build/index.html";
         String htmlUrl = htmlURL();
         cenariusWebView.loadUrl(htmlUrl);
     }
