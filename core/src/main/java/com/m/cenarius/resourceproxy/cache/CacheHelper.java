@@ -81,26 +81,24 @@ public class CacheHelper {
     private String cacheRouteFileURLForRoute(Route route) {
         //路由表正在更新的时候需要对比 hash
         RouteManager routeManager = RouteManager.getInstance();
-        if (routeManager.isUpdatingRoutes()) {
-            String cachedRoutesString = routeManager.readCachedRoutes();
-            if (cachedRoutesString != null) {
-                ArrayList<Route> cacheRoutes = GsonHelper.getInstance().fromJson(cachedRoutesString, new TypeToken<ArrayList<Route>>() {
-                }.getType());
-                for (Route cacheRoute : cacheRoutes) {
-                    if (cacheRoute.uri.equals(route.uri) && cacheRoute.fileHash.equals(route.fileHash)) {
-                        return cacheRouteFilePathForRoute(route);
-                    }
+        if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes)
+        {
+            for (Route cacheRoute : routeManager.cacheRoutes) {
+                if (cacheRoute.fileHash.equals(route.fileHash)) {
+                    return cacheRouteFilePathForRoute(route);
                 }
             }
             return null;
-        } else {
+        }
+        else {
             return cacheRouteFilePathForRoute(route);
         }
     }
 
-    private String cacheRouteFilePathForRoute(Route route){
-        File cacheFile = mInternalCache.file(route);
-        if (cacheFile.exists() && cacheFile.canRead()) {
+    private String cacheRouteFilePathForRoute(Route route) {
+        CacheEntry cacheEntry = mInternalCache.findCache(route);
+        if (cacheEntry != null) {
+            File cacheFile = mInternalCache.file(route);
             return "file://" + cacheFile.getPath();
         }
         CacheHelper.getInstance().removeCache(route);
@@ -136,6 +134,7 @@ public class CacheHelper {
     public String localHtmlURLForURI(String uriString) {
         Uri finalUri = Uri.parse(uriString);
         String baseUri = finalUri.getPath();
+        //最新的在内存中的 route
         Route route = RouteManager.getInstance().findRoute(baseUri);
         String urlString = routeFileURLForRoute(route);
         String finalUrl = finalUrl(urlString, finalUri);
