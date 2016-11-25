@@ -131,7 +131,7 @@ public class CacheHelper {
     }
 
     /**
-     * 查找 uri 对应的本地 html 文件 URL。先查 Cache，再查 asset
+     * 查找 uri 对应的本地 html 文件 URL。先查 Cache，再查 asset。如果在缓存文件和资源文件中都找不到对应的本地文件，返回 null
      */
     public String localHtmlURLForURI(String uriString) {
         Uri finalUri = Uri.parse(uriString);

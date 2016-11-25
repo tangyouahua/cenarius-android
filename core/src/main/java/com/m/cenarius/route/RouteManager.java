@@ -8,6 +8,7 @@ import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
+import com.m.cenarius.resourceproxy.network.HtmlHelper;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.GsonHelper;
@@ -65,19 +66,29 @@ public class RouteManager {
     }
 
     /**
+     * 最新的Route列表
+     */
+    public ArrayList<Route> routes;
+
+    /**
      * 缓存Route列表
      */
-    private ArrayList<Route> mRoutes;
+    public ArrayList<Route> cacheRoutes;
 
     /**
-     * 待校验的route数据
+     * 资源Route列表
      */
-    private String mCheckingRouteString;
+    public ArrayList<Route> resourceRoutes;
 
-    /**
-     * 等待route刷新的callback
-     */
-    private RouteRefreshCallback mRouteRefreshCallback;
+//    /**
+//     * 待校验的route数据
+//     */
+//    private String mCheckingRouteString;
+
+//    /**
+//     * 等待route刷新的callback
+//     */
+//    private RouteRefreshCallback mRouteRefreshCallback;
 
     /**
      * 正在下载路由表
@@ -115,7 +126,7 @@ public class RouteManager {
     }
 
     public ArrayList getRoutes() {
-        return mRoutes;
+        return routes;
     }
 
     /**
@@ -141,47 +152,29 @@ public class RouteManager {
      * 2. 如果没有本地缓存，则加载asset中预置的routes
      */
     private void loadLocalRoutes() {
-        TaskBuilder.create(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                // load cached routes
-                try {
-                    String routeContent = readCachedRoutes();
-                    if (!TextUtils.isEmpty(routeContent)) {
-                        mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
-                        }.getType());
-                    }
-                } catch (Exception e) {
-                    LogUtils.i(TAG, e.getMessage());
-                }
+        // 读取 cacheRoutes
+        String routeContent = readCachedRoutes();
+        if (!TextUtils.isEmpty(routeContent)) {
+            cacheRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
+            }.getType());
+        }
 
-                // load preset routes
-                if (null == mRoutes) {
-                    try {
-                        String routeContent = readPresetRoutes();
-                        if (!TextUtils.isEmpty(routeContent)) {
-                            mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
-                            }.getType());
-                        }
-                    } catch (Exception e) {
-                        LogUtils.i(TAG, e.getMessage());
-                    }
-                }
-
-                return null;
-            }
-        }, new SimpleTaskCallback<Void>() {
-        }, this).start();
+        // 读取 resourceRoutes
+        routeContent = readPresetRoutes();
+        if (!TextUtils.isEmpty(routeContent)) {
+            resourceRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
+            }.getType());
+        }
     }
 
     /**
      * 以string方式返回Route列表, 如果Route为空则返回null
      */
     public String getRoutesString() {
-        if (null == mRoutes) {
+        if (null == routes) {
             return null;
         }
-        return GsonHelper.getInstance().toJson(mRoutes);
+        return GsonHelper.getInstance().toJson(routes);
     }
 
     /**
@@ -218,10 +211,10 @@ public class RouteManager {
         if (TextUtils.isEmpty(uri)) {
             return null;
         }
-        if (null == mRoutes) {
+        if (null == routes) {
             return null;
         }
-        for (Route route : mRoutes) {
+        for (Route route : routes) {
             if (route.match(uri)) {
                 return route;
             }
@@ -247,9 +240,10 @@ public class RouteManager {
      * 刷新路由表
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
-        mRouteRefreshCallback = callback;
+//        mRouteRefreshCallback = callback;
         if (updatingRoutes){
-            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+//            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+            callback.onSuccess(null);
             return;
         }
         updatingRoutes = true;
@@ -258,21 +252,59 @@ public class RouteManager {
             public void onSuccess(String data) {
                 if (TextUtils.isEmpty(data))
                 {
-                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+//                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+                    callback.onSuccess(null);
                     updatingRoutes = false;
                 }
                 else {
-                    mCheckingRouteString = data;
+//                    mCheckingRouteString = data;
 
                     //先更新内存中的 routes
-                    mRoutes = GsonHelper.getInstance().fromJson(mCheckingRouteString, new TypeToken<ArrayList<Route>>() {
+                    routes = GsonHelper.getInstance().fromJson(data, new TypeToken<ArrayList<Route>>() {
                     }.getType());
-                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
 
-                    //然后下载最新 routes 中的资源文件
-                    saveCachedRoutes(mCheckingRouteString);
-                    updatingRoutes = false;
-                    ResourceProxy.getInstance().prepareHtmlFiles(mRoutes);
+                    //优先下载
+                    ArrayList<String> downloadFirstList = Cenarius.downloadFirstList;
+                    final ArrayList<Route> downloadFirstRoutes = new ArrayList<Route>();
+                    if (downloadFirstList != null)
+                    {
+                        for (String uri: downloadFirstList) {
+                            Route route  = findRoute(uri);
+                            downloadFirstRoutes.add(route);
+                        }
+                    }
+
+                    HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, new RouteRefreshCallback() {
+                        @Override
+                        public void onSuccess(String data) {
+                            //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
+                            cacheRoutes.addAll(0, downloadFirstRoutes);
+                            callback.onSuccess(null);
+
+                            //然后下载最新 routes 中的资源文件
+                            HtmlHelper.downloadFilesWithinRoutes(routes, new RouteRefreshCallback() {
+                                @Override
+                                public void onSuccess(String data) {
+                                    // 所有文件更新到最新，保存路由表
+                                    cacheRoutes = routes;
+                                    saveCachedRoutes(data);
+                                    updatingRoutes = false;
+                                }
+
+                                @Override
+                                public void onFail() {
+                                    updatingRoutes = false;
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onFail() {
+                            //优先下载失败
+                            callback.onFail();
+                            updatingRoutes = false;
+                        }
+                    });
                 }
             }
 
@@ -302,47 +334,16 @@ public class RouteManager {
      * @param content route内容
      */
     private void saveCachedRoutes(final String content) {
-//        TaskBuilder.create(new Callable<Void>() {
-//            @Override
-//            public Void call() throws Exception {
-//                try {
-//                    if (TextUtils.isEmpty(content)) {
-//                        // 如果内容为空，则只删除文件
-//                        return null;
-//                    }
-//                    //删除不用的和更新的文件
-//                    ArrayList<Route> newRoutes = GsonHelper.getInstance().fromJson(content, new TypeToken<ArrayList<Route>>() {
-//                    }.getType());
-//                    String oldRoutesString = readCachedRoutes();
-//                    if (oldRoutesString != null) {
-//                        ArrayList<Route> oldRoutes = GsonHelper.getInstance().fromJson(oldRoutesString, new TypeToken<ArrayList<Route>>() {
-//                        }.getType());
-//                        deleteOldFiles(newRoutes, oldRoutes);
-//                    }
-//
-//                    //保存新routes
-//                    File file = getCachedRoutesFile();
-//                    if (file.exists()) {
-//                        file.delete();
-//                    }
-//                    FileUtils.write(file, content);
-//                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                return null;
-//            }
-//        }, null, this).start();
 
         //删除不用的和更新的文件
         try {
-            //删除不用的和更新的文件
-            String oldRoutesString = readCachedRoutes();
-            if (oldRoutesString != null) {
-                ArrayList<Route> oldRoutes = GsonHelper.getInstance().fromJson(oldRoutesString, new TypeToken<ArrayList<Route>>() {
-                }.getType());
-                deleteOldFiles(mRoutes, oldRoutes);
-            }
+//            //删除不用的和更新的文件
+//            String oldRoutesString = readCachedRoutes();
+//            if (oldRoutesString != null) {
+//                ArrayList<Route> oldRoutes = GsonHelper.getInstance().fromJson(oldRoutesString, new TypeToken<ArrayList<Route>>() {
+//                }.getType());
+//                deleteOldFiles(routes, oldRoutes);
+//            }
 
             //保存新routes
             File file = getCachedRoutesFile();
@@ -460,24 +461,24 @@ public class RouteManager {
         });
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(BusProvider.BusEvent event) {
-        if (null == event) {
-            return;
-        }
-
-        if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_VALID) {
-            if (null != mRouteRefreshCallback) {
-                mRouteRefreshCallback.onSuccess(mCheckingRouteString);
-            }
-            LogUtils.i(TAG, "new route effective");
-        }
-        else if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_INVALID){
-            if (null != mRouteRefreshCallback) {
-                mRouteRefreshCallback.onFail();
-            }
-        }
-    }
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onEventMainThread(BusProvider.BusEvent event) {
+//        if (null == event) {
+//            return;
+//        }
+//
+//        if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_VALID) {
+//            if (null != mRouteRefreshCallback) {
+//                mRouteRefreshCallback.onSuccess(mCheckingRouteString);
+//            }
+//            LogUtils.i(TAG, "new route effective");
+//        }
+//        else if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_INVALID){
+//            if (null != mRouteRefreshCallback) {
+//                mRouteRefreshCallback.onFail();
+//            }
+//        }
+//    }
 
     public boolean isUpdatingRoutes(){
         return updatingRoutes;

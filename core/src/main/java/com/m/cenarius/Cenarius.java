@@ -21,6 +21,7 @@ public class Cenarius {
     public static String LoginAppKey;
     public static String LoginAppSecret;
     public static ArrayList<String> routesWhiteList;
+    public static ArrayList<String> downloadFirstList;
 
     /**
      * 可以额外设置主app的user-agent
@@ -96,8 +97,15 @@ public class Cenarius {
     /**
      设置路由表白名单
      */
-    public static void setRoutesWhiteList(ArrayList<String> whiteList){
-        routesWhiteList = whiteList;
+    public static void setRoutesWhiteList(ArrayList<String> list){
+        routesWhiteList = list;
+    }
+
+    /**
+     设置路由表白名单
+     */
+    public static void setDownloadFirstList(ArrayList<String> list){
+        downloadFirstList = list;
     }
 
 }
