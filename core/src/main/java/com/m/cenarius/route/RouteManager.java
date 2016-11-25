@@ -62,7 +62,7 @@ public class RouteManager {
     private static RouteConfig sRouteConfig;
     private RouteManager() {
         loadLocalRoutes();
-        BusProvider.getInstance().register(this);
+//        BusProvider.getInstance().register(this);
     }
 
     /**
@@ -310,7 +310,8 @@ public class RouteManager {
 
             @Override
             public void onFail() {
-                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+//                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+                callback.onFail();
                 updatingRoutes = false;
             }
         });
