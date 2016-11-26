@@ -8,6 +8,7 @@ import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
+import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.HtmlHelper;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.BusProvider;
@@ -381,7 +382,7 @@ public class RouteManager {
 
         deletedRoutes.addAll(changedRoutes);
         for (Route route:deletedRoutes) {
-            CacheHelper.getInstance().removeCache(route);
+            InternalCache.getInstance().removeCache(route);
         }
     }
 

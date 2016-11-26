@@ -4,6 +4,7 @@ import com.m.cenarius.Constants;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.resourceproxy.cache.CacheEntry;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
+import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.BusProvider;
@@ -39,86 +40,86 @@ public class HtmlHelper {
                 .enqueue(callback);
     }
 
-    /**
-     * 下载html文件，然后缓存
-     *
-     * @param route
-     * @param callback
-     */
-    public static void prepareHtmlFile(final Route route, final Callback callback) {
-        HtmlHelper.doDownloadHtmlFile(route.getHtmlFile(), new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                try {
-                    if (response.isSuccessful()) {
-                        // 1. 存储到本地
-                        boolean result = CacheHelper.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
-                                .byteStream()));
-                        // 存储失败，则失败
-                        if (!result) {
-                            onFailure(call, new IOException("file save fail!"));
-                            return;
-                        }
-                    }
-                    // 2. 通知外面去查找
-                    if (null != callback) {
-                        callback.onResponse(call, response);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    onFailure(call, new IOException("file save fail!"));
-                    LogUtils.i(TAG, "prepare html fail");
-                }
-            }
+//    /**
+//     * 下载html文件，然后缓存
+//     *
+//     * @param route
+//     * @param callback
+//     */
+//    public static void prepareHtmlFile(final Route route, final Callback callback) {
+//        HtmlHelper.doDownloadHtmlFile(route.getHtmlFile(), new Callback() {
+//            @Override
+//            public void onResponse(Call call, Response response) throws IOException {
+//                try {
+//                    if (response.isSuccessful()) {
+//                        // 1. 存储到本地
+//                        boolean result = InternalCache.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
+//                                .byteStream()));
+//                        // 存储失败，则失败
+//                        if (!result) {
+//                            onFailure(call, new IOException("file save fail!"));
+//                            return;
+//                        }
+//                    }
+//                    // 2. 通知外面去查找
+//                    if (null != callback) {
+//                        callback.onResponse(call, response);
+//                    }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    onFailure(call, new IOException("file save fail!"));
+//                    LogUtils.i(TAG, "prepare html fail");
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call call, IOException e) {
+//                if (null != callback) {
+//                    callback.onFailure(call, e);
+//                }
+//            }
+//        });
+//    }
 
-            @Override
-            public void onFailure(Call call, IOException e) {
-                if (null != callback) {
-                    callback.onFailure(call, e);
-                }
-            }
-        });
-    }
-
-    /**
-     * 空闲时间下载h5文件
-     */
-    public static void prepareHtmlFiles(ArrayList<Route> routes) {
-        if (null == routes || routes.isEmpty()) {
-            return;
-        }
-        // 重新下载
-        mDownloadingProcess.clear();
-        for (final Route route : routes) {
-            CacheEntry htmlFile = CacheHelper.getInstance().findCache(route);
-            if (null == htmlFile) {
-                if (!mDownloadingProcess.contains(route.getHtmlFile())) {
-                    mDownloadingProcess.add(route.getHtmlFile());
-                    HtmlHelper.prepareHtmlFile(route, new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                            // 如果下载失败，则不移除
+//    /**
+//     * 空闲时间下载h5文件
+//     */
+//    public static void prepareHtmlFiles(ArrayList<Route> routes) {
+//        if (null == routes || routes.isEmpty()) {
+//            return;
+//        }
+//        // 重新下载
+//        mDownloadingProcess.clear();
+//        for (final Route route : routes) {
+//            CacheEntry htmlFile = CacheHelper.getInstance().findCache(route);
+//            if (null == htmlFile) {
+//                if (!mDownloadingProcess.contains(route.getHtmlFile())) {
+//                    mDownloadingProcess.add(route.getHtmlFile());
+//                    HtmlHelper.prepareHtmlFile(route, new Callback() {
+//                        @Override
+//                        public void onFailure(Call call, IOException e) {
+//                            // 如果下载失败，则不移除
+////                            mDownloadingProcess.remove(route.getHtmlFile());
+//                            LogUtils.i(TAG, "download html failed" + e.getMessage());
+//                        }
+//
+//                        @Override
+//                        public void onResponse(Call call, Response response) throws IOException {
 //                            mDownloadingProcess.remove(route.getHtmlFile());
-                            LogUtils.i(TAG, "download html failed" + e.getMessage());
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            mDownloadingProcess.remove(route.getHtmlFile());
-                            LogUtils.i(TAG, "download html success");
-                            // 如果全部文件下载成功，则发送校验成功事件
-                            if (mDownloadingProcess.isEmpty()) {
-                                LogUtils.i(TAG, "download html complete");
-//                                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
-                            }
-                        }
-                    });
-                }
-            } else {
-                htmlFile.close();
-            }
-        }
-    }
+//                            LogUtils.i(TAG, "download html success");
+//                            // 如果全部文件下载成功，则发送校验成功事件
+//                            if (mDownloadingProcess.isEmpty()) {
+//                                LogUtils.i(TAG, "download html complete");
+////                                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
+//                            }
+//                        }
+//                    });
+//                }
+//            } else {
+//                htmlFile.close();
+//            }
+//        }
+//    }
 
     public static void downloadFilesWithinRoutes(ArrayList<Route> routes, final RouteManager.RouteRefreshCallback callback) {
         final ArrayList<Route> downloadRoutes = new ArrayList<>(routes);
@@ -149,7 +150,7 @@ public class HtmlHelper {
                 try {
                     if (response.isSuccessful()) {
                         // 1. 存储到本地
-                        CacheHelper.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
+                        InternalCache.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
                                 .byteStream()));
                         downloadRoutes.remove(route);
                         if (downloadRoutes.isEmpty()) {

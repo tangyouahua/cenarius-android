@@ -13,6 +13,7 @@ import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheEntry;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
+import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.BusProvider;
@@ -127,7 +128,7 @@ public class CenariusHandleRequest {
             return uri;
         }
         //cache
-        String cachePath = "file://" + CacheHelper.getInstance().cachePath() + Constants.DEFAULT_ASSET_FILE_PATH + "/";
+        String cachePath = "file://" + InternalCache.getInstance().cachePath() + Constants.DEFAULT_ASSET_FILE_PATH + "/";
         uri = deleteString(cachePath, url);
         if (uri != null) {
             return uri;
@@ -246,7 +247,7 @@ class ResourceRequest implements Runnable {
             String baseUri = finalUri.getPath();
             Route route = RouteManager.getInstance().findRoute(baseUri);
             // cache 缓存
-            cacheEntry = CacheHelper.getInstance().findCache(route);
+            cacheEntry = InternalCache.getInstance().findCache(route);
             if (cacheEntry == null) {
                 // asset 缓存
                 cacheEntry = AssetCache.getInstance().findCache(route);
@@ -272,8 +273,8 @@ class ResourceRequest implements Runnable {
             if (response.isSuccessful()) {
                 InputStream inputStream = null;
                 if (null != response.body()) {
-                    CacheHelper.getInstance().saveCache(route, IOUtils.toByteArray(response.body().byteStream()));
-                    cacheEntry = CacheHelper.getInstance().findCache(route);
+                    InternalCache.getInstance().saveCache(route, IOUtils.toByteArray(response.body().byteStream()));
+                    cacheEntry = InternalCache.getInstance().findCache(route);
                     if (null != cacheEntry && cacheEntry.isValid()) {
                         inputStream = cacheEntry.inputStream;
                     }
@@ -296,12 +297,14 @@ class ResourceRequest implements Runnable {
             }
         } catch (SocketTimeoutException e) {
             try {
+                // 输出错误
                 byte[] result = wrapperErrorResponse(e);
                 mOut.write(result);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
         } catch (ConnectTimeoutException e) {
+            // 输出错误
             byte[] result = wrapperErrorResponse(e);
             try {
                 mOut.write(result);
@@ -310,6 +313,7 @@ class ResourceRequest implements Runnable {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            // 输出错误
             byte[] result = wrapperErrorResponse(e);
             try {
                 mOut.write(result);
@@ -350,57 +354,57 @@ class ResourceRequest implements Runnable {
     }
 
     private byte[] wrapperErrorResponse(Exception exception) {
-        if (null == exception) {
-            return new byte[0];
-        }
-
-        try {
-            // generate json response
-            JSONObject result = new JSONObject();
-            result.put(Constants.KEY_NETWORK_ERROR, true);
-            return (Constants.ERROR_PREFIX + result.toString()).getBytes();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        if (null == exception) {
+//            return new byte[0];
+//        }
+//
+//        try {
+//            // generate json response
+//            JSONObject result = new JSONObject();
+//            result.put(Constants.KEY_NETWORK_ERROR, true);
+//            return (Constants.ERROR_PREFIX + result.toString()).getBytes();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return new byte[0];
     }
 
     private byte[] wrapperErrorResponse(Response response) {
-        if (null == response) {
-            return new byte[0];
-        }
-        try {
-            // read response content
-            Map<String, String> responseHeaders = new HashMap<>();
-            for (String field : response.headers()
-                    .names()) {
-                responseHeaders.put(field, response.headers()
-                        .get(field));
-            }
-            byte[] responseContents = new byte[0];
-            if (null != response.body()) {
-                if (responseGzip(responseHeaders)) {
-                    responseContents = parseGzipResponseBody(response.body());
-                } else {
-                    responseContents = response.body().bytes();
-                }
-            }
-
-            // generate json response
-            JSONObject result = new JSONObject();
-            result.put(Constants.KEY_RESPONSE_CODE, response.code());
-            String apiError = new String(responseContents, "utf-8");
-            try {
-                JSONObject content = new JSONObject(apiError);
-                result.put(Constants.KEY_RESPONSE_ERROR, content);
-            } catch (Exception e) {
-                e.printStackTrace();
-                result.put(Constants.KEY_RESPONSE_ERROR, apiError);
-            }
-            return (Constants.ERROR_PREFIX + result.toString()).getBytes();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        if (null == response) {
+//            return new byte[0];
+//        }
+//        try {
+//            // read response content
+//            Map<String, String> responseHeaders = new HashMap<>();
+//            for (String field : response.headers()
+//                    .names()) {
+//                responseHeaders.put(field, response.headers()
+//                        .get(field));
+//            }
+//            byte[] responseContents = new byte[0];
+//            if (null != response.body()) {
+//                if (responseGzip(responseHeaders)) {
+//                    responseContents = parseGzipResponseBody(response.body());
+//                } else {
+//                    responseContents = response.body().bytes();
+//                }
+//            }
+//
+//            // generate json response
+//            JSONObject result = new JSONObject();
+//            result.put(Constants.KEY_RESPONSE_CODE, response.code());
+//            String apiError = new String(responseContents, "utf-8");
+//            try {
+//                JSONObject content = new JSONObject(apiError);
+//                result.put(Constants.KEY_RESPONSE_ERROR, content);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                result.put(Constants.KEY_RESPONSE_ERROR, apiError);
+//            }
+//            return (Constants.ERROR_PREFIX + result.toString()).getBytes();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return new byte[0];
     }
 }

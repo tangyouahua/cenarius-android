@@ -16,20 +16,23 @@ import java.io.OutputStream;
 
 /**
  * 缓存资源文件
- *
+ * <p>
  * 存储位置默认在/data/data/www下
- *
  */
 
 public class InternalCache implements ICache {
 
     public static final String TAG = "InternalCache";
 
-    public InternalCache() {
+    public static InternalCache getInstance() {
+        return new InternalCache();
     }
 
     @Override
     public CacheEntry findCache(Route route) {
+        if (route == null) {
+            return null;
+        }
         File file = file(route);
         if (file.exists() && file.canRead()) {
             try {
@@ -46,6 +49,11 @@ public class InternalCache implements ICache {
         return null;
     }
 
+    /**
+     * 删除单个资源缓存
+     *
+     * @param route 资源地址
+     */
     @Override
     public boolean removeCache(Route route) {
         File file = file(route);
@@ -127,6 +135,14 @@ public class InternalCache implements ICache {
      */
     public File file(Route route) {
         return new File(fileDir(), route.uri);
+    }
+
+    /**
+     * 获取缓存目录
+     */
+    public String cachePath() {
+        return AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
+                Context.MODE_PRIVATE).getPath() + "/";
     }
 
 }

@@ -1,6 +1,7 @@
 package com.m.cenarius.resourceproxy;
 
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
+import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.HtmlHelper;
 import com.m.cenarius.resourceproxy.network.INetwork;
 import com.m.cenarius.resourceproxy.network.NetworkImpl;
@@ -33,15 +34,15 @@ public class ResourceProxy {
         return sInstance;
     }
 
-    /**
-     * 预加载html
-     */
-    public void prepareHtmlFiles(ArrayList<Route> routes) {
-        HtmlHelper.prepareHtmlFiles(routes);
-    }
+//    /**
+//     * 预加载html
+//     */
+//    public void prepareHtmlFiles(ArrayList<Route> routes) {
+//        HtmlHelper.prepareHtmlFiles(routes);
+//    }
 
     public void clearCache() {
-        CacheHelper.getInstance().clearCache();
+        InternalCache.getInstance().clear();
     }
 
     public INetwork getNetwork() {

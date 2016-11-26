@@ -43,6 +43,9 @@ public class AssetCache implements ICache {
 
     @Override
     public CacheEntry findCache(Route route) {
+        if (route == null) {
+            return null;
+        }
         //读取资源文件夹routes
         try {
             if (RouteManager.getInstance().resourceRoutes != null) {
