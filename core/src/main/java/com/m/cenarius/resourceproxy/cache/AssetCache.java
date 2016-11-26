@@ -45,11 +45,8 @@ public class AssetCache implements ICache {
     public CacheEntry findCache(Route route) {
         //读取资源文件夹routes
         try {
-            String routeContent = RouteManager.getInstance().readPresetRoutes();
-            if (!TextUtils.isEmpty(routeContent)) {
-                ArrayList<Route> mRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
-                }.getType());
-                for (Route presetRoute : mRoutes) {
+            if (RouteManager.getInstance().resourceRoutes != null) {
+                for (Route presetRoute : RouteManager.getInstance().resourceRoutes) {
                     if (presetRoute.equals(route)) {
                         //资源文件路径
                         String pathString = filePath(presetRoute.uri);
@@ -67,6 +64,21 @@ public class AssetCache implements ICache {
             }
         } catch (Exception e) {
             LogUtils.i(TAG, e.getMessage());
+        }
+        return null;
+    }
+
+    public CacheEntry findWhiteListCache(String uri){
+        //资源文件路径
+        String pathString = filePath(uri);
+        AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
+        try {
+            InputStream inputStream = assetManager.open(pathString);
+            CacheEntry cacheEntry = new CacheEntry(0, inputStream);
+            LogUtils.i(TAG, "hit");
+            return cacheEntry;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return null;
     }

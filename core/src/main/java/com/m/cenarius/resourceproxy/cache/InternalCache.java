@@ -48,7 +48,6 @@ public class InternalCache implements ICache {
 
     @Override
     public boolean removeCache(Route route) {
-        LogUtils.i(TAG, "remove cache  : url " + route.uri);
         File file = file(route);
         return file.exists() && file.delete();
     }

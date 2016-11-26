@@ -120,37 +120,52 @@ public class HtmlHelper {
         }
     }
 
-    public static void downloadFilesWithinRoutes(final ArrayList<Route> routes, final RouteManager.RouteRefreshCallback callback){
-        if (routes == null || routes.isEmpty())
-        {
+    public static void downloadFilesWithinRoutes(ArrayList<Route> routes, final RouteManager.RouteRefreshCallback callback) {
+        final ArrayList<Route> downloadRoutes = new ArrayList<>(routes);
+        if (downloadRoutes == null || downloadRoutes.isEmpty()) {
             callback.onSuccess(null);
             return;
         }
 
-        final Route route = routes.get(0);
+        final Route route = downloadRoutes.get(0);
 
         // 如果文件在本地文件存在（要么在缓存，要么在资源文件夹），什么都不需要做
         String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(route.uri);
-        if (htmlFileURL != null){
-            routes.remove(route);
+        if (htmlFileURL != null) {
+            downloadRoutes.remove(route);
         }
 
         // 文件不存在，下载下来。
         doDownloadHtmlFile(route.getHtmlFile(), new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                routes.remove(route);
+                LogUtils.i(TAG, "download html failed" + e.getMessage());
+                downloadRoutes.remove(route);
                 callback.onFail();
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                routes.remove(route);
-                if (routes.isEmpty()){
-                    callback.onSuccess(null);
-                }
-                else {
-                    downloadFilesWithinRoutes(routes, callback);
+                try {
+                    if (response.isSuccessful()) {
+                        // 1. 存储到本地
+                        CacheHelper.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
+                                .byteStream()));
+                        downloadRoutes.remove(route);
+                        if (downloadRoutes.isEmpty()) {
+                            callback.onSuccess(null);
+                        } else {
+                            downloadFilesWithinRoutes(downloadRoutes, callback);
+                        }
+                    } else {
+                        LogUtils.i(TAG, "download html failed");
+                        downloadRoutes.remove(route);
+                        callback.onFail();
+                    }
+                } catch (Exception e) {
+                    LogUtils.i(TAG, "download html failed" + e.getMessage());
+                    downloadRoutes.remove(route);
+                    callback.onFail();
                 }
             }
         });

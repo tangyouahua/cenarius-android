@@ -299,17 +299,6 @@ public class CacheHelper {
 //    }
 
     /**
-     * 禁用缓存
-     */
-    public void enableCache(boolean enableCache) {
-        mCacheEnabled = enableCache;
-    }
-
-    public boolean cacheEnabled() {
-        return mCacheEnabled;
-    }
-
-    /**
      * 获取缓存目录
      */
     public String cachePath() {

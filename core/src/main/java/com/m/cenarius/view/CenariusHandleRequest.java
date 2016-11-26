@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
-import android.webkit.WebView;
 
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
@@ -17,7 +16,6 @@ import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.BusProvider;
-import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.utils.MimeUtils;
 import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.IOUtils;
@@ -25,7 +23,6 @@ import com.m.cenarius.utils.io.IOUtils;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONObject;
 import org.xutils.common.util.LogUtil;
-import org.xwalk.core.XWalkView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,20 +71,19 @@ public class CenariusHandleRequest {
 
             //拦截在路由表中的uri
             RouteManager routeManager = RouteManager.getInstance();
-            String htmlFileURL = null;
-            if (routeManager.isInRoutes(baseUri)) {
-                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
-                if (htmlFileURL == null) {
-                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
-                }
-            }
+//            String htmlFileURL = null;
+//            if (routeManager.isInRoutes(baseUri)) {
+//                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
+//                if (htmlFileURL == null) {
+//                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
+//                }
+//            }
+//            //拦截在白名单中的uri
+//            else if (routeManager.isInWhiteList(baseUri)) {
+//                htmlFileURL = AssetCache.getInstance().fileUrl(baseUri);
+//            }
 
-            //拦截在白名单中的uri
-            if (routeManager.isInWhiteList(baseUri)) {
-                htmlFileURL = AssetCache.getInstance().fileUrl(baseUri);
-            }
-
-            if (htmlFileURL != null) {
+            if (routeManager.isInRoutes(baseUri) || routeManager.isInWhiteList(baseUri)) {
                 String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
                 String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
                 try {
@@ -100,7 +96,8 @@ public class CenariusHandleRequest {
                         headers.put("Access-Control-Allow-Origin", "*");
                         xResponse.setResponseHeaders(headers);
                     }
-                    final String url = requestUrl;
+                    // 把带参数的 uri 给到加载
+                    final String url = uriString;
                     webView.post(new Runnable() {
                         @Override
                         public void run() {
@@ -120,106 +117,6 @@ public class CenariusHandleRequest {
 
         return null;
     }
-
-
-    // html js 直接返回
-//        if (Helper.isHtmlResource(requestUrl) || Helper.isJsResource(requestUrl)) {
-//            String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
-//            if (htmlFileURL == null) {
-//                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
-//            }
-//            return super.shouldInterceptRequest(webView, htmlFileURL);
-//
-//
-//            final CacheEntry cacheEntry = CacheHelper.getInstance().findCache(route);
-//            if (null == cacheEntry) {
-//                // 没有cache，
-//                return super.shouldInterceptRequest(webView, requestUrl);
-//            }
-//            if (!cacheEntry.isValid()) {
-//                // 有cache但无效，清除缓存
-//                CacheHelper.getInstance().removeCache(route);
-//                return super.shouldInterceptRequest(webView, requestUrl);
-//            } else {
-//                //读缓存
-//                LogUtils.i(TAG, "cache hit :" + requestUrl);
-//                String data = "";
-//                try {
-//                    data = IOUtils.toString(cacheEntry.inputStream);
-//                    // hack 检查cache是否完整
-//                    if (TextUtils.isEmpty(data)) {
-//                        CacheHelper.getInstance().removeCache(route);
-//                        return super.shouldInterceptRequest(webView, requestUrl);
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    // hack 检查cache是否完整
-//                    CacheHelper.getInstance().removeCache(route);
-//                    return super.shouldInterceptRequest(webView, requestUrl);
-//                }
-//                return new WebResourceResponse(Constants.MIME_TYPE_HTML, "utf-8", IOUtils.toInputStream(data));
-//            }
-//        }
-//
-//        // js直接返回
-//        if (Helper.isJsResource(requestUrl)) {
-//            final CacheEntry cacheEntry = CacheHelper.getInstance().findCache(route);
-//            if (null == cacheEntry) {
-//                // 后面逻辑会通过network去加载
-//                // 加载后再显示
-//            } else if (!cacheEntry.isValid()) {
-//                // 后面逻辑会通过network去加载
-//                // 加载后再显示
-//                // 清除缓存
-//                CacheHelper.getInstance().removeCache(route);
-//            } else {
-//                String data = "";
-//                try {
-//                    data = IOUtils.toString(cacheEntry.inputStream);
-//                    if (TextUtils.isEmpty(data) || (cacheEntry.length > 0 && cacheEntry.length != data.length())) {
-//                        CacheHelper.getInstance().removeCache(route);
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    CacheHelper.getInstance().removeCache(route);
-//                }
-//                LogUtils.i(TAG, "cache hit :" + requestUrl);
-//                return new WebResourceResponse(Constants.MIME_TYPE_HTML, "utf-8", IOUtils.toInputStream(data));
-//            }
-//        }
-//
-//        // 图片等其他资源使用先返回空流，异步写数据
-//        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
-//        String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
-//        try {
-//            LogUtils.i(TAG, "start load async :" + requestUrl);
-//            final PipedOutputStream out = new PipedOutputStream();
-//            final PipedInputStream in = new PipedInputStream(out);
-//            WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-//            if (Utils.hasLollipop()) {
-//                Map<String, String> headers = new HashMap<>();
-//                headers.put("Access-Control-Allow-Origin", "*");
-//                xResponse.setResponseHeaders(headers);
-//            }
-//            final String url = requestUrl;
-//            webView.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    new Thread(new ResourceRequest(url, out, in)).start();
-//                }
-//            });
-//            return xResponse;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-//            return super.shouldInterceptRequest(webView, requestUrl);
-//        } catch (Throwable e) {
-//            e.printStackTrace();
-//            LogUtils.e(TAG, "url : " + requestUrl + " " + e.getMessage());
-//            return super.shouldInterceptRequest(webView, requestUrl);
-//        }
-//    }
-
 
     public static String uriForUrl(String url) {
         String uri;
@@ -343,14 +240,19 @@ class ResourceRequest implements Runnable {
     @Override
     public void run() {
         try {
-            // read cache first
+            // 先读缓存
             CacheEntry cacheEntry = null;
-            String uri = CenariusHandleRequest.uriForUrl(mUrl);
-            Route route = RouteManager.getInstance().findRoute(uri);
-            if (CacheHelper.getInstance().cacheEnabled()) {
-                cacheEntry = CacheHelper.getInstance().findCache(route);
+            Uri finalUri = Uri.parse(mUrl);
+            String baseUri = finalUri.getPath();
+            Route route = RouteManager.getInstance().findRoute(baseUri);
+            // cache 缓存
+            cacheEntry = CacheHelper.getInstance().findCache(route);
+            if (cacheEntry == null) {
+                // asset 缓存
+                cacheEntry = AssetCache.getInstance().findCache(route);
                 if (cacheEntry == null){
-                    cacheEntry = AssetCache.getInstance().findCache(route);
+                    // 白名单 缓存
+                    cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
                 }
             }
             if (null != cacheEntry && cacheEntry.isValid()) {
@@ -359,13 +261,17 @@ class ResourceRequest implements Runnable {
                 return;
             }
 
-            // request network
+            // 从网络加载
+            String remoteHtmlURL = CacheHelper.getInstance().remoteHtmlURLForURI(mUrl);
+            if (remoteHtmlURL == null){
+                return;
+            }
             Response response = ResourceProxy.getInstance().getNetwork()
-                    .handle(CenariusHandleRequest.buildRequest(mUrl));
-            // write cache
+                    .handle(CenariusHandleRequest.buildRequest(remoteHtmlURL));
+            // 写缓存
             if (response.isSuccessful()) {
                 InputStream inputStream = null;
-                if (null != uri && null != response.body()) {
+                if (null != response.body()) {
                     CacheHelper.getInstance().saveCache(route, IOUtils.toByteArray(response.body().byteStream()));
                     cacheEntry = CacheHelper.getInstance().findCache(route);
                     if (null != cacheEntry && cacheEntry.isValid()) {
@@ -375,12 +281,12 @@ class ResourceRequest implements Runnable {
                 if (null == inputStream && null != response.body()) {
                     inputStream = response.body().byteStream();
                 }
-                // write output
+                // 正常输出
                 if (null != inputStream) {
                     mOut.write(IOUtils.toByteArray(inputStream));
                 }
             } else {
-                // return request error
+                // 输出错误
                 byte[] result = wrapperErrorResponse(response);
                 try {
                     mOut.write(result);

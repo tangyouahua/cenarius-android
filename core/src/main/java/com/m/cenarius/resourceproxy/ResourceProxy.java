@@ -33,11 +33,6 @@ public class ResourceProxy {
         return sInstance;
     }
 
-    public ResourceProxy enableCache(boolean enableCache) {
-        CacheHelper.getInstance().enableCache(enableCache);
-        return this;
-    }
-
     /**
      * 预加载html
      */

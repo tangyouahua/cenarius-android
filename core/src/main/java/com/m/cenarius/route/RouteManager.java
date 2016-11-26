@@ -278,7 +278,10 @@ public class RouteManager {
                         @Override
                         public void onSuccess(String data) {
                             //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
-                            cacheRoutes.addAll(0, downloadFirstRoutes);
+                            if (cacheRoutes != null){
+                                cacheRoutes.addAll(0, downloadFirstRoutes);
+                            }
+
                             callback.onSuccess(null);
 
                             //然后下载最新 routes 中的资源文件
