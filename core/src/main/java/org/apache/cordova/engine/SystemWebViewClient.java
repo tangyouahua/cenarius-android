@@ -86,6 +86,10 @@ public class SystemWebViewClient extends CenariusWebViewClient {
      */
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        //修改：先调协议拦截
+        if (super.shouldOverrideUrlLoading(view, url)) {
+            return true;
+        }
         return parentEngine.client.onNavigationAttempt(url);
     }
 
