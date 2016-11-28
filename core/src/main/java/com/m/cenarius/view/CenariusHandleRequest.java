@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
 import com.m.cenarius.Cenarius;
@@ -69,24 +70,32 @@ public class CenariusHandleRequest {
             // requestUrl 符合拦截规则
             Uri finalUri = Uri.parse(uriString);
             String baseUri = finalUri.getPath();
-
-            //拦截在路由表中的uri
             RouteManager routeManager = RouteManager.getInstance();
-//            String htmlFileURL = null;
-//            if (routeManager.isInRoutes(baseUri)) {
-//                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uriString);
-//                if (htmlFileURL == null) {
-//                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uriString);
-//                }
-//            }
-//            //拦截在白名单中的uri
-//            else if (routeManager.isInWhiteList(baseUri)) {
-//                htmlFileURL = AssetCache.getInstance().fileUrl(baseUri);
-//            }
-
             if (routeManager.isInRoutes(baseUri) || routeManager.isInWhiteList(baseUri)) {
+
                 String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
                 String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
+
+                // 有缓存
+                CacheEntry cacheEntry = null;
+                Route route = RouteManager.getInstance().findRoute(baseUri);
+                // cache 缓存
+                cacheEntry = InternalCache.getInstance().findCache(route);
+                if (cacheEntry == null) {
+                    // asset 缓存
+                    cacheEntry = AssetCache.getInstance().findCache(route);
+                    if (cacheEntry == null){
+                        // 白名单 缓存
+                        cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
+                    }
+                }
+                if (null != cacheEntry && cacheEntry.isValid()) {
+//                    byte[] bytes = IOUtils.toByteArray(cacheEntry.inputStream);
+                    WebResourceResponse webResourceResponse = new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
+                    return webResourceResponse;
+                }
+
+                // 从网络加载
                 try {
                     LogUtil.v("start load async :" + requestUrl);
                     final PipedOutputStream out = new PipedOutputStream();
@@ -241,26 +250,26 @@ class ResourceRequest implements Runnable {
     @Override
     public void run() {
         try {
-            // 先读缓存
+//            // 先读缓存
             CacheEntry cacheEntry = null;
             Uri finalUri = Uri.parse(mUrl);
             String baseUri = finalUri.getPath();
             Route route = RouteManager.getInstance().findRoute(baseUri);
-            // cache 缓存
-            cacheEntry = InternalCache.getInstance().findCache(route);
-            if (cacheEntry == null) {
-                // asset 缓存
-                cacheEntry = AssetCache.getInstance().findCache(route);
-                if (cacheEntry == null){
-                    // 白名单 缓存
-                    cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
-                }
-            }
-            if (null != cacheEntry && cacheEntry.isValid()) {
-                byte[] bytes = IOUtils.toByteArray(cacheEntry.inputStream);
-                mOut.write(bytes);
-                return;
-            }
+//            // cache 缓存
+//            cacheEntry = InternalCache.getInstance().findCache(route);
+//            if (cacheEntry == null) {
+//                // asset 缓存
+//                cacheEntry = AssetCache.getInstance().findCache(route);
+//                if (cacheEntry == null){
+//                    // 白名单 缓存
+//                    cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
+//                }
+//            }
+//            if (null != cacheEntry && cacheEntry.isValid()) {
+//                byte[] bytes = IOUtils.toByteArray(cacheEntry.inputStream);
+//                mOut.write(bytes);
+//                return;
+//            }
 
             // 从网络加载
             String remoteHtmlURL = CacheHelper.getInstance().remoteHtmlURLForURI(mUrl);
