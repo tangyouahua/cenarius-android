@@ -65,34 +65,29 @@ public class CenariusHandleRequest {
     }
 
     public static WebResourceResponse handleResourceRequest(View webView, String requestUrl) {
+        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
+        String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
         String uriString = uriForUrl(requestUrl);
         if (uriString != null) {
             // requestUrl 符合拦截规则
             Uri finalUri = Uri.parse(uriString);
             String baseUri = finalUri.getPath();
             RouteManager routeManager = RouteManager.getInstance();
-            if (routeManager.isInRoutes(baseUri) || routeManager.isInWhiteList(baseUri)) {
-
-                String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
-                String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
-
-                // 有缓存
-                CacheEntry cacheEntry = null;
+            CacheEntry cacheEntry;
+            if (routeManager.isInWhiteList(baseUri)) {
+                // 白名单 缓存
+                cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
+                return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
+            } else if (routeManager.isInRoutes(baseUri)) {
                 Route route = RouteManager.getInstance().findRoute(baseUri);
                 // cache 缓存
                 cacheEntry = InternalCache.getInstance().findCache(route);
                 if (cacheEntry == null) {
                     // asset 缓存
                     cacheEntry = AssetCache.getInstance().findCache(route);
-                    if (cacheEntry == null){
-                        // 白名单 缓存
-                        cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
-                    }
                 }
                 if (null != cacheEntry && cacheEntry.isValid()) {
-//                    byte[] bytes = IOUtils.toByteArray(cacheEntry.inputStream);
-                    WebResourceResponse webResourceResponse = new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
-                    return webResourceResponse;
+                    return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
                 }
 
                 // 从网络加载
@@ -250,7 +245,6 @@ class ResourceRequest implements Runnable {
     @Override
     public void run() {
         try {
-//            // 先读缓存
             CacheEntry cacheEntry = null;
             Uri finalUri = Uri.parse(mUrl);
             String baseUri = finalUri.getPath();
@@ -273,7 +267,7 @@ class ResourceRequest implements Runnable {
 
             // 从网络加载
             String remoteHtmlURL = CacheHelper.getInstance().remoteHtmlURLForURI(mUrl);
-            if (remoteHtmlURL == null){
+            if (remoteHtmlURL == null) {
                 return;
             }
             Response response = ResourceProxy.getInstance().getNetwork()

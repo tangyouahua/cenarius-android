@@ -78,7 +78,6 @@ public class AssetCache implements ICache {
         try {
             InputStream inputStream = assetManager.open(pathString);
             CacheEntry cacheEntry = new CacheEntry(0, inputStream);
-            LogUtils.i(TAG, "hit");
             return cacheEntry;
         } catch (IOException e) {
             e.printStackTrace();
