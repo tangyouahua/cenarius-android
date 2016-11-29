@@ -70,7 +70,7 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
 
         cenariusWebView.loadUrl(url);
 
-        cenariusWebView.setWebViewClient(new CenariusWebViewClient() {
+        cenariusWebView.setWebViewClient(new CenariusWebViewClient(cenariusWebView.getWebView()) {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 bar.setVisibility(View.VISIBLE);

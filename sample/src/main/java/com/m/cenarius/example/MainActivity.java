@@ -27,11 +27,11 @@ public class MainActivity extends CNRSViewActivity {
     }
 
     public void openH5(View view){
-        openWebPage("build/index.html", null);
+        openWebPage("sign/sign.html", null);
     }
 
     public void openCordova(View view){
-        openCordovaPage("build/index.html", null);
+        openCordovaPage("sign/sign.html", null);
     }
 
     public void login(View view){

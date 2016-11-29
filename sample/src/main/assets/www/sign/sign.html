@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Document</title>
+	<meta charset="UTF-8">
+	<title>Document</title>
+    <script src="../cenariusIntercept.js"></script>
 </head>
+
 <body>
-    <script src="../jquery.js"></script>
-    <script>
+	<script src="../jquery.js"></script>
+	<script>
         $.ajax({
-            url: 'https://gateway-dev.infinitus.com.cn/api/gbss/dealer/dealers/161891690/sponsor',
-            type: 'GET',
+            url: 'https://uim-test.infinitus.com.cn/oauth20/accessToken',
+            type: 'POST',
             headers: {
                 "X-Requested-With": "OpenAPIRequest"
+            },
+            data: {
+                "dKey1": "dValue1",
+                "dKey2": "dValue2"
             },
             success: function(data) {
                 console.log(data)
@@ -19,4 +26,5 @@
         })
     </script>
 </body>
+
 </html>

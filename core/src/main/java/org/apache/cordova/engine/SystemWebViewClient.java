@@ -73,6 +73,7 @@ public class SystemWebViewClient extends CenariusWebViewClient {
     private Hashtable<String, AuthenticationToken> authenticationTokens = new Hashtable<String, AuthenticationToken>();
 
     public SystemWebViewClient(SystemWebViewEngine parentEngine) {
+        super(parentEngine.webView);
         this.parentEngine = parentEngine;
     }
 

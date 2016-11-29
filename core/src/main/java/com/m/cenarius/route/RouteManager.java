@@ -275,7 +275,7 @@ public class RouteManager {
                         }
                     }
 
-                    HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, new RouteRefreshCallback() {
+                    HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, true, new RouteRefreshCallback() {
                         @Override
                         public void onSuccess(String data) {
                             //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
@@ -286,7 +286,7 @@ public class RouteManager {
                             callback.onSuccess(null);
 
                             //然后下载最新 routes 中的资源文件
-                            HtmlHelper.downloadFilesWithinRoutes(routes, new RouteRefreshCallback() {
+                            HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
                                 @Override
                                 public void onSuccess(String data) {
                                     // 所有文件更新到最新，保存路由表

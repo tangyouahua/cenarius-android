@@ -152,7 +152,7 @@ public class CenariusWebViewCore extends SafeWebView {
             setWebContentsDebuggingEnabled(Cenarius.DEBUG);
         }
         if (null == mWebViewClient) {
-            mWebViewClient = new CenariusWebViewClient();
+            mWebViewClient = new CenariusWebViewClient(this);
         }
         setWebViewClient(mWebViewClient);
         if (null == mWebChromeClient) {
@@ -255,120 +255,4 @@ public class CenariusWebViewCore extends SafeWebView {
         super.setWebChromeClient(client);
     }
 
-//    /**
-//     * Load Page
-//     *
-//     * @param uri
-//     */
-//    public void loadUri(String uri) {
-//        loadUri(uri, null);
-//    }
-//
-//    /**
-//     * Load Page
-//     *
-//     * @param uri
-//     * @param callback
-//     */
-//    public void loadUri(String uri, UriLoadCallback callback) {
-//        loadUri(uri, callback, true);
-//    }
-//
-//    /**
-//     * Cenarius entry
-//     * <p>
-//     * 如果map能够匹配上，则
-//     */
-//    private void loadUri(final String uri, final UriLoadCallback callback, boolean page) {
-//        LogUtils.i(TAG, "loadUri , uri = " + (null != uri ? uri : "null"));
-//        if (TextUtils.isEmpty(uri)) {
-//            throw new IllegalArgumentException("[CenariusWebView] [loadUri] uri can not be null");
-//        }
-//
-//        Route route = RouteManager.getInstance().findRoute(uri);
-//        if (null == route) {
-//            LogUtils.i(TAG, "route not found");
-//            if (null != callback) {
-//                callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
-//            }
-//            return;
-//        }
-//        if (null != callback) {
-//            callback.onStartLoad();
-//        }
-//        loadUrl(route.getHtmlFile());
-//
-//
-//        final Route route;
-//        if (page) {
-//            route = RouteManager.getInstance().findRoute(uri);
-//        } else {
-//            route = RouteManager.getInstance().findPartialRoute(uri);
-//        }
-//        if (null == route) {
-//            LogUtils.i(TAG, "route not found");
-//            if (null != callback) {
-//                callback.onFail(RxLoadError.ROUTE_NOT_FOUND);
-//            }
-//            return;
-//        }
-//        if (null != callback) {
-//            callback.onStartLoad();
-//        }
-//        CacheEntry cacheEntry = null;
-//        // 如果禁用缓存，则不读取缓存内容
-//        if (CacheHelper.getInstance().cacheEnabled()) {
-//            cacheEntry = CacheHelper.getInstance().findHtmlCache(route);
-//        }
-//        if (null != cacheEntry && cacheEntry.isValid()) {
-//            // show cache
-//            doLoadCache(uri, route);
-//            if (null != callback) {
-//                callback.onSuccess();
-//            }
-//        } else {
-//            if (null != callback) {
-//                callback.onStartDownloadHtml();
-//            }
-//            HtmlHelper.prepareHtmlFile(route.getHtmlFile(), new Callback() {
-//                @Override
-//                public void onFailure(Call call, IOException e) {
-//                    if (null != callback) {
-//                        callback.onFail(RxLoadError.HTML_DOWNLOAD_FAIL);
-//                    }
-//                }
-//
-//                @Override
-//                public void onResponse(Call call, final Response response) throws IOException {
-//                    mMainHandler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            if (response.isSuccessful()) {
-//                                LogUtils.i(TAG, "download success");
-//                                final CacheEntry cacheEntry = CacheHelper.getInstance().findHtmlCache(route.getHtmlFile());
-//                                if (null != cacheEntry && cacheEntry.isValid()) {
-//                                    // show cache
-//                                    doLoadCache(uri, route);
-//                                    if (null != callback) {
-//                                        callback.onSuccess();
-//                                    }
-//                                }
-//                            } else {
-//                                if (null != callback) {
-//                                    callback.onFail(RxLoadError.HTML_DOWNLOAD_FAIL);
-//                                }
-//                            }
-//                        }
-//                    });
-//                }
-//            });
-//        }
-//    }
-//
-//    private void doLoadCache(String uri, Route route) {
-//        LogUtils.i(TAG, "file cache , doLoadCache cache file");
-//        // using file schema to doLoadCache
-//        // 4.0的版本加载本地文件不能传递parameters，所以html文本需要替换内容
-//        loadUrl(Constants.FILE_AUTHORITY + route.getHtmlFile() + "?uri=" + Uri.encode(uri));
-//    }
 }
