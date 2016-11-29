@@ -349,13 +349,13 @@ public class SystemWebViewClient extends CenariusWebViewClient {
                 return new WebResourceResponse(result.mimeType, "UTF-8", result.inputStream);
             }
             // If we don't need to special-case the request, let the browser load it.
-            return null;
+            return super.shouldInterceptRequest(view, url);
         } catch (IOException e) {
             if (!(e instanceof FileNotFoundException)) {
                 LOG.e(TAG, "Error occurred while loading a file (returning a 404).", e);
             }
             // Results in a 404.
-            return new WebResourceResponse("text/plain", "UTF-8", null);
+            return super.shouldInterceptRequest(view, url);
         }
     }
 
