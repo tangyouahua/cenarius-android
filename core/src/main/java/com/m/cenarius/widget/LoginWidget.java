@@ -1,15 +1,12 @@
 package com.m.cenarius.widget;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
 
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.utils.GsonHelper;
-import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.view.CenariusWidget;
 
 import java.io.IOException;
@@ -104,7 +101,7 @@ public class LoginWidget implements CenariusWidget {
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
                     String dataJson = response.body().string();
-                    HashMap dataMap = GsonHelper.getInstance().fromJson(dataJson, HashMap.class);
+                    HashMap dataMap = JSON.parseObject(dataJson, HashMap.class);
                     String token = (String) dataMap.get("access_token");
                     String error_msg = (String) dataMap.get("error_msg");
                     if (token != null && token.length() > 0) {

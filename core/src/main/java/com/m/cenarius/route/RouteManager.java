@@ -4,30 +4,19 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
-import com.m.cenarius.resourceproxy.ResourceProxy;
-import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.HtmlHelper;
 import com.m.cenarius.utils.AppContext;
-import com.m.cenarius.utils.BusProvider;
-import com.m.cenarius.utils.GsonHelper;
-import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.utils.io.FileUtils;
 import com.m.cenarius.utils.io.IOUtils;
-import com.google.gson.reflect.TypeToken;
-import com.mcxiaoke.next.task.SimpleTaskCallback;
-import com.mcxiaoke.next.task.TaskBuilder;
-
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
+import java.util.List;
 
 /**
  * 管理route文件
@@ -69,17 +58,17 @@ public class RouteManager {
     /**
      * 最新的Route列表
      */
-    public ArrayList<Route> routes;
+    public List<Route> routes;
 
     /**
      * 缓存Route列表
      */
-    public ArrayList<Route> cacheRoutes;
+    public List<Route> cacheRoutes;
 
     /**
      * 资源Route列表
      */
-    public ArrayList<Route> resourceRoutes;
+    public List<Route> resourceRoutes;
 
 //    /**
 //     * 待校验的route数据
@@ -126,7 +115,7 @@ public class RouteManager {
         return sInstance;
     }
 
-    public ArrayList getRoutes() {
+    public List<Route> getRoutes() {
         return routes;
     }
 
@@ -156,15 +145,13 @@ public class RouteManager {
         // 读取 cacheRoutes
         String routeContent = readCachedRoutes();
         if (!TextUtils.isEmpty(routeContent)) {
-            cacheRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
-            }.getType());
+            cacheRoutes = JSON.parseArray(routeContent, Route.class);
         }
 
         // 读取 resourceRoutes
         routeContent = readPresetRoutes();
         if (!TextUtils.isEmpty(routeContent)) {
-            resourceRoutes = GsonHelper.getInstance().fromJson(routeContent, new TypeToken<ArrayList<Route>>() {
-            }.getType());
+            resourceRoutes = JSON.parseArray(routeContent, Route.class);
         }
     }
 
@@ -175,7 +162,7 @@ public class RouteManager {
         if (null == routes) {
             return null;
         }
-        return GsonHelper.getInstance().toJson(routes);
+        return JSON.toJSONString(routes);
     }
 
     /**
@@ -261,8 +248,7 @@ public class RouteManager {
 //                    mCheckingRouteString = data;
 
                     //先更新内存中的 routes
-                    routes = GsonHelper.getInstance().fromJson(data, new TypeToken<ArrayList<Route>>() {
-                    }.getType());
+                    routes = JSON.parseArray(data, Route.class);
 
                     //优先下载
                     ArrayList<String> downloadFirstList = Cenarius.downloadFirstList;

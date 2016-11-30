@@ -1,9 +1,5 @@
 package com.m.cenarius.route;
-
 import android.text.TextUtils;
-
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
 
 /**
@@ -13,9 +9,7 @@ public class Route implements Serializable{
 
     private static final long serialVersionUID = 1l;
 
-    @SerializedName("hash")
     public String fileHash;
-    @SerializedName("file")
     public String uri;
 //    @SerializedName("remoteHTML")
 //    public String remoteHTML;
@@ -57,5 +51,21 @@ public class Route implements Serializable{
             return false;
         }
         return TextUtils.equals(this.fileHash, ((Route) o).fileHash);
+    }
+
+    public String getFileHash() {
+        return fileHash;
+    }
+
+    public void setFileHash(String fileHash) {
+        this.fileHash = fileHash;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

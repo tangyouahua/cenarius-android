@@ -1,21 +1,13 @@
 package com.m.cenarius.resourceproxy.cache;
-
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
-
-import com.google.gson.reflect.TypeToken;
 import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
-import com.m.cenarius.utils.GsonHelper;
 import com.m.cenarius.utils.LogUtils;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 /**
  * 预置到asset中的只读cache
