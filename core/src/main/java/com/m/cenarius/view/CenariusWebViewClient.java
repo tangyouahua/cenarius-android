@@ -1,49 +1,14 @@
 package com.m.cenarius.view;
 
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.m.cenarius.Constants;
-import com.m.cenarius.Cenarius;
-import com.m.cenarius.resourceproxy.ResourceProxy;
-import com.m.cenarius.resourceproxy.cache.AssetCache;
-import com.m.cenarius.resourceproxy.cache.CacheEntry;
-import com.m.cenarius.resourceproxy.cache.CacheHelper;
-import com.m.cenarius.route.Route;
-import com.m.cenarius.route.RouteManager;
-import com.m.cenarius.utils.BusProvider;
-import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.utils.Utils;
-import com.m.cenarius.utils.io.IOUtils;
 
-import org.apache.http.conn.ConnectTimeoutException;
-import org.json.JSONObject;
-import org.xutils.common.util.LogUtil;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import okhttp3.FormBody;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.Buffer;
-import okio.GzipSource;
 
 
 public class CenariusWebViewClient extends WebViewClient {

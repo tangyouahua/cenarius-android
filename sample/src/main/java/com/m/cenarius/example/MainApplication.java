@@ -1,18 +1,13 @@
 package com.m.cenarius.example;
 
 import android.app.Application;
-import android.widget.ImageView;
 
 import com.m.cenarius.Cenarius;
-import com.m.cenarius.resourceproxy.ResourceProxy;
-import com.m.cenarius.resourceproxy.network.CenariusContainerAPIHelper;
 import com.m.cenarius.route.RouteManager;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.OkHttpClient;
-import org.xutils.x;
 
 public class MainApplication extends Application {
 
