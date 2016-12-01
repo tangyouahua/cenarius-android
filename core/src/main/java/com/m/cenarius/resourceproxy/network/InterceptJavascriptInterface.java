@@ -1,14 +1,7 @@
 package com.m.cenarius.resourceproxy.network;
 
-import android.content.Context;
-import android.util.Log;
-import android.webkit.JavascriptInterface;
-
 import com.m.cenarius.view.CenariusWebViewClient;
 import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * 拦截 ajax
@@ -46,15 +39,14 @@ public class InterceptJavascriptInterface {
             this.body = body;
         }
     }
-
-    @JavascriptInterface
+    
+    @org.xwalk.core.JavascriptInterface
+    @android.webkit.JavascriptInterface
     public void customAjax(final String method, final String header, final String body) {
-        if (mWebViewClient instanceof CenariusXWalkCordovaResourceClient){
-            ((CenariusXWalkCordovaResourceClient)mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
-        }
-        else if (mWebViewClient instanceof CenariusWebViewClient)
-        {
-            ((CenariusWebViewClient)mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
+        if (mWebViewClient instanceof CenariusXWalkCordovaResourceClient) {
+            ((CenariusXWalkCordovaResourceClient) mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
+        } else if (mWebViewClient instanceof CenariusWebViewClient) {
+            ((CenariusWebViewClient) mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
         }
     }
 

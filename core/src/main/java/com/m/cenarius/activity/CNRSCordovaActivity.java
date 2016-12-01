@@ -20,6 +20,7 @@ public class CNRSCordovaActivity extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         super.init();
         setCorsswalk();
 
@@ -28,6 +29,7 @@ public class CNRSCordovaActivity extends CordovaActivity {
         String htmlUrl = htmlURL();
         if (htmlUrl != null){
             loadUrl(htmlUrl);
+            setCorsswalk();
         }
         else {
             LogUtil.v("htmlUrl 为空");

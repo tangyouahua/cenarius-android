@@ -26,13 +26,10 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
         super(parentEngine);
         mWebView = parentEngine.getView();
         mJSIntercept = new InterceptJavascriptInterface(this);
-        if (mWebView instanceof WebView)
-        {
-            ((WebView)mWebView).addJavascriptInterface(mJSIntercept, "interception");
-        }
-        else if (mWebView instanceof XWalkView)
-        {
-            ((XWalkView)mWebView).addJavascriptInterface(mJSIntercept, "interception");
+        if (mWebView instanceof WebView) {
+            ((WebView) mWebView).addJavascriptInterface(mJSIntercept, "interception");
+        } else if (mWebView instanceof XWalkView) {
+            ((XWalkView) mWebView).addJavascriptInterface(mJSIntercept, "interception");
         }
     }
 
@@ -74,7 +71,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
         if (Utils.hasLollipop()) {
             WebResourceResponse webResourceResponse = handleResourceRequest(view, request.getUrl().toString());
             //创建新的 XWalkWebResourceResponse
-            if (webResourceResponse != null){
+            if (webResourceResponse != null) {
                 String mimeType = webResourceResponse.getMimeType();
                 String encoding = webResourceResponse.getEncoding();
                 int statusCode = webResourceResponse.getStatusCode();
@@ -102,13 +99,12 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
      * <note>这个方法会在渲染线程执行，如果做了耗时操作会block渲染</note>
      */
     private WebResourceResponse handleResourceRequest(XWalkView webView, String requestUrl) {
-        if (mNextAjaxRequestContents != null){
+        if (mNextAjaxRequestContents != null) {
             // ajax 请求
 
         }
         WebResourceResponse webResourceResponse = CenariusHandleRequest.handleResourceRequest(webView, requestUrl);
-        if (webResourceResponse != null)
-        {
+        if (webResourceResponse != null) {
             return webResourceResponse;
         }
 
