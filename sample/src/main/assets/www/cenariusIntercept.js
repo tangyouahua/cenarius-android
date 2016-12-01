@@ -9,7 +9,6 @@ XMLHttpRequest.prototype.open = function (method, url, async, user, password) {
 
 XMLHttpRequest.prototype.reallySend = XMLHttpRequest.prototype.send;
 XMLHttpRequest.prototype.send = function (body) {
-    console.log("send");
     window.interception.customAjax(lastXmlhttpRequestPrototypeMethod, JSON.stringify(lastXmlhttpRequestPrototypeHeader), body);
     lastXmlhttpRequestPrototypeMethod = null;
     lastXmlhttpRequestPrototypeHeader = null;
@@ -22,6 +21,5 @@ XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
         lastXmlhttpRequestPrototypeHeader = {};
     }
     lastXmlhttpRequestPrototypeHeader[name] = value;
-    console.log(lastXmlhttpRequestPrototypeHeader);
     this.reallySetRequestHeader(name, value);
 };

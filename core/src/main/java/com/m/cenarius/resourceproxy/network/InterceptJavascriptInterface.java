@@ -37,12 +37,12 @@ public class InterceptJavascriptInterface {
 
     public class AjaxRequestContents {
         public String method = null;
-//        public String header = null;
+        public String header = null;
         public String body = null;
 
-        public AjaxRequestContents(String method,  String body) {
+        public AjaxRequestContents(String method, String header, String body) {
             this.method = method;
-//            this.header = header;
+            this.header = header;
             this.body = body;
         }
     }
@@ -50,11 +50,11 @@ public class InterceptJavascriptInterface {
     @JavascriptInterface
     public void customAjax(final String method, final String header, final String body) {
         if (mWebViewClient instanceof CenariusXWalkCordovaResourceClient){
-//            ((CenariusXWalkCordovaResourceClient)mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
+            ((CenariusXWalkCordovaResourceClient)mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
         }
         else if (mWebViewClient instanceof CenariusWebViewClient)
         {
-
+            ((CenariusWebViewClient)mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
         }
     }
 
