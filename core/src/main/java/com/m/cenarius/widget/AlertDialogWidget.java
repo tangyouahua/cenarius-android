@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.webkit.WebView;
 
-import com.m.cenarius.utils.GsonHelper;
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.view.CenariusWidget;
 
 import org.crosswalk.engine.XWalkCordovaView;
@@ -36,7 +36,7 @@ public class AlertDialogWidget implements CenariusWidget {
             String data = uri.getQueryParameter("data");
             Data alertDialogData = null;
             if (!TextUtils.isEmpty(data)) {
-                alertDialogData = GsonHelper.getInstance().fromJson(data, Data.class);
+                alertDialogData = JSON.parseObject(data, Data.class);
             }
             if (null == alertDialogData || !alertDialogData.valid()) {
                 return false;

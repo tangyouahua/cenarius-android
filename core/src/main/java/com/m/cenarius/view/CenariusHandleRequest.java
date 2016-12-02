@@ -3,9 +3,9 @@ package com.m.cenarius.view;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
 import com.m.cenarius.Cenarius;
@@ -23,8 +23,6 @@ import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.IOUtils;
 
 import org.apache.http.conn.ConnectTimeoutException;
-import org.json.JSONObject;
-import org.xutils.common.util.LogUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,7 +90,7 @@ public class CenariusHandleRequest {
 
                 // 从网络加载
                 try {
-                    LogUtil.v("start load async :" + requestUrl);
+                    Log.v("cenarius", "start load async :" + requestUrl);
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
@@ -112,10 +110,10 @@ public class CenariusHandleRequest {
                     return xResponse;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    LogUtil.e("url : " + requestUrl + " " + e.getMessage());
+                    Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
                 } catch (Throwable e) {
                     e.printStackTrace();
-                    LogUtil.e("url : " + requestUrl + " " + e.getMessage());
+                    Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
                 }
             }
         }

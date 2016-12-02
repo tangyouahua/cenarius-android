@@ -1,7 +1,6 @@
 package com.m.cenarius.widget;
 
 import android.view.View;
-import android.webkit.WebView;
 
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.utils.GsonHelper;

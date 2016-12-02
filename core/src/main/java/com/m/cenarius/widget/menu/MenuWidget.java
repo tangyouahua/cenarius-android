@@ -1,20 +1,16 @@
 package com.m.cenarius.widget.menu;
-
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
-
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.R;
 import com.m.cenarius.activity.CNRSViewActivity;
-import com.m.cenarius.utils.GsonHelper;
 import com.m.cenarius.view.CenariusWidget;
-import com.google.gson.reflect.TypeToken;
 import com.mcxiaoke.next.task.SimpleTaskCallback;
 import com.mcxiaoke.next.task.TaskBuilder;
-
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public class MenuWidget implements CenariusWidget {
@@ -35,22 +31,20 @@ public class MenuWidget implements CenariusWidget {
         }
         final Uri uri = Uri.parse(url);
         if (TextUtils.equals(uri.getPath(), getPath())) {
-            TaskBuilder.create(new Callable<ArrayList<MenuItem>>() {
+            TaskBuilder.create(new Callable<List<MenuItem>>() {
                 @Override
-                public ArrayList<MenuItem> call() throws Exception {
+                public List<MenuItem> call() throws Exception {
                     String data = uri.getQueryParameter(KEY_DATA);
                     if (TextUtils.isEmpty(data)) {
                         return null;
                     }
 
                     // get the menus
-                    return GsonHelper.getInstance()
-                            .fromJson(data, new TypeToken<ArrayList<MenuItem>>() {
-                            }.getType());
+                    return JSON.parseArray(data, MenuItem.class);
                 }
-            }, new SimpleTaskCallback<ArrayList<MenuItem>>(){
+            }, new SimpleTaskCallback<List<MenuItem>>(){
                 @Override
-                public void onTaskSuccess(ArrayList<MenuItem> menuItems, Bundle extras) {
+                public void onTaskSuccess(List<MenuItem> menuItems, Bundle extras) {
                     if (null != menuItems && !menuItems.isEmpty()) {
                         // show the menus and tilte
                         if (null != view && view.getContext() instanceof CNRSViewActivity) {

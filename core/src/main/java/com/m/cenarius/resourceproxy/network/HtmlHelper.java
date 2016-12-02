@@ -121,7 +121,7 @@ public class HtmlHelper {
 //        }
 //    }
 
-    public static void downloadFilesWithinRoutes(ArrayList<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback) {
+    public static void downloadFilesWithinRoutes(List<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback) {
         if (routes == null || routes.isEmpty()) {
             callback.onSuccess(null);
             return;

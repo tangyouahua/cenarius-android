@@ -49,8 +49,6 @@ import org.crosswalk.engine.XWalkCordovaView;
 import org.crosswalk.engine.XWalkWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xutils.common.util.LogUtil;
-
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -208,7 +206,7 @@ public class CordovaFragment extends CNRSViewFragment {
      */
     public void setCorsswalk() {
         View appCordovaView = appView.getView();//加载H5的View
-        LogUtil.v("此手机系统用到的内核为-->" + appCordovaView.getClass().getSimpleName());
+        Log.v("cenarius", "此手机系统用到的内核为-->" + appCordovaView.getClass().getSimpleName());
         if (appCordovaView instanceof SystemWebView) {
             SystemWebViewEngine engine = (SystemWebViewEngine) appView.getEngine();
             SystemWebView webView = (SystemWebView) engine.getView();
@@ -220,7 +218,7 @@ public class CordovaFragment extends CNRSViewFragment {
             webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
         } else {
-            LogUtil.e("系统内核出故障，请检查...");
+            Log.v("cenarius", "系统内核出故障，请检查...");
         }
     }
 
