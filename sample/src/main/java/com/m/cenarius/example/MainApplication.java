@@ -39,7 +39,7 @@ public class MainApplication extends Application {
         Cenarius.setRoutesWhiteList(whiteList);
 //        Cenarius.setDevelopModeEnable(true);//开启调试模式，会禁用路由表，从SD卡读取。
         // 设置并刷新route
-        RouteManager.getInstance().setRemoteFolderUrl("http://172.20.70.80/hybrid");
+        RouteManager.getInstance().setRemoteFolderUrl("http://172.20.70.80/a");
 //        RouteManager.getInstance().setRemoteFolderUrl("https://emcsdev.infinitus.com.cn/h5/www");
         RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
             @Override

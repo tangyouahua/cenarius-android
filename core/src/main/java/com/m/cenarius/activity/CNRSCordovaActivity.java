@@ -20,7 +20,6 @@ public class CNRSCordovaActivity extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         super.init();
         setCorsswalk();
 

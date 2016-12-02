@@ -39,7 +39,7 @@ public class InterceptJavascriptInterface {
             this.body = body;
         }
     }
-    
+
     @org.xwalk.core.JavascriptInterface
     @android.webkit.JavascriptInterface
     public void customAjax(final String method, final String header, final String body) {

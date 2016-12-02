@@ -1,6 +1,5 @@
 package com.m.cenarius.view;
 
-import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
