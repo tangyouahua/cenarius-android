@@ -21,5 +21,5 @@
     <preference name="BackupWebStorage" value="none" />
     <preference name="SplashScreenDelay" value="2000" />
     <preference name="FadeSplashScreenDuration" value="2000" />
-    <!--<preference name="webView" value="org.crosswalk.engine.XWalkWebViewEngine" />-->
+    <preference name="webView" value="org.crosswalk.engine.XWalkWebViewEngine" />
 </widget>

@@ -1,13 +1,16 @@
 package com.m.cenarius.view;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.ResourceProxy;
@@ -15,10 +18,13 @@ import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheEntry;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
+import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.MimeUtils;
+import com.m.cenarius.utils.OpenApi;
+import com.m.cenarius.utils.QueryUtil;
 import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.IOUtils;
 
@@ -111,12 +117,52 @@ public class CenariusHandleRequest {
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
-                } catch (Throwable e) {
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static WebResourceResponse handleAjaxRequest(View webView, String requestUrl, InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
+        // header
+        Map header = JSON.parseObject(ajaxRequestContents.header, Map.class);
+        if (header.get("X-Requested-With").equals("OpenAPIRequest")) {
+            String query = Uri.parse(requestUrl).getQuery();
+            if (query == null || QueryUtil.queryMap(query).get("sign") == null) {
+                // 需要签名
+                String body = ajaxRequestContents.body;
+
+
+                String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
+                String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
+                // 从网络加载
+                try {
+                    Log.v("cenarius", "start load async :" + requestUrl);
+                    final PipedOutputStream out = new PipedOutputStream();
+                    final PipedInputStream in = new PipedInputStream(out);
+                    WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+                    if (Utils.hasLollipop()) {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Access-Control-Allow-Origin", "*");
+                        xResponse.setResponseHeaders(headers);
+                    }
+                    // 把带参数的 uri 给到加载
+                    final String url = OpenApi.openApiQuery(query, body, webView.getContext());
+                    webView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            new Thread(new ResourceRequest(url, out, in)).start();
+                        }
+                    });
+                    return xResponse;
+                } catch (IOException e) {
                     e.printStackTrace();
                     Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
                 }
             }
         }
+
 
         return null;
     }

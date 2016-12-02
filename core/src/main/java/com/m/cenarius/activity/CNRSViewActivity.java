@@ -1,10 +1,8 @@
 package com.m.cenarius.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -13,13 +11,10 @@ import com.m.cenarius.Cenarius;
 import com.m.cenarius.R;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
-import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.view.CenariusWidget;
 import com.m.cenarius.widget.AlertDialogWidget;
 import com.m.cenarius.widget.CordovaWidget;
-import com.m.cenarius.widget.LoginWidget;
 import com.m.cenarius.widget.NativeWidget;
-import com.m.cenarius.widget.PullToRefreshWidget;
 import com.m.cenarius.widget.TitleWidget;
 import com.m.cenarius.widget.ToastWidget;
 import com.m.cenarius.widget.WebWidget;
@@ -27,8 +22,6 @@ import com.m.cenarius.widget.menu.MenuItem;
 import com.m.cenarius.widget.menu.MenuWidget;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,16 +107,16 @@ public class CNRSViewActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    /**
-     * 登录
-     *
-     * @param username 用户名
-     * @param password 密码
-     * @param callback 登录后将执行这个 callback
-     */
-    public static void login(Context context, String username, String password, LoginWidget.LoginCallback callback) {
-        LoginWidget.login(context, username, password, callback);
-    }
+//    /**
+//     * 登录
+//     *
+//     * @param username 用户名
+//     * @param password 密码
+//     * @param callback 登录后将执行这个 callback
+//     */
+//    public static void login(Context context, String username, String password, LoginWidget.LoginCallback callback) {
+//        LoginWidget.login(context, username, password, callback);
+//    }
 
 
     /**

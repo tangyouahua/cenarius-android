@@ -7,6 +7,7 @@ import android.view.View;
 import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.utils.GsonHelper;
+import com.m.cenarius.utils.OpenApi;
 import com.m.cenarius.view.CenariusWidget;
 
 import java.io.IOException;
@@ -66,14 +67,14 @@ public class LoginWidget implements CenariusWidget {
             return;
         }
 
-        TreeMap<String, String> params = new TreeMap<>();
+        HashMap<String, String> params = new HashMap<>();
         params.put("app_key", appKey);
         params.put("timestamp", Long.toString((new Date()).getTime()));
         params.put("username", username);
         params.put("password", password);
         params.put("terminalType", "mobile");
         params.put("rememberMe", "true");
-        String sign = md5Signature(params, appSecret);
+        String sign = OpenApi.md5Signature(params, appSecret);
         params.put("sign", sign);
 
         OkHttpClient client = Cenarius.getOkHttpClient();
@@ -176,53 +177,6 @@ public class LoginWidget implements CenariusWidget {
 //        }
 //    }
 
-    /**
-     * md5 签名
-     */
-    public static String md5Signature(TreeMap<String, String> params, String secret) {
-        String result = null;
-        StringBuffer orgin = getBeforeSign(params, new StringBuffer(secret));
-        if (orgin == null) {
-            return result;
-        }
-        // secret last
-        orgin.append(secret);
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            result = byte2hex(md.digest(orgin.toString().getBytes("utf-8")));
-        } catch (Exception e) {
-            throw new java.lang.RuntimeException("md5 sign error !", e);
-        }
-        return result;
-    }
 
-    private static StringBuffer getBeforeSign(TreeMap<String, String> params, StringBuffer orgin) {
-        if (params == null) {
-            return null;
-        }
-
-        Map<String, String> treeMap = new TreeMap<>();
-        treeMap.putAll(params);
-        Iterator<String> iter = treeMap.keySet().iterator();
-        while (iter.hasNext()) {
-            String name = iter.next();
-            orgin.append(name).append(params.get(name));
-        }
-        return orgin;
-    }
-
-    private static String byte2hex(byte[] b) {
-        StringBuffer hs = new StringBuffer();
-        String stmp = "";
-        for (int n = 0; n < b.length; n++) {
-            stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
-            if (stmp.length() == 1) {
-                hs.append("0").append(stmp);
-            } else {
-                hs.append(stmp);
-            }
-        }
-        return hs.toString().toUpperCase();
-    }
 
 }

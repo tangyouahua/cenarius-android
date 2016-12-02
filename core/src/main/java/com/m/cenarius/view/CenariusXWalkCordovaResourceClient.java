@@ -99,15 +99,16 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
      * <note>这个方法会在渲染线程执行，如果做了耗时操作会block渲染</note>
      */
     private WebResourceResponse handleResourceRequest(XWalkView webView, String requestUrl) {
+        WebResourceResponse webResourceResponse = null;
         if (mNextAjaxRequestContents != null) {
             // ajax 请求
-
+            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(webView, requestUrl, mNextAjaxRequestContents);
+        } else {
+            webResourceResponse = CenariusHandleRequest.handleResourceRequest(webView, requestUrl);
         }
-        WebResourceResponse webResourceResponse = CenariusHandleRequest.handleResourceRequest(webView, requestUrl);
         if (webResourceResponse != null) {
             return webResourceResponse;
         }
-
         return super.shouldInterceptLoadRequest(webView, requestUrl);
     }
 
