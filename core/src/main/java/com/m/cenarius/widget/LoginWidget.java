@@ -76,10 +76,7 @@ public class LoginWidget implements CenariusWidget {
         params.put("sign", sign);
 
         RequestParams requestParams = new RequestParams(service);
-        Iterator<String> iter = params.keySet().iterator();
-        String key;
-        while (iter.hasNext()) {
-            key = iter.next();
+        for (String key : params.keySet()) {
             requestParams.addQueryStringParameter(key, String.valueOf(params.get(key)));
         }
 

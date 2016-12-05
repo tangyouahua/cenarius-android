@@ -26,7 +26,7 @@ public class CenariusWebViewClient extends WebViewClient {
     // ajax 拦截
     private WebView mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
-//    private OkHttpClient client = new OkHttpClient();
+    //    private OkHttpClient client = new OkHttpClient();
     private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
@@ -100,13 +100,15 @@ public class CenariusWebViewClient extends WebViewClient {
      * <note>这个方法会在渲染线程执行，如果做了耗时操作会block渲染</note>
      */
     private WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
-        if (mNextAjaxRequestContents != null){
+        WebResourceResponse webResourceResponse;
+        if (mNextAjaxRequestContents != null) {
             // ajax 请求
-
+            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents);
+        } else {
+            // h5 请求
+            webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
         }
-        WebResourceResponse webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
-        if (webResourceResponse != null)
-        {
+        if (webResourceResponse != null) {
             return webResourceResponse;
         }
 

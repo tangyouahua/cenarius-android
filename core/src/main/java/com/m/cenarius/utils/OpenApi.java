@@ -1,7 +1,5 @@
 package com.m.cenarius.utils;
 
-import android.content.Context;
-
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.widget.LoginWidget;
 
@@ -9,7 +7,6 @@ import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -20,7 +17,7 @@ public class OpenApi {
      * md5 签名
      */
     public static String md5Signature(Map<String, String> params, String secret) {
-        String result = null;
+        String result;
         StringBuffer orgin = getBeforeSign(params, new StringBuffer(secret));
         if (orgin == null) {
             return null;
@@ -43,10 +40,8 @@ public class OpenApi {
 
         Map<String, String> map = new TreeMap<>();
         map.putAll(params);
-        Iterator<String> iter = map.keySet().iterator();
-        while (iter.hasNext()) {
-            String name = iter.next();
-            orgin.append(name).append(params.get(name));
+        for (String key : map.keySet()) {
+            orgin.append(key).append(params.get(key));
         }
         return orgin;
     }
@@ -68,7 +63,7 @@ public class OpenApi {
     /**
      * 返回签名之后的 Query
      */
-    public static String openApiQuery(String query, String body, Context context) {
+    public static String openApiQuery(String query, String body) {
         String parameterString = query;
         if (body != null) {
             if (parameterString != null) {
@@ -78,12 +73,10 @@ public class OpenApi {
             }
         }
         // 多值合并
-        Map<String, String> parameters = new HashMap();
+        Map<String, String> parameters = new HashMap<>();
         Map<String, List<String>> oldParameters = QueryUtil.queryMap(parameterString);
         if (oldParameters != null) {
-            Iterator<String> iter = oldParameters.keySet().iterator();
-            while (iter.hasNext()) {
-                String key = iter.next();
+            for (String key: oldParameters.keySet()) {
                 List<String> array = oldParameters.get(key);
                 Collections.sort(array);
                 String value = array.get(0);
