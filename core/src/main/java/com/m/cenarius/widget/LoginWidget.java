@@ -6,25 +6,20 @@ import android.view.View;
 
 import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
+import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.GsonHelper;
 import com.m.cenarius.utils.OpenApi;
 import com.m.cenarius.view.CenariusWidget;
 
-import java.io.IOException;
-import java.security.MessageDigest;
+import org.xutils.common.Callback;
+import org.xutils.http.RequestParams;
+import org.xutils.x;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class LoginWidget implements CenariusWidget {
 
@@ -56,7 +51,7 @@ public class LoginWidget implements CenariusWidget {
         return false;
     }
 
-    public static void login(final Context context, String username, String password, final LoginCallback callback) {
+    public static void login(String username, String password, final LoginCallback callback) {
         String service = Cenarius.LoginService;
         String appKey = Cenarius.LoginAppKey;
         String appSecret = Cenarius.LoginAppSecret;
@@ -77,50 +72,51 @@ public class LoginWidget implements CenariusWidget {
         String sign = OpenApi.md5Signature(params, appSecret);
         params.put("sign", sign);
 
-        OkHttpClient client = Cenarius.getOkHttpClient();
-        FormBody.Builder builder = new FormBody.Builder();
+        RequestParams requestParams = new RequestParams(service);
         Iterator<String> iter = params.keySet().iterator();
         String key;
         while (iter.hasNext()) {
             key = iter.next();
-            builder.add(key, String.valueOf(params.get(key)));
+            requestParams.addQueryStringParameter(key, String.valueOf(params.get(key)));
         }
-        RequestBody formBody = builder.build();
-        Request request = new Request.Builder()
-                .url(service)
-                .post(formBody)
-                .build();
-        client.newCall(request).enqueue(new Callback() {
+
+        x.http().post(requestParams, new Callback.CommonCallback<String>() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onSuccess(String result) {
+                Map map = JSON.parseObject(result, Map.class);
+                String token = (String) map.get("access_token");
+                String error_msg = (String) map.get("error_msg");
+                if (token != null && token.length() > 0) {
+                    saveAccessToken(token);
+                    if (callback != null) {
+                        callback.onSuccess(token);
+                    }
+                } else {
+                    if (callback != null) {
+                        if (error_msg != null && error_msg.length() > 0) {
+                            callback.onFail(error_msg);
+                        } else {
+                            callback.onFail("系统错误");
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
                 if (callback != null) {
                     callback.onFail("系统错误");
                 }
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    String dataJson = response.body().string();
-                    HashMap dataMap = JSON.parseObject(dataJson, HashMap.class);
-                    String token = (String) dataMap.get("access_token");
-                    String error_msg = (String) dataMap.get("error_msg");
-                    if (token != null && token.length() > 0) {
-                        saveAccessToken(token, context);
-                        if (callback != null) {
-                            callback.onSuccess(token);
-                        }
-                    } else {
-                        if (callback != null) {
-                            if (error_msg != null && error_msg.length() > 0){
-                                callback.onFail(error_msg);
-                            }
-                            else {
-                                callback.onFail("系统错误");
-                            }
-                        }
-                    }
-                }
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
             }
         });
     }
@@ -128,15 +124,15 @@ public class LoginWidget implements CenariusWidget {
     /**
      * 登出
      */
-    public static void logout(final Context context){
-        deleteAccessToken(context);
+    public static void logout(final Context context) {
+        deleteAccessToken();
     }
 
     /**
      * 保存 AccessToken
      */
-    private static void saveAccessToken(String accessToken, final Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(PREF_FILE_NAME, 0);
+    private static void saveAccessToken(String accessToken) {
+        SharedPreferences preferences = AppContext.getInstance().getSharedPreferences(PREF_FILE_NAME, 0);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(TOKEN_KEY, accessToken);
         editor.commit();
@@ -145,14 +141,14 @@ public class LoginWidget implements CenariusWidget {
     /**
      * 获取 AccessToken
      */
-    public static String getAccessToken(final Context context){
-        SharedPreferences preferences = context.getSharedPreferences(PREF_FILE_NAME, 0);
+    public static String getAccessToken() {
+        SharedPreferences preferences = AppContext.getInstance().getSharedPreferences(PREF_FILE_NAME, 0);
         String token = preferences.getString(TOKEN_KEY, null);
         return token;
     }
 
-    private static void deleteAccessToken(final Context context){
-        SharedPreferences preferences = context.getSharedPreferences(PREF_FILE_NAME, 0);
+    private static void deleteAccessToken() {
+        SharedPreferences preferences = AppContext.getInstance().getSharedPreferences(PREF_FILE_NAME, 0);
         SharedPreferences.Editor editor = preferences.edit();
         editor.clear();
         editor.commit();
@@ -176,7 +172,6 @@ public class LoginWidget implements CenariusWidget {
 //            }
 //        }
 //    }
-
 
 
 }

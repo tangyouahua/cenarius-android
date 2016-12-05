@@ -1,11 +1,13 @@
 package com.m.cenarius;
 
-import android.content.Context;
+import android.app.Application;
 import android.text.TextUtils;
 
 import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
+
+import org.xutils.x;
 
 import java.util.ArrayList;
 
@@ -33,14 +35,16 @@ public class Cenarius {
      */
     private static OkHttpClient mOkHttpClient;
 
-    public static void initialize(final Context context) {
+    public static void initialize(final Application context) {
         AppContext.init(context);
         RouteManager.getInstance();
         ResourceProxy.getInstance();
+        x.Ext.init(context);
     }
 
     public static void setDebug(boolean debug) {
         DEBUG = debug;
+        x.Ext.setDebug(debug);
     }
 
     /**

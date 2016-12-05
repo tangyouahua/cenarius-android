@@ -1,7 +1,5 @@
 package com.m.cenarius.activity;
 
-
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -18,7 +16,6 @@ import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.view.CenariusWidget;
 import com.m.cenarius.widget.AlertDialogWidget;
 import com.m.cenarius.widget.CordovaWidget;
-import com.m.cenarius.widget.LoginWidget;
 import com.m.cenarius.widget.NativeWidget;
 import com.m.cenarius.widget.TitleWidget;
 import com.m.cenarius.widget.ToastWidget;
@@ -140,18 +137,6 @@ public class CNRSViewFragment extends Fragment {
         intent.putExtra("parameters", parameters);
         startActivity(intent);
     }
-
-    /**
-     登录
-
-     @param username   用户名
-     @param password   密码
-     @param callback   登录后将执行这个 callback
-     */
-    public static void login(Context context, String username, String password, LoginWidget.LoginCallback callback){
-        LoginWidget.login(context, username, password, callback);
-    }
-
 
     /**
      * 对应的 uri。

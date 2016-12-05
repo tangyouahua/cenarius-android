@@ -11,19 +11,9 @@ import okhttp3.OkHttpClient;
 
 public class MainApplication extends Application {
 
-//    static final List<String> PROXY_HOSTS = new ArrayList<>();
-//    static {
-//        PROXY_HOSTS.add("raw.githubusercontent.com");
-//    }
-
     @Override
     public void onCreate() {
         super.onCreate();
-
-//        x.Ext.init(this);
-//        x.Ext.setDebug(BuildConfig.DEBUG);
-//
-//        XXX.onTestBaidu2Click();
 
         // 初始化cenarius
         Cenarius.initialize(this);

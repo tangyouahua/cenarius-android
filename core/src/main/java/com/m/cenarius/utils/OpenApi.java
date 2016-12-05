@@ -94,7 +94,7 @@ public class OpenApi {
             }
         }
         // 加入系统级参数
-        String token = LoginWidget.getAccessToken(context);
+        String token = LoginWidget.getAccessToken();
         String appKey = Cenarius.LoginAppKey;
         String appSecret =Cenarius.LoginAppSecret;
         String timestamp = Long.toString((new Date()).getTime());

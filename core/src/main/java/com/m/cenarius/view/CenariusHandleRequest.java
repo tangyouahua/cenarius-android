@@ -149,12 +149,13 @@ public class CenariusHandleRequest {
                     }
                     // 把带参数的 uri 给到加载
                     final String url = OpenApi.openApiQuery(query, body, webView.getContext());
-                    webView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            new Thread(new ResourceRequest(url, out, in)).start();
-                        }
-                    });
+                    // 用原生发起
+//                    webView.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            new Thread(new ResourceRequest(url, out, in)).start();
+//                        }
+//                    });
                     return xResponse;
                 } catch (IOException e) {
                     e.printStackTrace();
