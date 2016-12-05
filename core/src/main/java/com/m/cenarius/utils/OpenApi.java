@@ -41,7 +41,7 @@ public class OpenApi {
             return null;
         }
 
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new TreeMap<>();
         map.putAll(params);
         Iterator<String> iter = map.keySet().iterator();
         while (iter.hasNext()) {

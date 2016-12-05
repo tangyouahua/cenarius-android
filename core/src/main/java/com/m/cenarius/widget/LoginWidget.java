@@ -67,7 +67,7 @@ public class LoginWidget implements CenariusWidget {
             return;
         }
 
-        HashMap<String, String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         params.put("app_key", appKey);
         params.put("timestamp", Long.toString((new Date()).getTime()));
         params.put("username", username);

@@ -28,7 +28,7 @@ public class MainApplication extends Application {
         // 初始化cenarius
         Cenarius.initialize(this);
         Cenarius.setDebug(BuildConfig.DEBUG);
-        Cenarius.setLogin("https://uim-test.infinitus.com.cn/oauth20/accessToken", "BUPM", "rfGd23Yhjd92JkpWe");
+        Cenarius.setLogin("https://uim-test.infinitus.com.cn/oauth20/accessToken", "gbss-bupm", "gbss-bupm");
         ArrayList<String> whiteList = new ArrayList<>();
         whiteList.add("cordova");
         Cenarius.setRoutesWhiteList(whiteList);
