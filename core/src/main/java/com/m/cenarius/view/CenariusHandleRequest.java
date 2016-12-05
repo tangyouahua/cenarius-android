@@ -29,6 +29,9 @@ import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.IOUtils;
 
 import org.apache.http.conn.ConnectTimeoutException;
+import org.xutils.common.Callback;
+import org.xutils.http.RequestParams;
+import org.xutils.x;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,41 +85,44 @@ public class CenariusHandleRequest {
                 // 白名单 缓存
                 cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
                 return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
-            } else if (routeManager.isInRoutes(baseUri)) {
+            } else {
                 Route route = RouteManager.getInstance().findRoute(baseUri);
-                // cache 缓存
-                cacheEntry = InternalCache.getInstance().findCache(route);
-                if (cacheEntry == null) {
-                    // asset 缓存
-                    cacheEntry = AssetCache.getInstance().findCache(route);
-                }
-                if (null != cacheEntry && cacheEntry.isValid()) {
-                    return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
-                }
-
-                // 从网络加载
-                try {
-                    Log.v("cenarius", "start load async :" + requestUrl);
-                    final PipedOutputStream out = new PipedOutputStream();
-                    final PipedInputStream in = new PipedInputStream(out);
-                    WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-                    if (Utils.hasLollipop()) {
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("Access-Control-Allow-Origin", "*");
-                        xResponse.setResponseHeaders(headers);
+                if (route != null) {
+                    // cache 缓存
+                    cacheEntry = InternalCache.getInstance().findCache(route);
+                    if (cacheEntry == null) {
+                        // asset 缓存
+                        cacheEntry = AssetCache.getInstance().findCache(route);
                     }
-                    // 把带参数的 uri 给到加载
-                    final String url = uriString;
-                    webView.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            new Thread(new ResourceRequest(url, out, in)).start();
+                    if (null != cacheEntry && cacheEntry.isValid()) {
+                        return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
+                    }
+
+                    // 从网络加载
+                    try {
+                        Log.v("cenarius", "start load async :" + requestUrl);
+                        final PipedOutputStream out = new PipedOutputStream();
+                        final PipedInputStream in = new PipedInputStream(out);
+                        WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+                        if (Utils.hasLollipop()) {
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            xResponse.setResponseHeaders(headers);
                         }
-                    });
-                    return xResponse;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
+
+                        loadResourceRequest(route, out);
+//                    final String url = uriString;
+//                    webView.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            new Thread(new ResourceRequest(url, out, in)).start();
+//                        }
+//                    });
+                        return xResponse;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
+                    }
                 }
             }
         }
@@ -166,6 +172,40 @@ public class CenariusHandleRequest {
 
 
         return null;
+    }
+
+    private static void loadResourceRequest(final Route route, final PipedOutputStream outputStream) {
+
+        // 从网络加载
+        RequestParams requestParams = new RequestParams(route.getHtmlFile());
+        x.http().get(requestParams, new Callback.CommonCallback<byte[]>() {
+
+            @Override
+            public void onSuccess(byte[] result) {
+                try {
+                    outputStream.write(result);
+                    InternalCache.getInstance().saveCache(route, result);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+
+            }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
+        });
+
     }
 
     public static String uriForUrl(String url) {
@@ -289,93 +329,78 @@ class ResourceRequest implements Runnable {
 
     @Override
     public void run() {
-        try {
-            CacheEntry cacheEntry = null;
-            Uri finalUri = Uri.parse(mUrl);
-            String baseUri = finalUri.getPath();
-            Route route = RouteManager.getInstance().findRoute(baseUri);
-//            // cache 缓存
-//            cacheEntry = InternalCache.getInstance().findCache(route);
-//            if (cacheEntry == null) {
-//                // asset 缓存
-//                cacheEntry = AssetCache.getInstance().findCache(route);
-//                if (cacheEntry == null){
-//                    // 白名单 缓存
-//                    cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
-//                }
-//            }
-//            if (null != cacheEntry && cacheEntry.isValid()) {
-//                byte[] bytes = IOUtils.toByteArray(cacheEntry.inputStream);
-//                mOut.write(bytes);
+//        try {
+//            CacheEntry cacheEntry = null;
+//            Uri finalUri = Uri.parse(mUrl);
+//            String baseUri = finalUri.getPath();
+//            Route route = RouteManager.getInstance().findRoute(baseUri);
+//
+//            // 从网络加载
+//            String remoteHtmlURL = CacheHelper.getInstance().remoteHtmlURLForURI(mUrl);
+//            if (remoteHtmlURL == null) {
 //                return;
 //            }
-
-            // 从网络加载
-            String remoteHtmlURL = CacheHelper.getInstance().remoteHtmlURLForURI(mUrl);
-            if (remoteHtmlURL == null) {
-                return;
-            }
-            Response response = ResourceProxy.getInstance().getNetwork()
-                    .handle(CenariusHandleRequest.buildRequest(remoteHtmlURL));
-            // 写缓存
-            if (response.isSuccessful()) {
-                InputStream inputStream = null;
-                if (null != response.body()) {
-                    InternalCache.getInstance().saveCache(route, IOUtils.toByteArray(response.body().byteStream()));
-                    cacheEntry = InternalCache.getInstance().findCache(route);
-                    if (null != cacheEntry && cacheEntry.isValid()) {
-                        inputStream = cacheEntry.inputStream;
-                    }
-                }
-                if (null == inputStream && null != response.body()) {
-                    inputStream = response.body().byteStream();
-                }
-                // 正常输出
-                if (null != inputStream) {
-                    mOut.write(IOUtils.toByteArray(inputStream));
-                }
-            } else {
-                // 输出错误
-                byte[] result = wrapperErrorResponse(response);
-                try {
-                    mOut.write(result);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        } catch (SocketTimeoutException e) {
-            try {
-                // 输出错误
-                byte[] result = wrapperErrorResponse(e);
-                mOut.write(result);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        } catch (ConnectTimeoutException e) {
-            // 输出错误
-            byte[] result = wrapperErrorResponse(e);
-            try {
-                mOut.write(result);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            // 输出错误
-            byte[] result = wrapperErrorResponse(e);
-            try {
-                mOut.write(result);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        } finally {
-            try {
-                mOut.flush();
-                mOut.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+//            Response response = ResourceProxy.getInstance().getNetwork()
+//                    .handle(CenariusHandleRequest.buildRequest(remoteHtmlURL));
+//            // 写缓存
+//            if (response.isSuccessful()) {
+//                InputStream inputStream = null;
+//                if (null != response.body()) {
+//                    InternalCache.getInstance().saveCache(route, IOUtils.toByteArray(response.body().byteStream()));
+//                    cacheEntry = InternalCache.getInstance().findCache(route);
+//                    if (null != cacheEntry && cacheEntry.isValid()) {
+//                        inputStream = cacheEntry.inputStream;
+//                    }
+//                }
+//                if (null == inputStream && null != response.body()) {
+//                    inputStream = response.body().byteStream();
+//                }
+//                // 正常输出
+//                if (null != inputStream) {
+//                    mOut.write(IOUtils.toByteArray(inputStream));
+//                }
+//            } else {
+//                // 输出错误
+//                byte[] result = wrapperErrorResponse(response);
+//                try {
+//                    mOut.write(result);
+//                } catch (IOException e1) {
+//                    e1.printStackTrace();
+//                }
+//            }
+//        } catch (SocketTimeoutException e) {
+//            try {
+//                // 输出错误
+//                byte[] result = wrapperErrorResponse(e);
+//                mOut.write(result);
+//            } catch (IOException e1) {
+//                e1.printStackTrace();
+//            }
+//        } catch (ConnectTimeoutException e) {
+//            // 输出错误
+//            byte[] result = wrapperErrorResponse(e);
+//            try {
+//                mOut.write(result);
+//            } catch (IOException e1) {
+//                e1.printStackTrace();
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            // 输出错误
+//            byte[] result = wrapperErrorResponse(e);
+//            try {
+//                mOut.write(result);
+//            } catch (IOException e1) {
+//                e1.printStackTrace();
+//            }
+//        } finally {
+//            try {
+//                mOut.flush();
+//                mOut.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     private boolean responseGzip(Map<String, String> headers) {

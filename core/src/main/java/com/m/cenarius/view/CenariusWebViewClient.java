@@ -11,8 +11,6 @@ import com.m.cenarius.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.OkHttpClient;
-
 public class CenariusWebViewClient extends WebViewClient {
 
     static final String TAG = CenariusWebViewClient.class.getSimpleName();
@@ -28,7 +26,7 @@ public class CenariusWebViewClient extends WebViewClient {
     // ajax 拦截
     private WebView mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
-    private OkHttpClient client = new OkHttpClient();
+//    private OkHttpClient client = new OkHttpClient();
     private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {

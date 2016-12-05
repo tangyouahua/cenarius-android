@@ -7,8 +7,6 @@ import com.m.cenarius.route.RouteManager;
 
 import java.util.ArrayList;
 
-import okhttp3.OkHttpClient;
-
 public class MainApplication extends Application {
 
     @Override
@@ -42,10 +40,10 @@ public class MainApplication extends Application {
 //        // 设置local api
 //        CenariusContainerAPIHelper.registerAPIs(FrodoContainerAPIs.sAPIs);
 //        // 设置自定义的OkHttpClient
-        Cenarius.setOkHttpClient(new OkHttpClient().newBuilder()
-                .retryOnConnectionFailure(true)
-                .addNetworkInterceptor(new AuthInterceptor())
-                .build());
+//        Cenarius.setOkHttpClient(new OkHttpClient().newBuilder()
+//                .retryOnConnectionFailure(true)
+//                .addNetworkInterceptor(new AuthInterceptor())
+//                .build());
 //        Cenarius.setHostUserAgent(" Cenarius/1.2.x ");
 
     }

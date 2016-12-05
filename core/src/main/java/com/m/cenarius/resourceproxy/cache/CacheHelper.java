@@ -88,7 +88,7 @@ public class CacheHelper {
         return null;
     }
 
-    private String finalUrl(String url, Uri uri) {
+    public String finalUrl(String url, Uri uri) {
         if (url != null) {
             String query = uri.getQuery();
             String fragment = uri.getFragment();

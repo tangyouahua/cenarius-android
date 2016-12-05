@@ -11,8 +11,6 @@ import org.xutils.x;
 
 import java.util.ArrayList;
 
-import okhttp3.OkHttpClient;
-
 public class Cenarius {
 
     public static final String TAG = Cenarius.class.getSimpleName();
@@ -30,10 +28,10 @@ public class Cenarius {
      */
     private static String mHostUserAgent;
 
-    /**
-     * 可以通过设置OkHttpClient的方式实现共用
-     */
-    private static OkHttpClient mOkHttpClient;
+//    /**
+//     * 可以通过设置OkHttpClient的方式实现共用
+//     */
+//    private static OkHttpClient mOkHttpClient;
 
     public static void initialize(final Application context) {
         AppContext.init(context);
@@ -83,20 +81,20 @@ public class Cenarius {
         return stringBuilder.toString();
     }
 
-    public static void setOkHttpClient(OkHttpClient okHttpClient) {
-        if (null != okHttpClient) {
-            mOkHttpClient = okHttpClient;
-        }
-    }
-
-    public static OkHttpClient getOkHttpClient() {
-        if (null == mOkHttpClient) {
-            mOkHttpClient = new OkHttpClient.Builder()
-                    .retryOnConnectionFailure(false)
-                    .build();
-        }
-        return mOkHttpClient;
-    }
+//    public static void setOkHttpClient(OkHttpClient okHttpClient) {
+//        if (null != okHttpClient) {
+//            mOkHttpClient = okHttpClient;
+//        }
+//    }
+//
+//    public static OkHttpClient getOkHttpClient() {
+//        if (null == mOkHttpClient) {
+//            mOkHttpClient = new OkHttpClient.Builder()
+//                    .retryOnConnectionFailure(false)
+//                    .build();
+//        }
+//        return mOkHttpClient;
+//    }
 
     /**
      设置路由表白名单

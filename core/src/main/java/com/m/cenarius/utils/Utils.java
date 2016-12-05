@@ -2,12 +2,6 @@ package com.m.cenarius.utils;
 
 import android.os.Build;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import okio.ByteString;
-
 public class Utils {
 
     public static boolean hasHoneycomb() {
@@ -30,16 +24,16 @@ public class Utils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
-    public static String hash(String source) {
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-            byte[] md5Bytes = messageDigest.digest(source.getBytes("UTF-8"));
-            return ByteString.of(md5Bytes).hex();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return source;
-    }
+//    public static String hash(String source) {
+//        try {
+//            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+//            byte[] md5Bytes = messageDigest.digest(source.getBytes("UTF-8"));
+//            return ByteString.of(md5Bytes).hex();
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+//        return source;
+//    }
 }
