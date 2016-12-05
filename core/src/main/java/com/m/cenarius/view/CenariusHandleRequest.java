@@ -71,7 +71,7 @@ public class CenariusHandleRequest {
         return false;
     }
 
-    public static WebResourceResponse handleResourceRequest(View webView, String requestUrl) {
+    public static WebResourceResponse handleResourceRequest(String requestUrl) {
         String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
         String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
         String uriString = uriForUrl(requestUrl);
@@ -111,13 +111,6 @@ public class CenariusHandleRequest {
                         }
 
                         loadResourceRequest(route, out);
-//                    final String url = uriString;
-//                    webView.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            new Thread(new ResourceRequest(url, out, in)).start();
-//                        }
-//                    });
                         return xResponse;
                     } catch (IOException e) {
                         e.printStackTrace();

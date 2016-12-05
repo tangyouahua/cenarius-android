@@ -104,7 +104,7 @@ public class CenariusWebViewClient extends WebViewClient {
             // ajax 请求
 
         }
-        WebResourceResponse webResourceResponse = CenariusHandleRequest.handleResourceRequest(webView, requestUrl);
+        WebResourceResponse webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
         if (webResourceResponse != null)
         {
             return webResourceResponse;
