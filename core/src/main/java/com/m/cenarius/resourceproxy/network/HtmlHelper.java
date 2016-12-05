@@ -11,6 +11,9 @@ import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.utils.io.IOUtils;
 
+import org.xutils.http.RequestParams;
+import org.xutils.x;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +31,6 @@ public class HtmlHelper {
 
     /**
      * 下载html文件
-     *
-     * @param url
-     * @param callback
      */
     private static void doDownloadHtmlFile(String url, Callback callback) {
         LogUtils.i(TAG, "url = " + url);
@@ -40,152 +40,59 @@ public class HtmlHelper {
                 .enqueue(callback);
     }
 
-//    /**
-//     * 下载html文件，然后缓存
-//     *
-//     * @param route
-//     * @param callback
-//     */
-//    public static void prepareHtmlFile(final Route route, final Callback callback) {
-//        HtmlHelper.doDownloadHtmlFile(route.getHtmlFile(), new Callback() {
-//            @Override
-//            public void onResponse(Call call, Response response) throws IOException {
-//                try {
-//                    if (response.isSuccessful()) {
-//                        // 1. 存储到本地
-//                        boolean result = InternalCache.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
-//                                .byteStream()));
-//                        // 存储失败，则失败
-//                        if (!result) {
-//                            onFailure(call, new IOException("file save fail!"));
-//                            return;
-//                        }
-//                    }
-//                    // 2. 通知外面去查找
-//                    if (null != callback) {
-//                        callback.onResponse(call, response);
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    onFailure(call, new IOException("file save fail!"));
-//                    LogUtils.i(TAG, "prepare html fail");
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call call, IOException e) {
-//                if (null != callback) {
-//                    callback.onFailure(call, e);
-//                }
-//            }
-//        });
-//    }
-
-//    /**
-//     * 空闲时间下载h5文件
-//     */
-//    public static void prepareHtmlFiles(ArrayList<Route> routes) {
-//        if (null == routes || routes.isEmpty()) {
-//            return;
-//        }
-//        // 重新下载
-//        mDownloadingProcess.clear();
-//        for (final Route route : routes) {
-//            CacheEntry htmlFile = CacheHelper.getInstance().findCache(route);
-//            if (null == htmlFile) {
-//                if (!mDownloadingProcess.contains(route.getHtmlFile())) {
-//                    mDownloadingProcess.add(route.getHtmlFile());
-//                    HtmlHelper.prepareHtmlFile(route, new Callback() {
-//                        @Override
-//                        public void onFailure(Call call, IOException e) {
-//                            // 如果下载失败，则不移除
-////                            mDownloadingProcess.remove(route.getHtmlFile());
-//                            LogUtils.i(TAG, "download html failed" + e.getMessage());
-//                        }
-//
-//                        @Override
-//                        public void onResponse(Call call, Response response) throws IOException {
-//                            mDownloadingProcess.remove(route.getHtmlFile());
-//                            LogUtils.i(TAG, "download html success");
-//                            // 如果全部文件下载成功，则发送校验成功事件
-//                            if (mDownloadingProcess.isEmpty()) {
-//                                LogUtils.i(TAG, "download html complete");
-////                                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
-//                            }
-//                        }
-//                    });
-//                }
-//            } else {
-//                htmlFile.close();
-//            }
-//        }
-//    }
-
     public static void downloadFilesWithinRoutes(List<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback) {
         if (routes == null || routes.isEmpty()) {
             callback.onSuccess(null);
             return;
         }
-        final ArrayList<Route> downloadRoutes = new ArrayList<>(routes);
-        final Route route = downloadRoutes.get(0);
+        downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, 0);
+    }
+
+    private static void downloadFilesWithinRoutes(final List<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback, final int index) {
+        if (index >= routes.size()) {
+            callback.onSuccess(null);
+            return;
+        }
+
+        final Route route = routes.get(index);
 
         // 如果文件在本地文件存在（要么在缓存，要么在资源文件夹），什么都不需要做
         String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(route.uri);
         if (htmlFileURL != null) {
-            downloadRoutes.remove(route);
-            downloadFilesWithinRoutes(downloadRoutes, shouldDownloadAll, callback);
+            downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, index + 1);
             return;
         }
 
         // 文件不存在，下载下来
-        doDownloadHtmlFile(route.getHtmlFile(), new Callback() {
+        RequestParams requestParams = new RequestParams(route.getHtmlFile());
+        x.http().get(requestParams, new org.xutils.common.Callback.CommonCallback<byte[]>() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                LogUtils.i(TAG, "download html failed" + e.getMessage());
-                if (shouldDownloadAll){
+            public void onSuccess(byte[] result) {
+                // 1. 存储到本地
+                InternalCache.getInstance().saveCache(route, result);
+                downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, index + 1);
+            }
+
+            @Override
+            public void onError(Throwable ex, boolean isOnCallback) {
+                LogUtils.i(TAG, "download html failed");
+                if (shouldDownloadAll) {
                     callback.onFail();
-                }
-                else {
+                } else {
                     // 下载失败，仅删除旧文件
                     InternalCache.getInstance().removeCache(route);
-                    downloadRoutes.remove(route);
-                    downloadFilesWithinRoutes(downloadRoutes, shouldDownloadAll, callback);
+                    downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, index + 1);
                 }
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                try {
-                    if (response.isSuccessful()) {
-                        // 1. 存储到本地
-                        InternalCache.getInstance().saveCache(route, IOUtils.toByteArray(response.body()
-                                .byteStream()));
-                        downloadRoutes.remove(route);
-                        downloadFilesWithinRoutes(downloadRoutes, shouldDownloadAll, callback);
-                    } else {
-                        LogUtils.i(TAG, "download html failed");
-                        if (shouldDownloadAll){
-                            callback.onFail();
-                        }
-                        else {
-                            // 下载失败，仅删除旧文件
-                            InternalCache.getInstance().removeCache(route);
-                            downloadRoutes.remove(route);
-                            downloadFilesWithinRoutes(downloadRoutes, shouldDownloadAll, callback);
-                        }
-                    }
-                } catch (Exception e) {
-                    LogUtils.i(TAG, "download html failed" + e.getMessage());
-                    if (shouldDownloadAll){
-                        callback.onFail();
-                    }
-                    else {
-                        // 下载失败，仅删除旧文件
-                        InternalCache.getInstance().removeCache(route);
-                        downloadRoutes.remove(route);
-                        downloadFilesWithinRoutes(downloadRoutes, shouldDownloadAll, callback);
-                    }
-                }
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
             }
         });
     }

@@ -12,6 +12,11 @@ import com.m.cenarius.resourceproxy.network.HtmlHelper;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.io.FileUtils;
 import com.m.cenarius.utils.io.IOUtils;
+
+import org.xutils.common.Callback;
+import org.xutils.http.RequestParams;
+import org.xutils.x;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,16 +29,6 @@ import java.util.List;
 public class RouteManager {
 
     public static final String TAG = RouteManager.class.getSimpleName();
-
-    public static class RouteConfig {
-        public String routeApi;
-        public String routeCacheFileName;
-
-        public RouteConfig(String routeApi, String cacheFileName) {
-            this.routeApi = routeApi;
-            this.routeCacheFileName = cacheFileName;
-        }
-    }
 
     public interface RouteRefreshCallback {
         /**
@@ -49,11 +44,20 @@ public class RouteManager {
     }
 
     private static RouteManager sInstance;
-    private static RouteConfig sRouteConfig;
+
     private RouteManager() {
         loadLocalRoutes();
-//        BusProvider.getInstance().register(this);
     }
+
+    /**
+     * Routes的远程地址
+     */
+    private static String sRouteApi;
+
+    /**
+     * 缓存目录名字
+     */
+    private static String sRouteCacheFileName;
 
     /**
      * 最新的Route列表
@@ -70,34 +74,10 @@ public class RouteManager {
      */
     public List<Route> resourceRoutes;
 
-//    /**
-//     * 待校验的route数据
-//     */
-//    private String mCheckingRouteString;
-
-//    /**
-//     * 等待route刷新的callback
-//     */
-//    private RouteRefreshCallback mRouteRefreshCallback;
-
     /**
      * 正在下载路由表
      */
     private boolean updatingRoutes;
-
-    /**
-     * 配置Route 策略
-     *
-     * @param routeConfig 策略
-     */
-    public static void config(RouteConfig routeConfig) {
-        if (null != routeConfig) {
-            sRouteConfig = routeConfig;
-            if (!TextUtils.isEmpty(sRouteConfig.routeApi)) {
-                RouteFetcher.setRouteApi(sRouteConfig.routeApi);
-            }
-        }
-    }
 
     /**
      * 远程目录 url
@@ -124,7 +104,7 @@ public class RouteManager {
      */
     private void setRouteApi(String routeUrl) {
         if (!TextUtils.isEmpty(routeUrl)) {
-            RouteFetcher.setRouteApi(routeUrl);
+            sRouteApi = routeUrl;
         }
     }
 
@@ -228,39 +208,35 @@ public class RouteManager {
      * 刷新路由表
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
-//        mRouteRefreshCallback = callback;
         if (updatingRoutes){
-//            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
-            callback.onSuccess(null);
+            callback.onFail();
             return;
         }
         updatingRoutes = true;
-        RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
+
+        RequestParams requestParams = new RequestParams(sRouteApi);
+        x.http().get(requestParams, new Callback.CommonCallback<String>() {
+
             @Override
-            public void onSuccess(String data) {
-                if (TextUtils.isEmpty(data))
+            public void onSuccess(String result) {
+                if (TextUtils.isEmpty(result))
                 {
-//                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
                     callback.onSuccess(null);
                     updatingRoutes = false;
                 }
                 else {
-//                    mCheckingRouteString = data;
-
                     //先更新内存中的 routes
-                    routes = JSON.parseArray(data, Route.class);
+                    routes = JSON.parseArray(result, Route.class);
 
                     //优先下载
-                    ArrayList<String> downloadFirstList = Cenarius.downloadFirstList;
-                    final ArrayList<Route> downloadFirstRoutes = new ArrayList<Route>();
-                    if (downloadFirstList != null)
-                    {
-                        for (String uri: downloadFirstList) {
-                            Route route  = findRoute(uri);
+                    List<String> downloadFirstList = Cenarius.downloadFirstList;
+                    final List<Route> downloadFirstRoutes = new ArrayList<>();
+                    if (downloadFirstList != null) {
+                        for (String uri : downloadFirstList) {
+                            Route route = findRoute(uri);
                             downloadFirstRoutes.add(route);
                         }
                     }
-
                     HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, true, new RouteRefreshCallback() {
                         @Override
                         public void onSuccess(String data) {
@@ -299,13 +275,100 @@ public class RouteManager {
             }
 
             @Override
-            public void onFail() {
-//                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
+            public void onError(Throwable ex, boolean isOnCallback) {
                 callback.onFail();
                 updatingRoutes = false;
             }
+
+            @Override
+            public void onCancelled(CancelledException cex) {
+
+            }
+
+            @Override
+            public void onFinished() {
+
+            }
         });
     }
+
+
+    /**
+     * 刷新路由表
+     */
+//    public void refreshRoute(final RouteRefreshCallback callback) {
+//        if (updatingRoutes){
+//            callback.onSuccess(null);
+//            return;
+//        }
+//        updatingRoutes = true;
+//        RouteFetcher.fetchRoutes(new RouteRefreshCallback() {
+//            @Override
+//            public void onSuccess(String data) {
+//                if (TextUtils.isEmpty(data))
+//                {
+//                    callback.onSuccess(null);
+//                    updatingRoutes = false;
+//                }
+//                else {
+//                    //先更新内存中的 routes
+//                    routes = JSON.parseArray(data, Route.class);
+//
+//                    //优先下载
+//                    ArrayList<String> downloadFirstList = Cenarius.downloadFirstList;
+//                    final ArrayList<Route> downloadFirstRoutes = new ArrayList<Route>();
+//                    if (downloadFirstList != null)
+//                    {
+//                        for (String uri: downloadFirstList) {
+//                            Route route  = findRoute(uri);
+//                            downloadFirstRoutes.add(route);
+//                        }
+//                    }
+//
+//                    HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, true, new RouteRefreshCallback() {
+//                        @Override
+//                        public void onSuccess(String data) {
+//                            //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
+//                            if (cacheRoutes != null){
+//                                cacheRoutes.addAll(0, downloadFirstRoutes);
+//                            }
+//
+//                            callback.onSuccess(null);
+//
+//                            //然后下载最新 routes 中的资源文件
+//                            HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
+//                                @Override
+//                                public void onSuccess(String data) {
+//                                    // 所有文件更新到最新，保存路由表
+//                                    cacheRoutes = routes;
+//                                    saveCachedRoutes(data);
+//                                    updatingRoutes = false;
+//                                }
+//
+//                                @Override
+//                                public void onFail() {
+//                                    updatingRoutes = false;
+//                                }
+//                            });
+//                        }
+//
+//                        @Override
+//                        public void onFail() {
+//                            //优先下载失败
+//                            callback.onFail();
+//                            updatingRoutes = false;
+//                        }
+//                    });
+//                }
+//            }
+//
+//            @Override
+//            public void onFail() {
+//                callback.onFail();
+//                updatingRoutes = false;
+//            }
+//        });
+//    }
 
     /**
      * 删除缓存的Routes
@@ -414,7 +477,7 @@ public class RouteManager {
         if (!fileDir.exists()) {
             fileDir.mkdirs();
         }
-        String cacheFileName = (null != sRouteConfig && !TextUtils.isEmpty(sRouteConfig.routeCacheFileName)) ? sRouteConfig.routeCacheFileName : Constants.DEFAULT_DISK_ROUTES_FILE_NAME;
+        String cacheFileName = (!TextUtils.isEmpty(sRouteCacheFileName)) ? sRouteCacheFileName : Constants.DEFAULT_DISK_ROUTES_FILE_NAME;
         return new File(fileDir, cacheFileName);
     }
 

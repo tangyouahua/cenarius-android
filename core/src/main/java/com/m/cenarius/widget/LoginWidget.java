@@ -51,6 +51,9 @@ public class LoginWidget implements CenariusWidget {
         return false;
     }
 
+    /**
+     * 登录
+     */
     public static void login(String username, String password, final LoginCallback callback) {
         String service = Cenarius.LoginService;
         String appKey = Cenarius.LoginAppKey;
