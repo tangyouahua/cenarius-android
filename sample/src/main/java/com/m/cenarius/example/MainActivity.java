@@ -31,7 +31,7 @@ public class MainActivity extends CNRSViewActivity {
     }
 
     public void openCordova(View view){
-        openCordovaPage("build/index.html", null);
+        openCordovaPage("sign/sign.html", null);
     }
 
     public void login(View view){

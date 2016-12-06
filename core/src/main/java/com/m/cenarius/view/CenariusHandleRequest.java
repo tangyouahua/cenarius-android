@@ -30,6 +30,7 @@ import com.m.cenarius.utils.io.IOUtils;
 
 import org.apache.http.conn.ConnectTimeoutException;
 import org.xutils.common.Callback;
+import org.xutils.ex.HttpException;
 import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
@@ -136,7 +137,7 @@ public class CenariusHandleRequest {
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
                     // 把带参数的 uri 给到加载
                     final String url = OpenApi.openApiQuery(query, body);
-                    loadAjaxRequest(ajaxRequestContents.method, requestUrl, ajaxRequestContents.header, ajaxRequestContents.body);
+                    loadAjaxRequest(ajaxRequestContents.method, requestUrl, ajaxRequestContents.header, ajaxRequestContents.body, out);
                     return xResponse;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -149,7 +150,7 @@ public class CenariusHandleRequest {
         return null;
     }
 
-    private static void loadAjaxRequest(String method, String url, String header, String body) {
+    private static void loadAjaxRequest(String method, String url, String header, String body, final PipedOutputStream outputStream) {
         method = method.toUpperCase();
         HttpMethod httpMethod;
         if (method.equals("DELETE")) {
@@ -161,20 +162,35 @@ public class CenariusHandleRequest {
         } else {
             httpMethod = HttpMethod.GET;
         }
+
         RequestParams requestParams = new RequestParams(url);
-        if (header != null){
-            
+
+        if (header != null) {
+            Map<String, String> map = JSON.parseObject(header, Map.class);
+            for (String key : map.keySet()) {
+                String value = map.get(key);
+                requestParams.addHeader(key, value);
+            }
+        }
+
+        if (body != null) {
+            Map<String, List<String>> map = QueryUtil.queryMap(body);
+            for (String key : map.keySet()) {
+                String value = map.get(key).get(0);
+                requestParams.addBodyParameter(key, value);
+            }
         }
 
         x.http().request(httpMethod, requestParams, new Callback.CommonCallback<byte[]>() {
             @Override
             public void onSuccess(byte[] result) {
-
+                writeOutputStream(outputStream,result);
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-
+                byte[] result = wrapperErrorThrowable(ex);
+                writeOutputStream(outputStream,result);
             }
 
             @Override
@@ -196,17 +212,15 @@ public class CenariusHandleRequest {
 
             @Override
             public void onSuccess(byte[] result) {
-                try {
-                    outputStream.write(result);
+                if (writeOutputStream(outputStream,result)){
                     InternalCache.getInstance().saveCache(route, result);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
-
+                byte[] result = wrapperErrorThrowable(ex);
+                writeOutputStream(outputStream,result);
             }
 
             @Override
@@ -220,6 +234,18 @@ public class CenariusHandleRequest {
             }
         });
 
+    }
+
+    private static boolean writeOutputStream(PipedOutputStream outputStream, byte[] result) {
+        try {
+            outputStream.write(result);
+            outputStream.flush();
+            outputStream.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static String uriForUrl(String url) {
@@ -280,5 +306,91 @@ public class CenariusHandleRequest {
         String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
         return TextUtils.equals(fileExtension, Constants.EXTENSION_JS);
     }
+
+    private static byte[] wrapperErrorThrowable(Throwable ex) {
+        if (ex == null) {
+            return new byte[0];
+        }
+        return ex.toString().getBytes();
+    }
+
+    private static boolean responseGzip(Map<String, String> headers) {
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            if (entry.getKey()
+                    .toLowerCase()
+                    .equals(Constants.HEADER_CONTENT_ENCODING.toLowerCase())
+                    && entry.getValue()
+                    .toLowerCase()
+                    .equals(Constants.ENCODING_GZIP.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static byte[] parseGzipResponseBody(ResponseBody body) throws IOException {
+        Buffer buffer = new Buffer();
+        GzipSource gzipSource = new GzipSource(body.source());
+        while (gzipSource.read(buffer, Integer.MAX_VALUE) != -1) {
+        }
+        gzipSource.close();
+        return buffer.readByteArray();
+    }
+
+//    private static byte[] wrapperErrorResponse(Exception exception) {
+//        if (null == exception) {
+//            return new byte[0];
+//        }
+//
+//        try {
+//            // generate json response
+//            JSONObject result = new JSONObject();
+//            result.put(Constants.KEY_NETWORK_ERROR, true);
+//            return (Constants.ERROR_PREFIX + result.toString()).getBytes();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return new byte[0];
+//    }
+
+//    private static byte[] wrapperErrorResponse(Response response) {
+//        if (null == response) {
+//            return new byte[0];
+//        }
+//        try {
+//            // read response content
+//            Map<String, String> responseHeaders = new HashMap<>();
+//            for (String field : response.headers()
+//                    .names()) {
+//                responseHeaders.put(field, response.headers()
+//                        .get(field));
+//            }
+//            byte[] responseContents = new byte[0];
+//            if (null != response.body()) {
+//                if (responseGzip(responseHeaders)) {
+//                    responseContents = parseGzipResponseBody(response.body());
+//                } else {
+//                    responseContents = response.body().bytes();
+//                }
+//            }
+//
+//            // generate json response
+//            JSONObject result = new JSONObject();
+//            result.put(Constants.KEY_RESPONSE_CODE, response.code());
+//            String apiError = new String(responseContents, "utf-8");
+//            try {
+//                JSONObject content = new JSONObject(apiError);
+//                result.put(Constants.KEY_RESPONSE_ERROR, content);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                result.put(Constants.KEY_RESPONSE_ERROR, apiError);
+//            }
+//            return (Constants.ERROR_PREFIX + result.toString()).getBytes();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return new byte[0];
+//    }
+
 
 }
