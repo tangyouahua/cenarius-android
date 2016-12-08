@@ -133,7 +133,7 @@ public class OpenApi {
         String appKey = Cenarius.LoginAppKey;
         String appSecret = Cenarius.LoginAppSecret;
         String timestamp = Long.toString((new Date()).getTime());
-        if (token == null || appKey == null || appSecret == null) {
+        if (appKey == null || appSecret == null) {
             return;
         }
 
@@ -164,17 +164,21 @@ public class OpenApi {
             }
         }
 
-        parameters.put("access_token", token);
+        if (token != null) {
+            parameters.put("access_token", token);
+        }
         parameters.put("app_key", appKey);
         parameters.put("timestamp", timestamp);
 
         // 签名
         String sign = md5Signature(parameters, appSecret);
 
-        requestParams.addQueryStringParameter("access_token",token);
-        requestParams.addQueryStringParameter("app_key",appKey);
-        requestParams.addQueryStringParameter("timestamp",timestamp);
-        requestParams.addQueryStringParameter("sign",sign);
+        if (token != null) {
+            requestParams.addQueryStringParameter("access_token", token);
+        }
+        requestParams.addQueryStringParameter("app_key", appKey);
+        requestParams.addQueryStringParameter("timestamp", timestamp);
+        requestParams.addQueryStringParameter("sign", sign);
     }
 
     private static String getKeyValueString(List<KeyValue> list) {
