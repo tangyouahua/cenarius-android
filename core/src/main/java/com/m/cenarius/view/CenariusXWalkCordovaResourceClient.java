@@ -18,8 +18,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
-import okhttp3.OkHttpClient;
-
 public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClient {
 
     public CenariusXWalkCordovaResourceClient(XWalkWebViewEngine parentEngine) {
@@ -48,7 +46,6 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
     // ajax 拦截
     private View mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
-    private OkHttpClient client = new OkHttpClient();
     private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {

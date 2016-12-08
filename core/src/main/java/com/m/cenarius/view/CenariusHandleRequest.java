@@ -30,10 +30,6 @@ import java.io.PipedOutputStream;
 import java.util.List;
 import java.util.Map;
 
-import okhttp3.ResponseBody;
-import okio.Buffer;
-import okio.GzipSource;
-
 /**
  * 处理拦截逻辑
  */
@@ -300,28 +296,28 @@ public class CenariusHandleRequest {
         return ex.toString().getBytes();
     }
 
-    private static boolean responseGzip(Map<String, String> headers) {
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            if (entry.getKey()
-                    .toLowerCase()
-                    .equals(Constants.HEADER_CONTENT_ENCODING.toLowerCase())
-                    && entry.getValue()
-                    .toLowerCase()
-                    .equals(Constants.ENCODING_GZIP.toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    private static boolean responseGzip(Map<String, String> headers) {
+//        for (Map.Entry<String, String> entry : headers.entrySet()) {
+//            if (entry.getKey()
+//                    .toLowerCase()
+//                    .equals(Constants.HEADER_CONTENT_ENCODING.toLowerCase())
+//                    && entry.getValue()
+//                    .toLowerCase()
+//                    .equals(Constants.ENCODING_GZIP.toLowerCase())) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
-    private static byte[] parseGzipResponseBody(ResponseBody body) throws IOException {
-        Buffer buffer = new Buffer();
-        GzipSource gzipSource = new GzipSource(body.source());
-        while (gzipSource.read(buffer, Integer.MAX_VALUE) != -1) {
-        }
-        gzipSource.close();
-        return buffer.readByteArray();
-    }
+//    private static byte[] parseGzipResponseBody(ResponseBody body) throws IOException {
+//        Buffer buffer = new Buffer();
+//        GzipSource gzipSource = new GzipSource(body.source());
+//        while (gzipSource.read(buffer, Integer.MAX_VALUE) != -1) {
+//        }
+//        gzipSource.close();
+//        return buffer.readByteArray();
+//    }
 
 //    private static byte[] wrapperErrorResponse(Exception exception) {
 //        if (null == exception) {
