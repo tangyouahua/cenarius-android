@@ -1,53 +1,35 @@
 package com.m.cenarius.view;
 
-import android.content.Context;
 import android.net.Uri;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 
 import com.alibaba.fastjson.JSON;
-import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
-import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheEntry;
-import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
-import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.MimeUtils;
-import com.m.cenarius.utils.OpenApi;
+import com.m.cenarius.utils.OpenApiTracker;
 import com.m.cenarius.utils.QueryUtil;
-import com.m.cenarius.utils.Utils;
-import com.m.cenarius.utils.io.IOUtils;
 
-import org.apache.http.conn.ConnectTimeoutException;
 import org.xutils.common.Callback;
-import org.xutils.ex.HttpException;
 import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.net.SocketTimeoutException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import okhttp3.FormBody;
-import okhttp3.Request;
-import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import okio.GzipSource;
@@ -135,8 +117,8 @@ public class CenariusHandleRequest {
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-                    // 把带参数的 uri 给到加载
-                    final String url = OpenApi.openApiQuery(query, body);
+//                    // 把带参数的 uri 给到加载
+//                    final String url = OpenApi.openApiQuery(query, body);
                     loadAjaxRequest(ajaxRequestContents.method, requestUrl, ajaxRequestContents.header, ajaxRequestContents.body, out);
                     return xResponse;
                 } catch (IOException e) {
@@ -163,7 +145,11 @@ public class CenariusHandleRequest {
             httpMethod = HttpMethod.GET;
         }
 
-        RequestParams requestParams = new RequestParams(url);
+        // 由于 xutils 不能自动从 url？ 后面取出参数，这里手动取出
+        RequestParams requestParams = new RequestParams(QueryUtil.baseUrlFromUrl(url));
+        QueryUtil.addQueryForRequestParams(requestParams, url);
+        // 设置 OpenApi 拦截器
+        requestParams.setRequestTracker(new OpenApiTracker());
 
         if (header != null) {
             Map<String, String> map = JSON.parseObject(header, Map.class);
@@ -184,13 +170,13 @@ public class CenariusHandleRequest {
         x.http().request(httpMethod, requestParams, new Callback.CommonCallback<byte[]>() {
             @Override
             public void onSuccess(byte[] result) {
-                writeOutputStream(outputStream,result);
+                writeOutputStream(outputStream, result);
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 byte[] result = wrapperErrorThrowable(ex);
-                writeOutputStream(outputStream,result);
+                writeOutputStream(outputStream, result);
             }
 
             @Override
@@ -212,7 +198,7 @@ public class CenariusHandleRequest {
 
             @Override
             public void onSuccess(byte[] result) {
-                if (writeOutputStream(outputStream,result)){
+                if (writeOutputStream(outputStream, result)) {
                     InternalCache.getInstance().saveCache(route, result);
                 }
             }
@@ -220,7 +206,7 @@ public class CenariusHandleRequest {
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 byte[] result = wrapperErrorThrowable(ex);
-                writeOutputStream(outputStream,result);
+                writeOutputStream(outputStream, result);
             }
 
             @Override

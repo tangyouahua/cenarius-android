@@ -1,5 +1,9 @@
 package com.m.cenarius.utils;
 
+import android.net.Uri;
+
+import org.xutils.http.RequestParams;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -13,6 +17,7 @@ import java.util.Map;
  */
 
 public class QueryUtil {
+
     public static String mapToString(Map<String, String> map) {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -75,15 +80,40 @@ public class QueryUtil {
         return map;
     }
 
-    public static String itemForKey(Map<String, List<String>> map, String key)
-    {
+    public static String itemForKey(Map<String, List<String>> map, String key) {
         List<String> array = map.get(key);
-        if (array == null){
+        if (array == null) {
             return null;
         }
         return array.get(0);
     }
 
+    /**
+     * 从 url 中取出 query
+     */
+    public static String queryFromUrl(String url) {
+        return Uri.parse(url).getQuery();
+    }
 
+    /**
+     * 从 url 中取出 ? 之前的路径
+     */
+    public static String baseUrlFromUrl(String url) {
+        if (url.contains("?")) {
+            //如果请求的URL中带有"?",则说明此请求中有带参
+            int index = url.indexOf("?");
+            return url.substring(0, index);//截取到的URL
+        }
+        return url;
+    }
 
+    public static void addQueryForRequestParams(RequestParams requestParams, String url) {
+        String query = queryFromUrl(url);
+        Map<String, List<String>> map = queryMap(query);
+        if (map != null) {
+            for (String key : map.keySet()) {
+                requestParams.addQueryStringParameter(key, itemForKey(map, key));
+            }
+        }
+    }
 }

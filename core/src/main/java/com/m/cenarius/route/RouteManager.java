@@ -208,7 +208,7 @@ public class RouteManager {
      * 刷新路由表
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
-        if (updatingRoutes){
+        if (updatingRoutes) {
             callback.onFail();
             return;
         }
@@ -219,12 +219,10 @@ public class RouteManager {
 
             @Override
             public void onSuccess(String result) {
-                if (TextUtils.isEmpty(result))
-                {
+                if (TextUtils.isEmpty(result)) {
                     callback.onSuccess(null);
                     updatingRoutes = false;
-                }
-                else {
+                } else {
                     //先更新内存中的 routes
                     routes = JSON.parseArray(result, Route.class);
 
@@ -240,8 +238,13 @@ public class RouteManager {
                     HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, true, new RouteRefreshCallback() {
                         @Override
                         public void onSuccess(String data) {
-                            //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
-                            if (cacheRoutes != null){
+
+                            if (cacheRoutes == null) {
+                                //优先下载成功，如果没有 cacheRoutes，立马保存
+                                cacheRoutes = routes;
+                                saveCachedRoutes(data);
+                            } else {
+                                //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
                                 cacheRoutes.addAll(0, downloadFirstRoutes);
                             }
 
@@ -414,23 +417,23 @@ public class RouteManager {
         //找到需要删除的和更新的文件
         ArrayList<Route> changedRoutes = new ArrayList<>();
         ArrayList<Route> deletedRoutes = new ArrayList<>();
-        for (Route oldRoute:oldRoutes) {
+        for (Route oldRoute : oldRoutes) {
             boolean isDeleted = true;
-            for (Route newRoute:newRoutes) {
-                if (oldRoute.uri.equals(newRoute.uri)){
+            for (Route newRoute : newRoutes) {
+                if (oldRoute.uri.equals(newRoute.uri)) {
                     isDeleted = false;
-                    if (!newRoute.fileHash.equals(oldRoute.fileHash)){
+                    if (!newRoute.fileHash.equals(oldRoute.fileHash)) {
                         changedRoutes.add(oldRoute);
                     }
                 }
             }
-            if (isDeleted){
+            if (isDeleted) {
                 deletedRoutes.add(oldRoute);
             }
         }
 
         deletedRoutes.addAll(changedRoutes);
-        for (Route route:deletedRoutes) {
+        for (Route route : deletedRoutes) {
             InternalCache.getInstance().removeCache(route);
         }
     }
@@ -534,7 +537,7 @@ public class RouteManager {
 //        }
 //    }
 
-    public boolean isUpdatingRoutes(){
+    public boolean isUpdatingRoutes() {
         return updatingRoutes;
     }
 

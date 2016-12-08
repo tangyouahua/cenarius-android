@@ -35,7 +35,7 @@ public class MainActivity extends CNRSViewActivity {
     }
 
     public void login(View view){
-        LoginWidget.login("0009704", "Admin123", new LoginWidget.LoginCallback() {
+        LoginWidget.login("337304000", "123444", new LoginWidget.LoginCallback() {
             @Override
             public void onSuccess(String accessToken) {
 
