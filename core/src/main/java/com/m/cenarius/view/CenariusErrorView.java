@@ -10,9 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.m.cenarius.Constants;
 import com.m.cenarius.R;
-import com.m.cenarius.utils.BusProvider;
 
 public class CenariusErrorView extends LinearLayout implements View.OnClickListener{
 
@@ -67,7 +65,7 @@ public class CenariusErrorView extends LinearLayout implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.EVENT_CNRS_RETRY, null));
+//        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.EVENT_CNRS_RETRY, null));
     }
 
 }

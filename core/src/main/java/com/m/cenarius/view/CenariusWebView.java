@@ -11,10 +11,6 @@ import android.widget.ProgressBar;
 
 import com.m.cenarius.Constants;
 import com.m.cenarius.R;
-import com.m.cenarius.utils.BusProvider;
-
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -65,7 +61,6 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
         mCore = (CenariusWebViewCore) findViewById(R.id.webview);
         mErrorView = (CenariusErrorView) findViewById(R.id.cenarius_error_view);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        BusProvider.getInstance().register(this);
     }
 
     /**
@@ -251,34 +246,6 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
 
     public void onPageInvisible() {
         callFunction("Rexxar.Lifecycle.onPageInvisible");
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        BusProvider.getInstance().unregister(this);
-        super.onDetachedFromWindow();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(BusProvider.BusEvent event) {
-        if (event.eventId == Constants.EVENT_CNRS_RETRY) {
-            mErrorView.setVisibility(View.GONE);
-            reload();
-        } else if (event.eventId == Constants.EVENT_CNRS_NETWORK_ERROR) {
-            boolean handled = false;
-            CenariusWebViewCore.RxLoadError error = CenariusWebViewCore.RxLoadError.UNKNOWN;
-            if (null != event.data) {
-                int errorType = event.data.getInt(Constants.KEY_ERROR_TYPE);
-                error = CenariusWebViewCore.RxLoadError.parse(errorType);
-            }
-            if (null != mUriLoadCallback && null != mUriLoadCallback.get()) {
-                handled = mUriLoadCallback.get().onFail(error);
-            }
-            if (!handled) {
-                mProgressBar.setVisibility(View.GONE);
-                mErrorView.show(error.messsage);
-            }
-        }
     }
 
     /**
