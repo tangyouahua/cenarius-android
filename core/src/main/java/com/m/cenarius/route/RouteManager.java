@@ -251,20 +251,26 @@ public class RouteManager {
                             callback.onSuccess(null);
 
                             //然后下载最新 routes 中的资源文件
-                            HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
+                            new Thread(new Runnable() {
                                 @Override
-                                public void onSuccess(String data) {
-                                    // 所有文件更新到最新，保存路由表
-                                    cacheRoutes = routes;
-                                    saveCachedRoutes(data);
-                                    updatingRoutes = false;
-                                }
+                                public void run() {
+                                    HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
+                                        @Override
+                                        public void onSuccess(String data) {
+                                            // 所有文件更新到最新，保存路由表
+                                            cacheRoutes = routes;
+                                            saveCachedRoutes(data);
+                                            updatingRoutes = false;
+                                        }
 
-                                @Override
-                                public void onFail() {
-                                    updatingRoutes = false;
+                                        @Override
+                                        public void onFail() {
+                                            updatingRoutes = false;
+                                        }
+                                    });
                                 }
-                            });
+                            }).start();
+
                         }
 
                         @Override
