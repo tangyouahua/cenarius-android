@@ -128,15 +128,6 @@ public class OpenApi {
             }
         }
 
-        // 系统级参数
-        String token = LoginWidget.getAccessToken();
-        String appKey = Cenarius.LoginAppKey;
-        String appSecret = Cenarius.LoginAppSecret;
-        String timestamp = Long.toString((new Date()).getTime());
-        if (appKey == null || appSecret == null) {
-            return;
-        }
-
         String query = getKeyValueString(queryStringParams);
         String body = getKeyValueString(bodyParams);
 
@@ -164,7 +155,23 @@ public class OpenApi {
             }
         }
 
-        if (token != null) {
+        List<RequestParams.Header> headers = requestParams.getHeaders();
+        boolean withoutAccessToken = false;
+        if (headers != null) {
+            for (RequestParams.Header header : headers) {
+                if (header.key.equals("Without-Access-Token") && header.value.equals("True")) {
+                    withoutAccessToken = true;
+                    break;
+                }
+            }
+        }
+
+        // 加入系统级参数
+        String token = LoginWidget.getAccessToken();
+        String appKey = Cenarius.LoginAppKey;
+        String appSecret = Cenarius.LoginAppSecret;
+        String timestamp = Long.toString((new Date()).getTime());
+        if (token != null && !withoutAccessToken) {
             parameters.put("access_token", token);
         }
         parameters.put("app_key", appKey);
@@ -173,7 +180,7 @@ public class OpenApi {
         // 签名
         String sign = md5Signature(parameters, appSecret);
 
-        if (token != null) {
+        if (token != null && !withoutAccessToken) {
             requestParams.addQueryStringParameter("access_token", token);
         }
         requestParams.addQueryStringParameter("app_key", appKey);
