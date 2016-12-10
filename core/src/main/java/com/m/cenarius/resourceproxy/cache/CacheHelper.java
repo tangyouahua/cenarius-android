@@ -56,7 +56,7 @@ public class CacheHelper {
     private String cacheRouteFileURLForRoute(Route route) {
         //路由表正在更新的时候需要对比 hash
         RouteManager routeManager = RouteManager.getInstance();
-        if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes)
+        if (routeManager.cacheRoutes != routeManager.routes)
         {
             for (Route cacheRoute : routeManager.cacheRoutes) {
                 if (cacheRoute.fileHash.equals(route.fileHash)) {
@@ -74,6 +74,7 @@ public class CacheHelper {
         CacheEntry cacheEntry = mInternalCache.findCache(route);
         if (cacheEntry != null) {
             File cacheFile = mInternalCache.file(route);
+            cacheEntry.close();
             return "file://" + cacheFile.getPath();
         }
         InternalCache.getInstance().removeCache(route);
@@ -83,6 +84,7 @@ public class CacheHelper {
     private String resourceRouteFileURLForRoute(Route route) {
         CacheEntry cacheEntry = mAssetCache.findCache(route);
         if (cacheEntry != null) {
+            cacheEntry.close();
             return mAssetCache.fileUrl(route);
         }
         return null;
