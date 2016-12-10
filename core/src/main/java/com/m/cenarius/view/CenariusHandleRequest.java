@@ -194,9 +194,8 @@ public class CenariusHandleRequest {
 
             @Override
             public void onSuccess(byte[] result) {
-                if (writeOutputStream(outputStream, result)) {
-                    InternalCache.getInstance().saveCache(route, result);
-                }
+                writeOutputStream(outputStream, result);
+                InternalCache.getInstance().saveCache(route, result);
             }
 
             @Override
@@ -218,16 +217,19 @@ public class CenariusHandleRequest {
 
     }
 
-    private static boolean writeOutputStream(PipedOutputStream outputStream, byte[] result) {
+    private static void writeOutputStream(PipedOutputStream outputStream, byte[] result) {
         try {
             outputStream.write(result);
-            outputStream.flush();
-            outputStream.close();
-            return true;
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return false;
     }
 
     public static String uriForUrl(String url) {
