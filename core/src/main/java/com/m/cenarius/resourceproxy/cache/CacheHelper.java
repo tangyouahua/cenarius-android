@@ -56,7 +56,7 @@ public class CacheHelper {
     private String cacheRouteFileURLForRoute(Route route) {
         //路由表正在更新的时候需要对比 hash
         RouteManager routeManager = RouteManager.getInstance();
-        if (routeManager.cacheRoutes != routeManager.routes)
+        if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes)
         {
             for (Route cacheRoute : routeManager.cacheRoutes) {
                 if (cacheRoute.fileHash.equals(route.fileHash)) {
