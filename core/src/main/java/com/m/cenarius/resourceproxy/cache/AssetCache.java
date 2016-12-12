@@ -16,12 +16,28 @@ public class AssetCache implements ICache {
 
     public static final String TAG = "AssetCache";
 
+    private static AssetCache sInstance;
+
     public static AssetCache getInstance(String filePath) {
-        return new AssetCache(filePath);
+        if (null == sInstance) {
+            synchronized (AssetCache.class) {
+                if (null == sInstance) {
+                    sInstance = new AssetCache(filePath);
+                }
+            }
+        }
+        return sInstance;
     }
 
     public static AssetCache getInstance() {
-        return new AssetCache(null);
+        if (null == sInstance) {
+            synchronized (AssetCache.class) {
+                if (null == sInstance) {
+                    sInstance = new AssetCache(null);
+                }
+            }
+        }
+        return sInstance;
     }
 
     public String mFilePath;

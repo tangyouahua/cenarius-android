@@ -18,6 +18,7 @@ import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.MimeUtils;
 import com.m.cenarius.utils.OpenApiTracker;
 import com.m.cenarius.utils.QueryUtil;
+import com.m.cenarius.utils.io.IOUtils;
 
 import org.xutils.common.Callback;
 import org.xutils.http.HttpMethod;
@@ -25,6 +26,7 @@ import org.xutils.http.RequestParams;
 import org.xutils.x;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
@@ -60,36 +62,41 @@ public class CenariusHandleRequest {
             Uri finalUri = Uri.parse(uriString);
             String baseUri = finalUri.getPath();
             RouteManager routeManager = RouteManager.getInstance();
-            CacheEntry cacheEntry;
-            if (routeManager.isInWhiteList(baseUri)) {
-                // 白名单 缓存
-                cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
-                return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
-            } else {
-                Route route = RouteManager.getInstance().findRoute(baseUri);
-                if (route != null) {
-                    // cache 缓存
-                    cacheEntry = InternalCache.getInstance().findCache(route);
-                    if (cacheEntry == null) {
-                        // asset 缓存
-                        cacheEntry = AssetCache.getInstance().findCache(route);
-                    }
-                    if (null != cacheEntry && cacheEntry.isValid()) {
-                        return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
-                    }
 
-                    // 从网络加载
-                    try {
-                        Log.v("cenarius", "start load h5 :" + requestUrl);
-                        final PipedOutputStream out = new PipedOutputStream();
-                        final PipedInputStream in = new PipedInputStream(out);
-                        WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-                        loadResourceRequest(route, out);
-                        return xResponse;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
+            CacheEntry cacheEntry;
+
+            // H5 和 JS 直接返回
+            if (isHtmlResource(requestUrl) || isJsResource(requestUrl)) {
+                if (routeManager.isInWhiteList(baseUri)) {
+                    // 白名单 缓存
+                    cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
+                    return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
+                } else {
+                    Route route = RouteManager.getInstance().findRoute(baseUri);
+                    if (route != null) {
+                        // cache 缓存
+                        cacheEntry = InternalCache.getInstance().findCache(route);
+                        if (cacheEntry == null) {
+                            // asset 缓存
+                            cacheEntry = AssetCache.getInstance().findCache(route);
+                        }
+                        if (null != cacheEntry && cacheEntry.isValid()) {
+                            return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
+                        }
                     }
+                }
+            } else {
+                // 其他资源异步加载
+                try {
+                    Log.v("cenarius", "start load h5 :" + requestUrl);
+                    final PipedOutputStream out = new PipedOutputStream();
+                    final PipedInputStream in = new PipedInputStream(out);
+                    WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+                    loadResourceRequest(baseUri, out);
+                    return xResponse;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
                 }
             }
         }
@@ -187,34 +194,74 @@ public class CenariusHandleRequest {
         });
     }
 
-    private static void loadResourceRequest(final Route route, final PipedOutputStream outputStream) {
-
-        RequestParams requestParams = new RequestParams(route.getHtmlFile());
-        x.http().get(requestParams, new Callback.CommonCallback<byte[]>() {
-
+    private static void loadResourceRequest(final String baseUri, final PipedOutputStream outputStream) {
+        new Thread(new Runnable() {
             @Override
-            public void onSuccess(byte[] result) {
-                writeOutputStream(outputStream, result);
-                InternalCache.getInstance().saveCache(route, result);
+            public void run() {
+                RouteManager routeManager = RouteManager.getInstance();
+                if (routeManager.isInWhiteList(baseUri)) {
+                    // 白名单 缓存
+                    CacheEntry cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
+                    if (null != cacheEntry && cacheEntry.isValid()) {
+                        try {
+                            byte[] result = IOUtils.toByteArray(cacheEntry.inputStream);
+                            writeOutputStream(outputStream, result);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    final Route route = RouteManager.getInstance().findRoute(baseUri);
+                    if (route != null) {
+                        // cache 缓存
+                        CacheEntry cacheEntry = InternalCache.getInstance().findCache(route);
+                        if (cacheEntry == null) {
+                            // asset 缓存
+                            cacheEntry = AssetCache.getInstance().findCache(route);
+                        }
+                        if (null != cacheEntry && cacheEntry.isValid()) {
+                            try {
+                                byte[] result = IOUtils.toByteArray(cacheEntry.inputStream);
+                                writeOutputStream(outputStream, result);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            // 从网络加载
+                            RequestParams requestParams = new RequestParams(route.getHtmlFile());
+                            x.http().get(requestParams, new Callback.CommonCallback<byte[]>() {
+
+                                @Override
+                                public void onSuccess(byte[] result) {
+                                    writeOutputStream(outputStream, result);
+                                    InternalCache.getInstance().saveCache(route, result);
+                                }
+
+                                @Override
+                                public void onError(Throwable ex, boolean isOnCallback) {
+                                    byte[] result = wrapperErrorThrowable(ex);
+                                    writeOutputStream(outputStream, result);
+                                }
+
+                                @Override
+                                public void onCancelled(CancelledException cex) {
+
+                                }
+
+                                @Override
+                                public void onFinished() {
+
+                                }
+                            });
+                        }
+                    }
+                    else {
+                        // uri 不在 route 中
+                        writeOutputStream(outputStream, new byte[0]);
+                    }
+                }
             }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                byte[] result = wrapperErrorThrowable(ex);
-                writeOutputStream(outputStream, result);
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-
-            }
-        });
-
+        }).start();
     }
 
     private static void writeOutputStream(PipedOutputStream outputStream, byte[] result) {

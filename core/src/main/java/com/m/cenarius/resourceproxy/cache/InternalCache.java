@@ -24,8 +24,18 @@ public class InternalCache implements ICache {
 
     public static final String TAG = "InternalCache";
 
+    private static InternalCache sInstance;
+    private File fileDir;
+
     public static InternalCache getInstance() {
-        return new InternalCache();
+        if (null == sInstance) {
+            synchronized (InternalCache.class) {
+                if (null == sInstance) {
+                    sInstance = new InternalCache();
+                }
+            }
+        }
+        return sInstance;
     }
 
     @Override
@@ -124,7 +134,10 @@ public class InternalCache implements ICache {
      * @return 存储目录
      */
     private File fileDir() {
-        return new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
+        if (fileDir == null) {
+            fileDir = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
+        }
+        return fileDir;
     }
 
     /**

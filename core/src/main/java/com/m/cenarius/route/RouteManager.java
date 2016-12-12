@@ -2,6 +2,8 @@ package com.m.cenarius.route;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -39,9 +41,25 @@ public class RouteManager {
         void onFail();
     }
 
-    public interface UriHandleCallback {
-        void onResult(boolean handle);
-    }
+//    public interface UriHandleCallback {
+//        void onResult(boolean handle);
+//    }
+
+//    private final int RouteRefreshCallbackOnSuccess = 1;
+//    private Handler mHandler = new Handler(){
+//        @Override
+//        public void handleMessage(Message msg) {
+//            switch (msg.what) {
+//                case RouteRefreshCallbackOnSuccess: {
+//                    showTextView.setText(editText.getText().toString());
+//                    ShowAnimation();
+//                    break;
+//                }
+//                default:
+//                    break;
+//            }
+//        }
+//    };
 
     private static RouteManager sInstance;
 
@@ -135,26 +153,26 @@ public class RouteManager {
         }
     }
 
-    /**
-     * 以string方式返回Route列表, 如果Route为空则返回null
-     */
-    public String getRoutesString() {
-        if (null == routes) {
-            return null;
-        }
-        return JSON.toJSONString(routes);
-    }
-
-    /**
-     * uri 是否在路由表中
-     */
-    public boolean isInRoutes(String uri) {
-        Route route = findRoute(uri);
-        if (route != null) {
-            return true;
-        }
-        return false;
-    }
+//    /**
+//     * 以string方式返回Route列表, 如果Route为空则返回null
+//     */
+//    public String getRoutesString() {
+//        if (null == routes) {
+//            return null;
+//        }
+//        return JSON.toJSONString(routes);
+//    }
+//
+//    /**
+//     * uri 是否在路由表中
+//     */
+//    public boolean isInRoutes(String uri) {
+//        Route route = findRoute(uri);
+//        if (route != null) {
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      * uri 是否在白名单中
@@ -251,25 +269,20 @@ public class RouteManager {
                             callback.onSuccess(null);
 
                             //然后下载最新 routes 中的资源文件
-                            new Thread(new Runnable() {
+                            HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
                                 @Override
-                                public void run() {
-                                    HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
-                                        @Override
-                                        public void onSuccess(String data) {
-                                            // 所有文件更新到最新，保存路由表
-                                            cacheRoutes = routes;
-                                            saveCachedRoutes(data);
-                                            updatingRoutes = false;
-                                        }
-
-                                        @Override
-                                        public void onFail() {
-                                            updatingRoutes = false;
-                                        }
-                                    });
+                                public void onSuccess(String data) {
+                                    // 所有文件更新到最新，保存路由表
+                                    cacheRoutes = routes;
+                                    saveCachedRoutes(data);
+                                    updatingRoutes = false;
                                 }
-                            }).start();
+
+                                @Override
+                                public void onFail() {
+                                    updatingRoutes = false;
+                                }
+                            });
 
                         }
 
@@ -424,27 +437,27 @@ public class RouteManager {
         return findRoute(uri) != null;
     }
 
-    /**
-     * 如果本地的Routes不能处理uri，会尝试更新Routes来处理
-     *
-     * @return
-     */
-    public void handleRemote(final String uri, final UriHandleCallback callback) {
-        if (null == callback) {
-            return;
-        }
-        RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
-            @Override
-            public void onSuccess(String data) {
-                callback.onResult(handleByNative(uri));
-            }
-
-            @Override
-            public void onFail() {
-                callback.onResult(false);
-            }
-        });
-    }
+//    /**
+//     * 如果本地的Routes不能处理uri，会尝试更新Routes来处理
+//     *
+//     * @return
+//     */
+//    public void handleRemote(final String uri, final UriHandleCallback callback) {
+//        if (null == callback) {
+//            return;
+//        }
+//        RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
+//            @Override
+//            public void onSuccess(String data) {
+//                callback.onResult(handleByNative(uri));
+//            }
+//
+//            @Override
+//            public void onFail() {
+//                callback.onResult(false);
+//            }
+//        });
+//    }
 
 //    @Subscribe(threadMode = ThreadMode.MAIN)
 //    public void onEventMainThread(BusProvider.BusEvent event) {

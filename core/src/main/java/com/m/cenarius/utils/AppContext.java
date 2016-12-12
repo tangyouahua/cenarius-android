@@ -1,5 +1,6 @@
 package com.m.cenarius.utils;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 
@@ -10,11 +11,11 @@ public class AppContext extends ContextWrapper{
 
     private static AppContext sInstance;
 
-    public static void init(Context context) {
-        if (null == context) {
+    public static void init(Application application) {
+        if (null == application) {
             return;
         }
-        sInstance = new AppContext(context.getApplicationContext());
+        sInstance = new AppContext(application.getApplicationContext());
     }
 
     public static AppContext getInstance() {

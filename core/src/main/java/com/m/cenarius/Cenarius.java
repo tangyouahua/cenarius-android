@@ -33,11 +33,11 @@ public class Cenarius {
 //     */
 //    private static OkHttpClient mOkHttpClient;
 
-    public static void initialize(final Application context) {
-        AppContext.init(context);
+    public static void initialize(final Application application) {
+        AppContext.init(application);
         RouteManager.getInstance();
         ResourceProxy.getInstance();
-        x.Ext.init(context);
+        x.Ext.init(application);
     }
 
     public static void setDebug(boolean debug) {
