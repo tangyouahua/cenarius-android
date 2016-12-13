@@ -23,7 +23,7 @@ public class MainApplication extends Application {
 //        Cenarius.setDevelopModeEnable(true);//开启调试模式，会禁用路由表，从SD卡读取。
         // 设置并刷新route
 //        RouteManager.getInstance().setRemoteFolderUrl("http://172.20.70.80/a");
-        RouteManager.getInstance().setRemoteFolderUrl("https://emcsdev.infinitus.com.cn/h5/www");
+        RouteManager.getInstance().setRemoteFolderUrl("http://10.86.21.64:9080/h5/www");
         RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
             @Override
             public void onSuccess(String data) {

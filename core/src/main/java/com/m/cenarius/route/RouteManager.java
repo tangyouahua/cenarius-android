@@ -2,8 +2,6 @@ package com.m.cenarius.route;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -12,9 +10,12 @@ import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.HtmlHelper;
 import com.m.cenarius.utils.AppContext;
+import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.io.FileUtils;
 import com.m.cenarius.utils.io.IOUtils;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
@@ -65,6 +66,7 @@ public class RouteManager {
 
     private RouteManager() {
         loadLocalRoutes();
+        BusProvider.getInstance().register(this);
     }
 
     /**
@@ -76,6 +78,11 @@ public class RouteManager {
      * 缓存目录名字
      */
     private static String sRouteCacheFileName;
+
+    /**
+     * 等待route刷新的callback
+     */
+    private RouteRefreshCallback mRouteRefreshCallback;
 
     /**
      * 最新的Route列表
@@ -226,6 +233,8 @@ public class RouteManager {
      * 刷新路由表
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
+        mRouteRefreshCallback = callback;
+
         if (updatingRoutes) {
             callback.onFail();
             return;
@@ -238,7 +247,7 @@ public class RouteManager {
             @Override
             public void onSuccess(String result) {
                 if (TextUtils.isEmpty(result)) {
-                    callback.onSuccess(null);
+                    callback.onFail();
                     updatingRoutes = false;
                 } else {
                     //先更新内存中的 routes
@@ -266,7 +275,8 @@ public class RouteManager {
                                 cacheRoutes.addAll(0, downloadFirstRoutes);
                             }
 
-                            callback.onSuccess(null);
+//                            callback.onSuccess(null);
+                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
 
                             //然后下载最新 routes 中的资源文件
                             HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
@@ -289,7 +299,8 @@ public class RouteManager {
                         @Override
                         public void onFail() {
                             //优先下载失败
-                            callback.onFail();
+//                            callback.onFail();
+                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
                             updatingRoutes = false;
                         }
                     });
@@ -314,6 +325,15 @@ public class RouteManager {
         });
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRefreshRoute(BusProvider.BusEvent event) {
+        if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_VALID) {
+            mRouteRefreshCallback.onSuccess(null);
+        } else if (event.eventId == Constants.BUS_EVENT_ROUTE_CHECK_INVALID) {
+            mRouteRefreshCallback.onFail();
+        }
+    }
+
     /**
      * 删除缓存的Routes
      */
@@ -333,16 +353,7 @@ public class RouteManager {
      */
     private void saveCachedRoutes(final String content) {
 
-        //删除不用的和更新的文件
         try {
-//            //删除不用的和更新的文件
-//            String oldRoutesString = readCachedRoutes();
-//            if (oldRoutesString != null) {
-//                ArrayList<Route> oldRoutes = GsonHelper.getInstance().fromJson(oldRoutesString, new TypeToken<ArrayList<Route>>() {
-//                }.getType());
-//                deleteOldFiles(routes, oldRoutes);
-//            }
-
             //保存新routes
             File file = getCachedRoutesFile();
             if (file.exists()) {
