@@ -39,37 +39,22 @@ public class HtmlHelper {
 
                 // 文件不存在，下载下来
                 RequestParams requestParams = new RequestParams(route.getHtmlFile());
-                x.http().get(requestParams, new org.xutils.common.Callback.CommonCallback<byte[]>() {
-                    @Override
-                    public void onSuccess(byte[] result) {
-                        // 1. 存储到本地
-                        LogUtils.i(TAG, "download " + route.getHtmlFile());
-                        InternalCache.getInstance().saveCache(route, result);
+                try {
+                    byte[] result = x.http().getSync(requestParams, byte[].class);
+                    // 1. 存储到本地
+                    LogUtils.i(TAG, "download " + route.getHtmlFile());
+                    InternalCache.getInstance().saveCache(route, result);
+                    downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, index + 1);
+                } catch (Throwable throwable) {
+                    LogUtils.i(TAG, "download html failed");
+                    if (shouldDownloadAll) {
+                        callback.onFail();
+                    } else {
+                        // 下载失败，仅删除旧文件
+                        InternalCache.getInstance().removeCache(route);
                         downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, index + 1);
                     }
-
-                    @Override
-                    public void onError(Throwable ex, boolean isOnCallback) {
-                        LogUtils.i(TAG, "download html failed");
-                        if (shouldDownloadAll) {
-                            callback.onFail();
-                        } else {
-                            // 下载失败，仅删除旧文件
-                            InternalCache.getInstance().removeCache(route);
-                            downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, index + 1);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(CancelledException cex) {
-
-                    }
-
-                    @Override
-                    public void onFinished() {
-
-                    }
-                });
+                }
             }
         }).start();
     }

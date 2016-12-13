@@ -68,7 +68,7 @@ public class AssetCache implements ICache {
                             LogUtils.i(TAG, "hit");
                             return cacheEntry;
                         } catch (IOException e) {
-                            e.printStackTrace();
+
                         }
                     }
                 }

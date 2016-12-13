@@ -111,7 +111,6 @@ public class CenariusHandleRequest {
             String query = Uri.parse(requestUrl).getQuery();
             if (query == null || QueryUtil.queryMap(query).get("sign") == null) {
                 // 需要签名
-                String body = ajaxRequestContents.body;
                 String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
                 String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
                 // 从网络加载
@@ -120,8 +119,6 @@ public class CenariusHandleRequest {
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-//                    // 把带参数的 uri 给到加载
-//                    final String url = OpenApi.openApiQuery(query, body);
                     loadAjaxRequest(ajaxRequestContents.method, requestUrl, ajaxRequestContents.header, ajaxRequestContents.body, out);
                     return xResponse;
                 } catch (IOException e) {
@@ -131,65 +128,53 @@ public class CenariusHandleRequest {
             }
         }
 
-
         return null;
     }
 
-    private static void loadAjaxRequest(String method, String url, String header, String body, final PipedOutputStream outputStream) {
-        method = method.toUpperCase();
-        HttpMethod httpMethod;
-        if (method.equals("DELETE")) {
-            httpMethod = HttpMethod.DELETE;
-        } else if (method.equals("POST")) {
-            httpMethod = HttpMethod.POST;
-        } else if (method.equals("PUT")) {
-            httpMethod = HttpMethod.PUT;
-        } else {
-            httpMethod = HttpMethod.GET;
-        }
-
-        // 由于 xutils 不能自动从 url？ 后面取出参数，这里手动取出
-        RequestParams requestParams = new RequestParams(QueryUtil.baseUrlFromUrl(url));
-        QueryUtil.addQueryForRequestParams(requestParams, url);
-        // 设置 OpenApi 拦截器
-        requestParams.setRequestTracker(new OpenApiTracker());
-
-        if (header != null) {
-            Map<String, String> map = JSON.parseObject(header, Map.class);
-            for (String key : map.keySet()) {
-                String value = map.get(key);
-                requestParams.addHeader(key, value);
-            }
-        }
-
-        if (body != null) {
-            Map<String, List<String>> map = QueryUtil.queryMap(body);
-            for (String key : map.keySet()) {
-                String value = map.get(key).get(0);
-                requestParams.addBodyParameter(key, value);
-            }
-        }
-
-        x.http().request(httpMethod, requestParams, new Callback.CommonCallback<byte[]>() {
+    private static void loadAjaxRequest(final String method, final String url, final String header, final String body, final PipedOutputStream outputStream) {
+        new Thread(new Runnable() {
             @Override
-            public void onSuccess(byte[] result) {
-                writeOutputStream(outputStream, result);
-            }
+            public void run() {
+                HttpMethod httpMethod;
+                if (method.toUpperCase().equals("DELETE")) {
+                    httpMethod = HttpMethod.DELETE;
+                } else if (method.toUpperCase().equals("POST")) {
+                    httpMethod = HttpMethod.POST;
+                } else if (method.toUpperCase().equals("PUT")) {
+                    httpMethod = HttpMethod.PUT;
+                } else {
+                    httpMethod = HttpMethod.GET;
+                }
 
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                byte[] result = wrapperErrorThrowable(ex);
-                writeOutputStream(outputStream, result);
-            }
+                // 由于 xutils 不能自动从 url？ 后面取出参数，这里手动取出
+                RequestParams requestParams = new RequestParams(QueryUtil.baseUrlFromUrl(url));
+                QueryUtil.addQueryForRequestParams(requestParams, url);
+                // 设置 OpenApi 拦截器
+                requestParams.setRequestTracker(new OpenApiTracker());
 
-            @Override
-            public void onCancelled(CancelledException cex) {
+                if (header != null) {
+                    Map<String, String> map = JSON.parseObject(header, Map.class);
+                    for (String key : map.keySet()) {
+                        String value = map.get(key);
+                        requestParams.addHeader(key, value);
+                    }
+                }
 
-            }
+                if (body != null) {
+                    Map<String, List<String>> map = QueryUtil.queryMap(body);
+                    for (String key : map.keySet()) {
+                        String value = map.get(key).get(0);
+                        requestParams.addBodyParameter(key, value);
+                    }
+                }
 
-            @Override
-            public void onFinished() {
-
+                try {
+                    byte[] result = x.http().requestSync(httpMethod,requestParams, byte[].class);
+                    writeOutputStream(outputStream, result);
+                } catch (Throwable throwable) {
+                    byte[] result = wrapperErrorThrowable(throwable);
+                    writeOutputStream(outputStream, result);
+                }
             }
         });
     }
@@ -229,33 +214,41 @@ public class CenariusHandleRequest {
                         } else {
                             // 从网络加载
                             RequestParams requestParams = new RequestParams(route.getHtmlFile());
-                            x.http().get(requestParams, new Callback.CommonCallback<byte[]>() {
+                            try {
+                                byte[] result = x.http().getSync(requestParams, byte[].class);
+                                writeOutputStream(outputStream, result);
+                                InternalCache.getInstance().saveCache(route, result);
+                            } catch (Throwable throwable) {
+                                byte[] result = wrapperErrorThrowable(throwable);
+                                writeOutputStream(outputStream, result);
+                            }
 
-                                @Override
-                                public void onSuccess(byte[] result) {
-                                    writeOutputStream(outputStream, result);
-                                    InternalCache.getInstance().saveCache(route, result);
-                                }
-
-                                @Override
-                                public void onError(Throwable ex, boolean isOnCallback) {
-                                    byte[] result = wrapperErrorThrowable(ex);
-                                    writeOutputStream(outputStream, result);
-                                }
-
-                                @Override
-                                public void onCancelled(CancelledException cex) {
-
-                                }
-
-                                @Override
-                                public void onFinished() {
-
-                                }
-                            });
+//                            x.http().get(requestParams, new Callback.CommonCallback<byte[]>() {
+//
+//                                @Override
+//                                public void onSuccess(byte[] result) {
+//                                    writeOutputStream(outputStream, result);
+//                                    InternalCache.getInstance().saveCache(route, result);
+//                                }
+//
+//                                @Override
+//                                public void onError(Throwable ex, boolean isOnCallback) {
+//                                    byte[] result = wrapperErrorThrowable(ex);
+//                                    writeOutputStream(outputStream, result);
+//                                }
+//
+//                                @Override
+//                                public void onCancelled(CancelledException cex) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onFinished() {
+//
+//                                }
+//                            });
                         }
-                    }
-                    else {
+                    } else {
                         // uri 不在 route 中
                         writeOutputStream(outputStream, new byte[0]);
                     }
