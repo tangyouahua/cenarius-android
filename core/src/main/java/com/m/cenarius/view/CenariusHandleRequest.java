@@ -176,7 +176,7 @@ public class CenariusHandleRequest {
                     writeOutputStream(outputStream, result);
                 }
             }
-        });
+        }).start();
     }
 
     private static void loadResourceRequest(final String baseUri, final PipedOutputStream outputStream) {

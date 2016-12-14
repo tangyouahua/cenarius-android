@@ -75,11 +75,6 @@ public class RouteManager {
     private static String sRouteApi;
 
     /**
-     * 缓存目录名字
-     */
-    private static String sRouteCacheFileName;
-
-    /**
      * 等待route刷新的callback
      */
     private RouteRefreshCallback mRouteRefreshCallback;
@@ -259,7 +254,14 @@ public class RouteManager {
                     if (downloadFirstList != null) {
                         for (String uri : downloadFirstList) {
                             Route route = findRoute(uri);
-                            downloadFirstRoutes.add(route);
+                            if (route != null) {
+                                downloadFirstRoutes.add(route);
+                            } else {
+                                //优先下载失败
+                                callback.onFail();
+                                updatingRoutes = false;
+                                return;
+                            }
                         }
                     }
                     HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, true, new RouteRefreshCallback() {
@@ -432,8 +434,7 @@ public class RouteManager {
         if (!fileDir.exists()) {
             fileDir.mkdirs();
         }
-        String cacheFileName = (!TextUtils.isEmpty(sRouteCacheFileName)) ? sRouteCacheFileName : Constants.DEFAULT_DISK_ROUTES_FILE_NAME;
-        return new File(fileDir, cacheFileName);
+        return new File(fileDir, Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
     }
 
     /**

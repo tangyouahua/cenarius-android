@@ -10,6 +10,7 @@ import com.m.cenarius.utils.AppContext;
 import org.xutils.x;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Cenarius {
 
@@ -20,8 +21,8 @@ public class Cenarius {
     public static String LoginService;
     public static String LoginAppKey;
     public static String LoginAppSecret;
-    public static ArrayList<String> routesWhiteList;
-    public static ArrayList<String> downloadFirstList;
+    public static List<String> routesWhiteList = new ArrayList<>();
+    public static List<String> downloadFirstList;
 
     /**
      * 可以额外设置主app的user-agent
@@ -38,6 +39,7 @@ public class Cenarius {
         RouteManager.getInstance();
         ResourceProxy.getInstance();
         x.Ext.init(application);
+        routesWhiteList.add("cenarius");
     }
 
     public static void setDebug(boolean debug) {
@@ -99,14 +101,15 @@ public class Cenarius {
     /**
      设置路由表白名单
      */
-    public static void setRoutesWhiteList(ArrayList<String> list){
+    public static void setRoutesWhiteList(List<String> list){
         routesWhiteList = list;
+        routesWhiteList.add("cenarius");
     }
 
     /**
      设置路由表白名单
      */
-    public static void setDownloadFirstList(ArrayList<String> list){
+    public static void setDownloadFirstList(List<String> list){
         downloadFirstList = list;
     }
 
