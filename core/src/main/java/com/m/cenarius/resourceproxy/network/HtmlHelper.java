@@ -15,7 +15,7 @@ public class HtmlHelper {
 
     public static final String TAG = HtmlHelper.class.getSimpleName();
 
-    public static void downloadFilesWithinRoutes(List<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback) {
+    public static void downloadFilesWithinRoutes(final List<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback) {
         downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, 0);
     }
 
