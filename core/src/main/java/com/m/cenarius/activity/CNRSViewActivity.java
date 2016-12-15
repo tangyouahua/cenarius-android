@@ -200,8 +200,8 @@ public class CNRSViewActivity extends AppCompatActivity {
     private String getSDFile(String uri) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
-            String applicationName = getApplicationName();
-            File fileDir = new File(sdCardDir, applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
+            String packageName = getPackageName();
+            File fileDir = new File(sdCardDir, packageName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
             String url = "file://" + fileDir.getPath();
             return url;
         }
@@ -213,7 +213,7 @@ public class CNRSViewActivity extends AppCompatActivity {
         PackageManager packageManager = null;
         ApplicationInfo applicationInfo;
         try {
-            packageManager = getApplicationContext().getPackageManager();
+            packageManager = getPackageManager();
             applicationInfo = packageManager.getApplicationInfo(getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
             applicationInfo = null;

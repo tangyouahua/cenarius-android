@@ -82,8 +82,8 @@ public class CNRSViewFragment extends Fragment {
     /**
      * 打开轻应用
      *
-     * @param htmlFileURL        网址
-     * @param parameters 参数
+     * @param htmlFileURL 网址
+     * @param parameters  参数
      */
     public void openLightApp(String htmlFileURL, HashMap parameters) {
         Intent intent = new Intent(this.getActivity(), CNRSWebViewActivity.class);
@@ -173,11 +173,9 @@ public class CNRSViewFragment extends Fragment {
     private String cnrs_htmlURL(String uri, String htmlFileURL) {
         if (htmlFileURL == null) {
             //读取sd目录
-            if (Cenarius.DevelopModeEnable)
-            {
+            if (Cenarius.DevelopModeEnable) {
                 return getSDFile(uri);
-            }
-            else {
+            } else {
                 htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
                 if (htmlFileURL == null) {
                     htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
@@ -191,8 +189,8 @@ public class CNRSViewFragment extends Fragment {
     private String getSDFile(String uri) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
-            String applicationName = getApplicationName();
-            File fileDir = new File(sdCardDir, applicationName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
+            String packageName = getActivity().getPackageName();
+            File fileDir = new File(sdCardDir, packageName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
             String url = "file://" + fileDir.getPath();
             return url;
         }
