@@ -26,11 +26,9 @@ public class CNRSCordovaActivity extends CordovaActivity {
         Log.v("cenarius", "loadUri , uri = " + (null != uri ? uri : "null"));
 
         String htmlUrl = htmlURL();
-        if (htmlUrl != null){
+        if (htmlUrl != null) {
             loadUrl(htmlUrl);
-            setCorsswalk();
-        }
-        else {
+        } else {
             Log.v("cenarius", "htmlUrl 为空");
         }
     }
@@ -53,7 +51,7 @@ public class CNRSCordovaActivity extends CordovaActivity {
             webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
         } else {
-            Log.e("cenarius","系统内核出故障，请检查...");
+            Log.e("cenarius", "系统内核出故障，请检查...");
         }
     }
 
