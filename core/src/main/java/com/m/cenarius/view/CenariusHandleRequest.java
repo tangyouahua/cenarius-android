@@ -74,7 +74,9 @@ public class CenariusHandleRequest {
                 if (routeManager.isInWhiteList(baseUri)) {
                     // 白名单 缓存
                     cacheEntry = AssetCache.getInstance().findWhiteListCache(baseUri);
-                    return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
+                    if (null != cacheEntry && cacheEntry.isValid()) {
+                        return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
+                    }
                 } else {
                     Route route = RouteManager.getInstance().findRoute(baseUri);
                     if (route != null) {
@@ -111,7 +113,7 @@ public class CenariusHandleRequest {
     public static WebResourceResponse handleAjaxRequest(String requestUrl, InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
         // header
         Map header = JSON.parseObject(ajaxRequestContents.header, Map.class);
-        if (header.get("X-Requested-With").equals("OpenAPIRequest")) {
+        if ("OpenAPIRequest".equals(header.get("X-Requested-With"))) {
             String query = Uri.parse(requestUrl).getQuery();
             if (query == null || QueryUtil.queryMap(query).get("sign") == null) {
                 // 需要签名

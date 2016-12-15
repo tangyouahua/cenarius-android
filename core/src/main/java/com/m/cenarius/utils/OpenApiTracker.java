@@ -22,7 +22,7 @@ public class OpenApiTracker implements RequestTracker {
         boolean isOpenApi = false;
         if (headers != null) {
             for (RequestParams.Header header : headers) {
-                if (header.key.equals("X-Requested-With") && header.value.equals("OpenAPIRequest")) {
+                if ("X-Requested-With".equals(header.key) && "OpenAPIRequest".equals(header.value)) {
                     isOpenApi = true;
                     break;
                 }

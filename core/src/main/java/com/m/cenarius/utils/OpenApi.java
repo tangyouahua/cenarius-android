@@ -121,7 +121,7 @@ public class OpenApi {
         List<KeyValue> bodyParams = requestParams.getBodyParams();
         if (queryStringParams != null) {
             for (KeyValue keyValue : queryStringParams) {
-                if (keyValue.key.equals("sign")) {
+                if ("sign".equals(keyValue.key)) {
                     // 已经有签名，不需要处理
                     return;
                 }
@@ -159,7 +159,7 @@ public class OpenApi {
         boolean withoutAccessToken = false;
         if (headers != null) {
             for (RequestParams.Header header : headers) {
-                if (header.key.equals("Without-Access-Token") && header.value.equals("True")) {
+                if ("Without-Access-Token".equals(header.key) && "True".equals(header.value)) {
                     withoutAccessToken = true;
                     break;
                 }
