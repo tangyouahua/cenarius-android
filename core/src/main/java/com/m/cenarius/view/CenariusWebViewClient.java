@@ -26,7 +26,6 @@ public class CenariusWebViewClient extends WebViewClient {
     // ajax 拦截
     private WebView mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
-    //    private OkHttpClient client = new OkHttpClient();
     private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {

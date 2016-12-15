@@ -8,6 +8,7 @@ import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 
 import com.alibaba.fastjson.JSON;
+import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheEntry;
@@ -20,13 +21,11 @@ import com.m.cenarius.utils.OpenApiTracker;
 import com.m.cenarius.utils.QueryUtil;
 import com.m.cenarius.utils.io.IOUtils;
 
-import org.xutils.common.Callback;
 import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
@@ -54,6 +53,11 @@ public class CenariusHandleRequest {
     }
 
     public static WebResourceResponse handleResourceRequest(String requestUrl) {
+
+        if (Cenarius.DevelopModeEnable) {
+            return null;
+        }
+
         String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
         String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
         String uriString = uriForUrl(requestUrl);
@@ -169,7 +173,7 @@ public class CenariusHandleRequest {
                 }
 
                 try {
-                    byte[] result = x.http().requestSync(httpMethod,requestParams, byte[].class);
+                    byte[] result = x.http().requestSync(httpMethod, requestParams, byte[].class);
                     writeOutputStream(outputStream, result);
                 } catch (Throwable throwable) {
                     byte[] result = wrapperErrorThrowable(throwable);

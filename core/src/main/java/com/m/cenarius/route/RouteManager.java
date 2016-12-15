@@ -230,6 +230,11 @@ public class RouteManager {
     public void refreshRoute(final RouteRefreshCallback callback) {
         mRouteRefreshCallback = callback;
 
+        if (Cenarius.DevelopModeEnable) {
+            callback.onSuccess(null);
+            return;
+        }
+
         if (updatingRoutes) {
             callback.onFail();
             return;
