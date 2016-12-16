@@ -123,9 +123,7 @@ public class RouteManager {
      * 设置获取routes地址
      */
     private void setRouteApi(String routeUrl) {
-        if (!TextUtils.isEmpty(routeUrl)) {
-            sRouteApi = routeUrl;
-        }
+        sRouteApi = routeUrl;
     }
 
     /**

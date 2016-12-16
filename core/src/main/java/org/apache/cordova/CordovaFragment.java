@@ -18,14 +18,17 @@
 */
 package org.apache.cordova;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,6 +36,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -86,21 +90,22 @@ import java.util.Locale;
 
 //修改：原来继承自 Fragment
 public class CordovaFragment extends CNRSViewFragment {
-    
     public static String TAG = "CordovaFragment";
 
     // The webview for our app
     protected CordovaWebView appView;
 
-
-    public CordovaWebView getAppView() {
-        return appView;
-    }
+    private static int ACTIVITY_STARTING = 0;
+    private static int ACTIVITY_RUNNING = 1;
+    private static int ACTIVITY_EXITING = 2;
 
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
     protected boolean keepRunning = true;
+
+    // Flag to keep immersive mode if set to fullscreen
+    protected boolean immersiveMode;
 
     // Read from config.xml:
     protected CordovaPreferences preferences;
@@ -108,10 +113,18 @@ public class CordovaFragment extends CNRSViewFragment {
     protected ArrayList<PluginEntry> pluginEntries;
     protected CordovaInterfaceImpl cordovaInterface;
 
+
+
+    // fragment 专有
+
     private View contentView;
 
     public View getContentView() {
         return contentView;
+    }
+
+    public CordovaWebView getAppView() {
+        return appView;
     }
 
     public void setContentView(View contentView) {
@@ -123,81 +136,11 @@ public class CordovaFragment extends CNRSViewFragment {
         if(contentView == null){
             init();
         }
+        if(TextUtils.isEmpty(launchUrl)){
+            launchUrl = htmlURL();
+        }
         loadUrl(launchUrl);
         return contentView;
-    }
-
-    /**
-     * Called when the activity is first created.
-     */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
-        LOG.d(TAG, "CordovaActivity.onCreate()");
-
-        // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
-        loadConfig();
-        if(getArguments() != null){
-            launchUrl = getArguments().getString("url");
-        }
-
-        Log.d(TAG, " launchURL : "+launchUrl);
-
-        /**
-        if(!preferences.getBoolean("ShowTitle", false))
-        {
-            getActivity().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        }
-        */
-        if(preferences.getBoolean("SetFullscreen", false))
-        {
-            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
-            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else if (preferences.getBoolean("Fullscreen", false)) {
-            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else {
-            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        }
-
-
-        super.onCreate(savedInstanceState);
-
-        cordovaInterface = makeCordovaInterface();
-        if(savedInstanceState != null)
-        {
-            cordovaInterface.restoreInstanceState(savedInstanceState);
-        }
-    }
-    
-    protected void init() {
-        appView = makeWebView();
-        createViews();
-        if (!appView.isInitialized()) {
-            appView.init(cordovaInterface, pluginEntries, preferences);
-        }
-        cordovaInterface.onCordovaInit(appView.getPluginManager());
-
-        // Wire the hardware volume controls to control media if desired.
-        String volumePref = preferences.getString("DefaultVolumeStream", "");
-        if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
-            getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        }
-
-        ////修改：增加内核判断
-        setCorsswalk();
-
-        //修改：注释掉
-//        if (BuildConfig.DEBUG) {
-//            ((WebView)appView.getView()).setWebViewClient(new SystemWebViewClient((SystemWebViewEngine)appView.getEngine()) {
-//                @Override
-//                public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-//                    handler.proceed();
-//                }
-//            });
-//        }
     }
 
     /**
@@ -222,15 +165,79 @@ public class CordovaFragment extends CNRSViewFragment {
         }
     }
 
+
+
+
+    // 从 Activity 中拷贝
+    /**
+     * Called when the activity is first created.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
+        loadConfig();
+
+        String logLevel = preferences.getString("loglevel", "ERROR");
+        LOG.setLogLevel(logLevel);
+
+        LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
+        LOG.d(TAG, "CordovaActivity.onCreate()");
+
+        if (!preferences.getBoolean("ShowTitle", false)) {
+            getActivity().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        }
+
+        if (preferences.getBoolean("SetFullscreen", false)) {
+            LOG.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
+            preferences.set("Fullscreen", true);
+        }
+        if (preferences.getBoolean("Fullscreen", false)) {
+            // NOTE: use the FullscreenNotImmersive configuration key to set the activity in a REAL full screen
+            // (as was the case in previous cordova versions)
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && !preferences.getBoolean("FullscreenNotImmersive", false)) {
+                immersiveMode = true;
+            } else {
+                getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
+        } else {
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+        }
+
+        super.onCreate(savedInstanceState);
+
+        cordovaInterface = makeCordovaInterface();
+        if (savedInstanceState != null) {
+            cordovaInterface.restoreInstanceState(savedInstanceState);
+        }
+    }
+
+    protected void init() {
+        appView = makeWebView();
+        createViews();
+        if (!appView.isInitialized()) {
+            appView.init(cordovaInterface, pluginEntries, preferences);
+        }
+        cordovaInterface.onCordovaInit(appView.getPluginManager());
+
+        // Wire the hardware volume controls to control media if desired.
+        String volumePref = preferences.getString("DefaultVolumeStream", "");
+        if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
+            getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        }
+    }
+
+
     @SuppressWarnings("deprecation")
     protected void loadConfig() {
         ConfigXmlParser parser = new ConfigXmlParser();
-        parser.parse(this.getActivity());
+        parser.parse(getActivity());
         preferences = parser.getPreferences();
         preferences.setPreferencesBundle(getActivity().getIntent().getExtras());
         launchUrl = parser.getLaunchUrl();
         pluginEntries = parser.getPluginEntries();
-//        Config.parser = parser;
+        Config.parser = parser;
     }
 
     //Suppressing warnings in AndroidStudio
@@ -245,18 +252,22 @@ public class CordovaFragment extends CNRSViewFragment {
         setContentView(appView.getView());
 
         if (preferences.contains("BackgroundColor")) {
-            int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
-            // Background of activity:
-            appView.getView().setBackgroundColor(backgroundColor);
+            try {
+                int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
+                // Background of activity:
+                appView.getView().setBackgroundColor(backgroundColor);
+            }
+            catch (NumberFormatException e){
+                e.printStackTrace();
+            }
         }
 
         appView.getView().requestFocusFromTouch();
-
     }
 
     /**
      * Construct the default web view object.
-     *
+     * <p/>
      * Override this to customize the webview that is used.
      */
     protected CordovaWebView makeWebView() {
@@ -264,7 +275,7 @@ public class CordovaFragment extends CNRSViewFragment {
     }
 
     protected CordovaWebViewEngine makeWebViewEngine() {
-        return CordovaWebViewImpl.createEngine(this.getActivity(), preferences);
+        return CordovaWebViewImpl.createEngine(getActivity(), preferences);
     }
 
     protected CordovaInterfaceImpl makeCordovaInterface() {
@@ -276,6 +287,7 @@ public class CordovaFragment extends CNRSViewFragment {
             }
         };
     }
+
     /**
      * Load the url into the webview.
      */
@@ -291,13 +303,29 @@ public class CordovaFragment extends CNRSViewFragment {
     }
 
     /**
+     * Called when the system is about to start resuming a previous activity.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        LOG.d(TAG, "Paused the activity.");
+
+        if (this.appView != null) {
+            // CB-9382 If there is an activity that started for result and main activity is waiting for callback
+            // result, we shoudn't stop WebView Javascript timers, as activity for result might be using them
+            boolean keepRunning = this.keepRunning || this.cordovaInterface.activityResultCallback != null;
+            this.appView.handlePause(keepRunning);
+        }
+    }
+
+    /**
      * Called when the activity will start interacting with the user.
      */
     @Override
     public void onResume() {
         super.onResume();
         LOG.d(TAG, "Resumed the activity.");
-        
+
         if (this.appView == null) {
             return;
         }
@@ -348,22 +376,23 @@ public class CordovaFragment extends CNRSViewFragment {
             appView.handleDestroy();
         }
     }
-    
+
+    @SuppressLint("NewApi")
     @Override
-    public void startActivityForResult(Intent intent, int requestCode) {
+    public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
         // Capture requestCode here so that it is captured in the setActivityResultCallback() case.
         cordovaInterface.setActivityResultRequestCode(requestCode);
-        super.startActivityForResult(intent, requestCode);
+        super.startActivityForResult(intent, requestCode, options);
     }
 
     /**
      * Called when an activity you launched exits, giving you the requestCode you started it with,
      * the resultCode it returned, and any additional data from it.
      *
-     * @param requestCode       The request code originally supplied to startActivityForResult(),
-     *                          allowing you to identify who this result came from.
-     * @param resultCode        The integer result code returned by the child activity through its setResult().
-     * @param intent            An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
+     * @param requestCode The request code originally supplied to startActivityForResult(),
+     *                    allowing you to identify who this result came from.
+     * @param resultCode  The integer result code returned by the child activity through its setResult().
+     * @param intent      An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
@@ -376,9 +405,9 @@ public class CordovaFragment extends CNRSViewFragment {
      * Report an error to the host application. These errors are unrecoverable (i.e. the main resource is unavailable).
      * The errorCode parameter corresponds to one of the ERROR_* constants.
      *
-     * @param errorCode    The error code corresponding to an ERROR_* value.
-     * @param description  A String describing the error.
-     * @param failingUrl   The url that failed to load.
+     * @param errorCode   The error code corresponding to an ERROR_* value.
+     * @param description A String describing the error.
+     * @param failingUrl  The url that failed to load.
      */
     public void onReceivedError(final int errorCode, final String description, final String failingUrl) {
         final CordovaFragment me = this;
@@ -479,13 +508,12 @@ public class CordovaFragment extends CNRSViewFragment {
                 e.printStackTrace();
             }
         } else if ("exit".equals(id)) {
-//            getActivity().finish();
+            getActivity().finish();
         }
         return null;
     }
 
-    public void onSaveInstanceState(Bundle outState)
-    {
+    public void onSaveInstanceState(Bundle outState) {
         cordovaInterface.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
@@ -493,7 +521,7 @@ public class CordovaFragment extends CNRSViewFragment {
     /**
      * Called by the system when the device configuration changes while your activity is running.
      *
-     * @param newConfig		The new device configuration
+     * @param newConfig The new device configuration
      */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -528,4 +556,5 @@ public class CordovaFragment extends CNRSViewFragment {
         }
 
     }
+
 }

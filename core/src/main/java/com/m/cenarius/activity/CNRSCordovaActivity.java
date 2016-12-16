@@ -21,7 +21,7 @@ public class CNRSCordovaActivity extends CordovaActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.init();
-        setCorsswalk();
+
 
         Log.v("cenarius", "loadUri , uri = " + (null != uri ? uri : "null"));
 
@@ -31,6 +31,8 @@ public class CNRSCordovaActivity extends CordovaActivity {
         } else {
             Log.v("cenarius", "htmlUrl 为空");
         }
+
+        setCorsswalk();
     }
 
     /**
