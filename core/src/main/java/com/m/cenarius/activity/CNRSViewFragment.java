@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,34 +37,38 @@ public class CNRSViewFragment extends Fragment {
     }
 
 
+//    @Override
+//    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+//                             Bundle savedInstanceState) {
+//
+//
+//        View view = super.onCreateView(inflater, container,
+//                savedInstanceState);
+//        return view;
+//    }
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         uri = getArguments().getString("uri");
         htmlFileURL = getArguments().getString("htmlFileURL");
 
-        // Widgets
-        TitleWidget titleWidget = new TitleWidget();
-        AlertDialogWidget alertDialogWidget = new AlertDialogWidget();
-        ToastWidget toastWidget = new ToastWidget();
-//        PullToRefreshWidget pullToRefreshWidget = new PullToRefreshWidget();
-        MenuWidget menuWidget = new MenuWidget();
-        NativeWidget nativeWidget = new NativeWidget();
-        WebWidget webWidget = new WebWidget();
-        CordovaWidget cordovaWidget = new CordovaWidget();
-
-        widgets.add(titleWidget);
-        widgets.add(alertDialogWidget);
-        widgets.add(toastWidget);
-//        widgets.add(pullToRefreshWidget);
-        widgets.add(menuWidget);
-        widgets.add(nativeWidget);
-        widgets.add(webWidget);
-        widgets.add(cordovaWidget);
-
-        View view = super.onCreateView(inflater, container,
-                savedInstanceState);
-        return view;
+//        // Widgets
+//        TitleWidget titleWidget = new TitleWidget();
+//        AlertDialogWidget alertDialogWidget = new AlertDialogWidget();
+//        ToastWidget toastWidget = new ToastWidget();
+//        MenuWidget menuWidget = new MenuWidget();
+//        NativeWidget nativeWidget = new NativeWidget();
+//        WebWidget webWidget = new WebWidget();
+//        CordovaWidget cordovaWidget = new CordovaWidget();
+//
+//        widgets.add(titleWidget);
+//        widgets.add(alertDialogWidget);
+//        widgets.add(toastWidget);
+//        widgets.add(menuWidget);
+//        widgets.add(nativeWidget);
+//        widgets.add(webWidget);
+//        widgets.add(cordovaWidget);
     }
 
     /**
@@ -153,7 +158,7 @@ public class CNRSViewFragment extends Fragment {
      */
     public HashMap cnrsDictionary;
 
-    public ArrayList<CenariusWidget> widgets = new ArrayList<>();
+//    public ArrayList<CenariusWidget> widgets = new ArrayList<>();
 
     private List<MenuItem> mMenuItems = new ArrayList<>();
 
@@ -161,14 +166,14 @@ public class CNRSViewFragment extends Fragment {
         return cnrs_htmlURL(uri, htmlFileURL);
     }
 
-    /**
-     * 添加自定义的 widget
-     */
-    public void addCenariusWidget(CenariusWidget widget) {
-        if (null != widget) {
-            widgets.add(widget);
-        }
-    }
+//    /**
+//     * 添加自定义的 widget
+//     */
+//    public void addCenariusWidget(CenariusWidget widget) {
+//        if (null != widget) {
+//            widgets.add(widget);
+//        }
+//    }
 
     private String cnrs_htmlURL(String uri, String htmlFileURL) {
         if (htmlFileURL == null) {

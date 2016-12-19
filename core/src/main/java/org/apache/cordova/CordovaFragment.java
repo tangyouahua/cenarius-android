@@ -53,6 +53,7 @@ import org.crosswalk.engine.XWalkCordovaView;
 import org.crosswalk.engine.XWalkWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -60,9 +61,9 @@ import java.util.Locale;
  * This class is the main Android activity that represents the Cordova
  * application. It should be extended by the user to load the specific
  * html file that contains the application.
- *
+ * <p>
  * As an example:
- * 
+ * <p>
  * <pre>
  *     package org.apache.cordova.examples;
  *
@@ -79,13 +80,12 @@ import java.util.Locale;
  *       }
  *     }
  * </pre>
- * 
- * Cordova xml configuration: Cordova uses a configuration file at 
+ * <p>
+ * Cordova xml configuration: Cordova uses a configuration file at
  * res/xml/config.xml to specify its settings. See "The config.xml File"
  * guide in cordova-docs at http://cordova.apache.org/docs for the documentation
  * for the configuration. The use of the set*Property() methods is
  * deprecated in favor of the config.xml file.
- *
  */
 
 //修改：原来继承自 Fragment
@@ -114,7 +114,6 @@ public class CordovaFragment extends CNRSViewFragment {
     protected CordovaInterfaceImpl cordovaInterface;
 
 
-
     // fragment 专有
 
     private View contentView;
@@ -133,12 +132,11 @@ public class CordovaFragment extends CNRSViewFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if(contentView == null){
+        if (contentView == null) {
             init();
         }
-        if(TextUtils.isEmpty(launchUrl)){
-            launchUrl = htmlURL();
-        }
+        setCorsswalk();
+        launchUrl = htmlURL();
         loadUrl(launchUrl);
         return contentView;
     }
@@ -166,9 +164,8 @@ public class CordovaFragment extends CNRSViewFragment {
     }
 
 
-
-
     // 从 Activity 中拷贝
+
     /**
      * Called when the activity is first created.
      */
@@ -183,27 +180,27 @@ public class CordovaFragment extends CNRSViewFragment {
         LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
         LOG.d(TAG, "CordovaActivity.onCreate()");
 
-        if (!preferences.getBoolean("ShowTitle", false)) {
-            getActivity().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        }
-
-        if (preferences.getBoolean("SetFullscreen", false)) {
-            LOG.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
-            preferences.set("Fullscreen", true);
-        }
-        if (preferences.getBoolean("Fullscreen", false)) {
-            // NOTE: use the FullscreenNotImmersive configuration key to set the activity in a REAL full screen
-            // (as was the case in previous cordova versions)
-            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && !preferences.getBoolean("FullscreenNotImmersive", false)) {
-                immersiveMode = true;
-            } else {
-                getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
-        } else {
-            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-        }
+//        if (!preferences.getBoolean("ShowTitle", false)) {
+//            getActivity().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+//        }
+//
+//        if (preferences.getBoolean("SetFullscreen", false)) {
+//            LOG.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
+//            preferences.set("Fullscreen", true);
+//        }
+//        if (preferences.getBoolean("Fullscreen", false)) {
+//            // NOTE: use the FullscreenNotImmersive configuration key to set the activity in a REAL full screen
+//            // (as was the case in previous cordova versions)
+//            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && !preferences.getBoolean("FullscreenNotImmersive", false)) {
+//                immersiveMode = true;
+//            } else {
+//                getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//            }
+//        } else {
+//            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+//                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+//        }
 
         super.onCreate(savedInstanceState);
 
@@ -256,8 +253,7 @@ public class CordovaFragment extends CNRSViewFragment {
                 int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
                 // Background of activity:
                 appView.getView().setBackgroundColor(backgroundColor);
-            }
-            catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
         }
@@ -508,7 +504,9 @@ public class CordovaFragment extends CNRSViewFragment {
                 e.printStackTrace();
             }
         } else if ("exit".equals(id)) {
-            getActivity().finish();
+            if (getActivity() != null) {
+                getActivity().finish();
+            }
         }
         return null;
     }
@@ -545,12 +543,9 @@ public class CordovaFragment extends CNRSViewFragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[],
                                            int[] grantResults) {
-        try
-        {
+        try {
             cordovaInterface.onRequestPermissionResult(requestCode, permissions, grantResults);
-        }
-        catch (JSONException e)
-        {
+        } catch (JSONException e) {
             LOG.d(TAG, "JSONException: Parameters fed into the method are not valid");
             e.printStackTrace();
         }

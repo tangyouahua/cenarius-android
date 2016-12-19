@@ -1,5 +1,6 @@
 package com.m.cenarius.example;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -46,5 +47,11 @@ public class MainActivity extends CNRSViewActivity {
 
             }
         });
+    }
+
+    public void openFragment(View view){
+        Intent intent = new Intent(this, FragmentActivity.class);
+        intent.putExtra("uri", "build/index.html");
+        startActivity(intent);
     }
 }

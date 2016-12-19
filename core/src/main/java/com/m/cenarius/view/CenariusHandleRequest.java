@@ -40,11 +40,13 @@ public class CenariusHandleRequest {
     public static boolean handleWidgets(View view, String url, List<CenariusWidget> widgets) {
         if (url.startsWith(Constants.CONTAINER_WIDGET_BASE)) {
             boolean handled;
-            for (CenariusWidget widget : widgets) {
-                if (null != widget) {
-                    handled = widget.handle(view, url);
-                    if (handled) {
-                        return true;
+            if (widgets != null) {
+                for (CenariusWidget widget : widgets) {
+                    if (null != widget) {
+                        handled = widget.handle(view, url);
+                        if (handled) {
+                            return true;
+                        }
                     }
                 }
             }

@@ -56,6 +56,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
     @Override
     public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
         mNextAjaxRequestContents = null;
+        mWidgets = getCenariusWidgets(view);
         if (CenariusHandleRequest.handleWidgets(view, url, mWidgets)) {
             return true;
         }
