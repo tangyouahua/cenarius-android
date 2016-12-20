@@ -51,7 +51,7 @@ public class MainActivity extends CNRSViewActivity {
 
     public void openFragment(View view){
         Intent intent = new Intent(this, FragmentActivity.class);
-        intent.putExtra("uri", "build/index.html");
+        intent.putExtra("htmlFileURL", "https://www.baidu.com/");
         startActivity(intent);
     }
 }

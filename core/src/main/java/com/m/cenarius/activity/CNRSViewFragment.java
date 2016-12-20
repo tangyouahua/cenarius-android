@@ -50,6 +50,7 @@ public class CNRSViewFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         uri = getArguments().getString("uri");
         htmlFileURL = getArguments().getString("htmlFileURL");
 
