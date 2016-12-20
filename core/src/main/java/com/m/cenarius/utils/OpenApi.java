@@ -1,5 +1,7 @@
 package com.m.cenarius.utils;
 
+import android.util.Base64;
+
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.widget.LoginWidget;
 
@@ -155,34 +157,22 @@ public class OpenApi {
             }
         }
 
-        List<RequestParams.Header> headers = requestParams.getHeaders();
-        boolean withoutAccessToken = false;
-        if (headers != null) {
-            for (RequestParams.Header header : headers) {
-                if ("Without-Access-Token".equals(header.key) && "True".equals(header.value)) {
-                    withoutAccessToken = true;
-                    break;
-                }
-            }
-        }
-
         // 加入系统级参数
         String token = LoginWidget.getAccessToken();
         String appKey = Cenarius.LoginAppKey;
         String appSecret = Cenarius.LoginAppSecret;
         String timestamp = Long.toString((new Date()).getTime());
-        if (token != null && !withoutAccessToken) {
-            parameters.put("access_token", token);
+        if (token == null) {
+            token = getAnonymousToken();
         }
+        parameters.put("access_token", token);
         parameters.put("app_key", appKey);
         parameters.put("timestamp", timestamp);
 
         // 签名
         String sign = md5Signature(parameters, appSecret);
 
-        if (token != null && !withoutAccessToken) {
-            requestParams.addQueryStringParameter("access_token", token);
-        }
+        requestParams.addQueryStringParameter("access_token", token);
         requestParams.addQueryStringParameter("app_key", appKey);
         requestParams.addQueryStringParameter("timestamp", timestamp);
         requestParams.addQueryStringParameter("sign", sign);
@@ -202,4 +192,41 @@ public class OpenApi {
         return query;
     }
 
+    private static String getAnonymousToken() {
+        String token = "ANONYMOUS##" + createRandom(false, 8);
+        token = Base64.encodeToString(token.getBytes(), Base64.DEFAULT);
+        return token;
+    }
+
+    /**
+     * 创建指定数量的随机字符串
+     *
+     * @param numberFlag 是否是数字
+     * @param length
+     * @return
+     */
+    private static String createRandom(boolean numberFlag, int length) {
+        String retStr = "";
+        String strTable = numberFlag ? "1234567890" : "1234567890abcdefghijkmnpqrstuvwxyz";
+        int len = strTable.length();
+        boolean bDone = true;
+        do {
+            retStr = "";
+            int count = 0;
+            for (int i = 0; i < length; i++) {
+                double dblR = Math.random() * len;
+                int intR = (int) Math.floor(dblR);
+                char c = strTable.charAt(intR);
+                if (('0' <= c) && (c <= '9')) {
+                    count++;
+                }
+                retStr += strTable.charAt(intR);
+            }
+            if (count >= 2) {
+                bDone = false;
+            }
+        } while (bDone);
+
+        return retStr;
+    }
 }
