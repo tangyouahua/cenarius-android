@@ -53,6 +53,7 @@ import org.crosswalk.engine.XWalkCordovaView;
 import org.crosswalk.engine.XWalkWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xutils.common.util.LogUtil;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -137,7 +138,12 @@ public class CordovaFragment extends CNRSViewFragment {
         }
         setCrosswalk();
         launchUrl = htmlURL();
-        loadUrl(launchUrl);
+        if (TextUtils.isEmpty(launchUrl)) {
+            LogUtil.e("launchUrl can not be null");
+        } else {
+            loadUrl(launchUrl);
+        }
+
         return contentView;
     }
 
