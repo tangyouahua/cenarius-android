@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import com.m.cenarius.resourceproxy.ResourceProxy;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
+import com.m.cenarius.utils.XutilsHttpManager;
 
 import org.xutils.x;
 
@@ -38,6 +39,7 @@ public class Cenarius {
         RouteManager.getInstance();
         ResourceProxy.getInstance();
         x.Ext.init(application);
+        XutilsHttpManager.registerInstance();
     }
 
     public static void setDebug(boolean debug) {

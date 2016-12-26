@@ -74,8 +74,8 @@ public class MainActivity extends CNRSViewActivity {
                 // 业务代码
                 requestParams.addHeader("X-Requested-With","OpenAPIRequest");
 
-                // 最后设置 OpenApi 拦截器
-                XutilsInterceptor.openApiForRequestParams(requestParams);
+//                // 最后设置 OpenApi 拦截器
+//                XutilsInterceptor.openApiForRequestParams(requestParams);
 
 
                 try {

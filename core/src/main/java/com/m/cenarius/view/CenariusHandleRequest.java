@@ -174,8 +174,8 @@ public class CenariusHandleRequest {
                     }
                 }
 
-                // 最后设置 OpenApi 拦截器
-                XutilsInterceptor.openApiForRequestParams(requestParams);
+//                // 最后设置 OpenApi 拦截器
+//                XutilsInterceptor.openApiForRequestParams(requestParams);
 
                 try {
                     byte[] result = x.http().requestSync(httpMethod, requestParams, byte[].class);
