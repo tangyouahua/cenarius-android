@@ -124,7 +124,7 @@ public class LoginWidget implements CenariusWidget {
     /**
      * 登出
      */
-    public static void logout(final Context context) {
+    public static void logout() {
         deleteAccessToken();
     }
 

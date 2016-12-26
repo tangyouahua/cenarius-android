@@ -20,7 +20,7 @@ public class CenariusWebViewClient extends WebViewClient {
     public CenariusWebViewClient(WebView webView) {
         mWebView = webView;
         mJSIntercept = new InterceptJavascriptInterface(this);
-        mWebView.addJavascriptInterface(mJSIntercept, "interception");
+        mWebView.addJavascriptInterface(mJSIntercept, "cenariusInterception");
     }
 
     // ajax 拦截

@@ -9,7 +9,7 @@ XMLHttpRequest.prototype.open = function (method, url, async, user, password) {
 
 XMLHttpRequest.prototype.reallySend = XMLHttpRequest.prototype.send;
 XMLHttpRequest.prototype.send = function (body) {
-    window.interception.customAjax(lastXmlhttpRequestPrototypeMethod, JSON.stringify(lastXmlhttpRequestPrototypeHeader), body);
+    window.cenariusInterception.customAjax(lastXmlhttpRequestPrototypeMethod, JSON.stringify(lastXmlhttpRequestPrototypeHeader), body);
     lastXmlhttpRequestPrototypeMethod = null;
     lastXmlhttpRequestPrototypeHeader = null;
     this.reallySend(body);

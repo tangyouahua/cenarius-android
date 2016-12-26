@@ -70,4 +70,17 @@
         android:text="打开Fragment"
         android:layout_marginTop="20dp"/>
 
+    <TextView
+        android:id="@+id/openapi"
+        android:onClick="openApi"
+        android:layout_width="150dp"
+        android:layout_height="45dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/holo_green_dark"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:text="发起openapi请求"
+        android:layout_marginTop="20dp"/>
+
 </LinearLayout>

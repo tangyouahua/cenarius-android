@@ -17,8 +17,8 @@ import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.MimeUtils;
-import com.m.cenarius.utils.OpenApiTracker;
 import com.m.cenarius.utils.QueryUtil;
+import com.m.cenarius.utils.XutilsInterceptor;
 import com.m.cenarius.utils.io.IOUtils;
 
 import org.xutils.http.HttpMethod;
@@ -157,9 +157,8 @@ public class CenariusHandleRequest {
                 // 由于 xutils 不能自动从 url？ 后面取出参数，这里手动取出
                 RequestParams requestParams = new RequestParams(QueryUtil.baseUrlFromUrl(url));
                 QueryUtil.addQueryForRequestParams(requestParams, url);
-                // 设置 OpenApi 拦截器
-                requestParams.setRequestTracker(new OpenApiTracker());
 
+                // 业务代码
                 if (header != null) {
                     Map<String, String> map = JSON.parseObject(header, Map.class);
                     for (String key : map.keySet()) {
@@ -175,6 +174,9 @@ public class CenariusHandleRequest {
                         requestParams.addBodyParameter(key, value);
                     }
                 }
+
+                // 最后设置 OpenApi 拦截器
+                XutilsInterceptor.openApiForRequestParams(requestParams);
 
                 try {
                     byte[] result = x.http().requestSync(httpMethod, requestParams, byte[].class);

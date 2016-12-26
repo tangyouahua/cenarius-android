@@ -25,9 +25,9 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
         mWebView = parentEngine.getView();
         mJSIntercept = new InterceptJavascriptInterface(this);
         if (mWebView instanceof WebView) {
-            ((WebView) mWebView).addJavascriptInterface(mJSIntercept, "interception");
+            ((WebView) mWebView).addJavascriptInterface(mJSIntercept, "cenariusInterception");
         } else if (mWebView instanceof XWalkView) {
-            ((XWalkView) mWebView).addJavascriptInterface(mJSIntercept, "interception");
+            ((XWalkView) mWebView).addJavascriptInterface(mJSIntercept, "cenariusInterception");
         }
     }
 
