@@ -8,6 +8,8 @@ import com.m.cenarius.widget.LoginWidget;
 import org.xutils.common.util.KeyValue;
 import org.xutils.http.RequestParams;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.Date;
@@ -189,11 +191,21 @@ public class OpenApi {
                 }
             }
         }
+
+        if (query != null) {
+            try {
+                // 原 query, 需要 decode
+                query = URLDecoder.decode(query, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+
         return query;
     }
 
     /**
-     获取匿名token
+     * 获取匿名token
      */
     private static String getAnonymousToken() {
         String token = "ANONYMOUS##" + createRandom(false, 8);

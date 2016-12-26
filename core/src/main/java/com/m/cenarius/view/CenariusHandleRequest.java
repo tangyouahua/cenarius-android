@@ -117,7 +117,7 @@ public class CenariusHandleRequest {
         Map header = JSON.parseObject(ajaxRequestContents.header, Map.class);
         if ("OpenAPIRequest".equals(header.get("X-Requested-With"))) {
             String query = Uri.parse(requestUrl).getQuery();
-            if (query == null || QueryUtil.queryMap(query).get("sign") == null) {
+            if (TextUtils.isEmpty(query) || QueryUtil.queryMap(query).get("sign") == null) {
                 // 需要签名
                 String fileExtension = MimeTypeMap.getFileExtensionFromUrl(requestUrl);
                 String mimeType = MimeUtils.guessMimeTypeFromExtension(fileExtension);
@@ -158,8 +158,7 @@ public class CenariusHandleRequest {
                 RequestParams requestParams = new RequestParams(QueryUtil.baseUrlFromUrl(url));
                 QueryUtil.addQueryForRequestParams(requestParams, url);
 
-                // 业务代码
-                if (header != null) {
+                 if (header != null) {
                     Map<String, String> map = JSON.parseObject(header, Map.class);
                     for (String key : map.keySet()) {
                         String value = map.get(key);
