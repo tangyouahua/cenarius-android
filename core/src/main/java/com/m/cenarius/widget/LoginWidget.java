@@ -53,8 +53,13 @@ public class LoginWidget implements CenariusWidget {
 
     /**
      * 登录
+     * @param username 用户名
+     * @param password 密码
+     * @param captchaId 获取验证码提交的随机码
+     * @param captcha 验证码
+     * @param callback  登录后将执行这个回调
      */
-    public static void login(String username, String password, final LoginCallback callback) {
+    public static void login(String username, String password, String captchaId, String captcha, final LoginCallback callback) {
         String service = Cenarius.LoginService;
         String appKey = Cenarius.LoginAppKey;
         String appSecret = Cenarius.LoginAppSecret;
@@ -72,6 +77,8 @@ public class LoginWidget implements CenariusWidget {
         params.put("password", password);
         params.put("terminalType", "mobile");
         params.put("rememberMe", "true");
+        params.put("captchaId", captchaId);
+        params.put("captcha", captcha);
         String sign = OpenApi.md5Signature(params, appSecret);
         params.put("sign", sign);
 
