@@ -101,6 +101,9 @@ public class QueryUtil {
      * 从 url 中取出 ? 之前的路径
      */
     public static String baseUrlFromUrl(String url) {
+        if (url == null) {
+            return null;
+        }
         if (url.contains("?")) {
             //如果请求的URL中带有"?",则说明此请求中有带参
             int index = url.indexOf("?");
