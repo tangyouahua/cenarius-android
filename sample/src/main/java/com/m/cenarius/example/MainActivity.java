@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.utils.QueryUtil;
 import com.m.cenarius.utils.XutilsInterceptor;
@@ -13,6 +14,9 @@ import com.m.cenarius.widget.LoginWidget;
 import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends CNRSViewActivity {
 
@@ -41,19 +45,19 @@ public class MainActivity extends CNRSViewActivity {
         openCordovaPage("sign/sign.html", null);
     }
 
-    public void login(View view){
-        LoginWidget.login("337304000", "123444", new LoginWidget.LoginCallback() {
-            @Override
-            public void onSuccess(String accessToken) {
-
-            }
-
-            @Override
-            public void onFail(String errorMessage) {
-
-            }
-        });
-    }
+//    public void login(View view){
+//        LoginWidget.login("337304000", "123444", new LoginWidget.LoginCallback() {
+//            @Override
+//            public void onSuccess(String accessToken) {
+//
+//            }
+//
+//            @Override
+//            public void onFail(String errorMessage) {
+//
+//            }
+//        });
+//    }
 
     public void openFragment(View view){
         Intent intent = new Intent(this, FragmentActivity.class);
@@ -73,13 +77,18 @@ public class MainActivity extends CNRSViewActivity {
 
                 // 业务代码
                 requestParams.addHeader("X-Requested-With","OpenAPIRequest");
+                requestParams.addBodyParameter("BodyParameter","BodyParameter");
+                requestParams.setAsJsonContent(true);
+                Map m = new HashMap();
+                m.put("JSON","JSON");
+                requestParams.setBodyContent(JSON.toJSONString(m));
 
 //                // 最后设置 OpenApi 拦截器
 //                XutilsInterceptor.openApiForRequestParams(requestParams);
 
 
                 try {
-                    x.http().requestSync(HttpMethod.GET, requestParams, byte[].class);
+                    x.http().requestSync(HttpMethod.POST, requestParams, byte[].class);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }

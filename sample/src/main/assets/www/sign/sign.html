@@ -10,17 +10,20 @@
 <body>
 	<script src="../jquery.js"></script>
 	<script>
-        $.ajax({
-            url: 'https://gbss-dev.infinitus.com.cn/gbss-bupm/front/gbss-mobile-portal/newPortal/getLoginInfo',
-            type: 'GET',
-            headers: {
-                "X-Requested-With": "OpenAPIRequest"
-            },
-            success: function(data) {
-                console.log(data)
-            }
-        })
-    </script>
+            $.ajax({
+                   url: 'http://10.86.21.66:6089/api/gbss/dealer/promotions/join',
+                   type: "POST",     //提交方式
+                 	dataType: "json",     //类型
+                 	contentType: "application/json; charset=utf-8",
+                   headers: {
+                   "X-Requested-With": "OpenAPIRequest"
+                   },
+                   data: JSON.stringify({"A":["1","2"]}),
+                   success: function(data) {
+                   console.log(data)
+                   }
+                   })
+            </script>
 </body>
 
 </html>

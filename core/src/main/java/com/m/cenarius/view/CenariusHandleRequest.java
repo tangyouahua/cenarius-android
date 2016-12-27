@@ -158,19 +158,28 @@ public class CenariusHandleRequest {
                 RequestParams requestParams = new RequestParams(QueryUtil.baseUrlFromUrl(url));
                 QueryUtil.addQueryForRequestParams(requestParams, url);
 
-                 if (header != null) {
+                boolean isJson = false;
+                if (header != null) {
                     Map<String, String> map = JSON.parseObject(header, Map.class);
                     for (String key : map.keySet()) {
                         String value = map.get(key);
                         requestParams.addHeader(key, value);
+                        if ("Content-Type".equals(key) && value != null && value.contains("application/json")) {
+                            isJson = true;
+                        }
                     }
                 }
 
                 if (body != null) {
-                    Map<String, List<String>> map = QueryUtil.queryMap(body);
-                    for (String key : map.keySet()) {
-                        String value = map.get(key).get(0);
-                        requestParams.addBodyParameter(key, value);
+                    if (isJson) {
+                        requestParams.setAsJsonContent(true);
+                        requestParams.setBodyContent(body);
+                    } else {
+                        Map<String, List<String>> map = QueryUtil.queryMap(body);
+                        for (String key : map.keySet()) {
+                            String value = map.get(key).get(0);
+                            requestParams.addBodyParameter(key, value);
+                        }
                     }
                 }
 
