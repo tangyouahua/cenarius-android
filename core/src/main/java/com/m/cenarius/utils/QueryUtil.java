@@ -94,6 +94,9 @@ public class QueryUtil {
      * 从 url 中取出 query
      */
     public static String queryFromUrl(String url) {
+        if (url == null) {
+            return null;
+        }
         return Uri.parse(url).getQuery();
     }
 
