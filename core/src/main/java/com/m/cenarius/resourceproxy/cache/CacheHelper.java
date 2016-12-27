@@ -122,13 +122,8 @@ public class CacheHelper {
      * 查找 uri 对应的服务器上 html 文件。
      */
     public String remoteHtmlURLForURI(String uri) {
-        Route route = RouteManager.getInstance().findRoute(uri);
-        if (null == route) {
-            LogUtils.i(TAG, "route not found");
-        } else {
-            return finalUrl(route.getHtmlFile(), Uri.parse(uri));
-        }
-        return null;
+        String remoteHTML = RouteManager.getInstance().remoteFolderUrl + "/" + uri;
+        return remoteHTML;
     }
 
 }
