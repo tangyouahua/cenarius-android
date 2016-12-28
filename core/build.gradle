@@ -25,7 +25,7 @@ android {
 }
 
 dependencies {
-    compile 'org.xwalk:xwalk_core_library:22.52.561.4'
+    compile 'org.xwalk:xwalk_core_library:20.50.533.12'
     compile 'com.android.support:support-v4:25.0.1'
     compile 'com.android.support:appcompat-v7:25.0.1'
     compile 'com.mcxiaoke.next:task:1.4.2'
