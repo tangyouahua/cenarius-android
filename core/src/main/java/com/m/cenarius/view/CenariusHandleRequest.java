@@ -115,7 +115,7 @@ public class CenariusHandleRequest {
     public static WebResourceResponse handleAjaxRequest(String requestUrl, InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
         // header
         Map header = JSON.parseObject(ajaxRequestContents.header, Map.class);
-        if ("OpenAPIRequest".equals(header.get("X-Requested-With"))) {
+        if (header != null && "OpenAPIRequest".equals(header.get("X-Requested-With"))) {
             String query = Uri.parse(requestUrl).getQuery();
             if (TextUtils.isEmpty(query) || QueryUtil.queryMap(query).get("sign") == null) {
                 // 需要签名
