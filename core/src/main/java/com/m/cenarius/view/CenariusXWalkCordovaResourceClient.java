@@ -4,6 +4,7 @@ import android.view.View;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.utils.Utils;
@@ -47,6 +48,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
     private View mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
     private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
+    private boolean isNextAjaxRequest = false;
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
         mNextAjaxRequestContents = ajaxRequestContents;
@@ -98,9 +100,10 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
      */
     private WebResourceResponse handleResourceRequest(XWalkView webView, String requestUrl) {
         WebResourceResponse webResourceResponse;
-        if (mNextAjaxRequestContents != null) {
+        if (isNextAjaxRequest) {
             // ajax 请求
-            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents);
+            isNextAjaxRequest = false;
+            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
         } else {
             // h5 请求
             webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);

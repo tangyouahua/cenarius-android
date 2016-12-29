@@ -5,11 +5,13 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CenariusWebViewClient extends WebViewClient {
 
@@ -27,9 +29,11 @@ public class CenariusWebViewClient extends WebViewClient {
     private WebView mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
     private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
+    private boolean isNextAjaxRequest = false;
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
         mNextAjaxRequestContents = ajaxRequestContents;
+        isNextAjaxRequest = true;
     }
 
 
@@ -100,9 +104,10 @@ public class CenariusWebViewClient extends WebViewClient {
      */
     private WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
         WebResourceResponse webResourceResponse;
-        if (mNextAjaxRequestContents != null) {
+        if (isNextAjaxRequest) {
             // ajax 请求
-            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents);
+            isNextAjaxRequest = false;
+            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
         } else {
             // h5 请求
             webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);

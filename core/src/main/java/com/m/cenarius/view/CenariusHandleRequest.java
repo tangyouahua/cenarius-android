@@ -112,9 +112,8 @@ public class CenariusHandleRequest {
         return null;
     }
 
-    public static WebResourceResponse handleAjaxRequest(String requestUrl, InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
+    public static WebResourceResponse handleAjaxRequest(final String requestUrl, final String method, final Map<String, String> header, final String body) {
         // header
-        Map header = JSON.parseObject(ajaxRequestContents.header, Map.class);
         if (header != null && "OpenAPIRequest".equals(header.get("X-Requested-With"))) {
             String query = Uri.parse(requestUrl).getQuery();
             if (TextUtils.isEmpty(query) || QueryUtil.queryMap(query).get("sign") == null) {
@@ -127,7 +126,7 @@ public class CenariusHandleRequest {
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-                    loadAjaxRequest(ajaxRequestContents.method, requestUrl, ajaxRequestContents.header, ajaxRequestContents.body, out);
+                    loadAjaxRequest(method, requestUrl, header, body, out);
                     return xResponse;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -139,7 +138,7 @@ public class CenariusHandleRequest {
         return null;
     }
 
-    private static void loadAjaxRequest(final String method, final String url, final String header, final String body, final PipedOutputStream outputStream) {
+    private static void loadAjaxRequest(final String method, final String url, final Map<String, String> header, final String body, final PipedOutputStream outputStream) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -160,9 +159,8 @@ public class CenariusHandleRequest {
 
                 boolean isJson = false;
                 if (header != null) {
-                    Map<String, String> map = JSON.parseObject(header, Map.class);
-                    for (String key : map.keySet()) {
-                        String value = map.get(key);
+                    for (String key : header.keySet()) {
+                        String value = header.get(key);
                         requestParams.addHeader(key, value);
                         if ("Content-Type".equals(key) && value != null && value.contains("application/json")) {
                             isJson = true;
