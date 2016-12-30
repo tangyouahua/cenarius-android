@@ -80,7 +80,7 @@ public class CenariusHandleRequest {
                         return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
                     }
                 } else {
-                    Route route = RouteManager.getInstance().findRoute(baseUri);
+                    Route route = routeManager.findRoute(baseUri);
                     if (route != null) {
                         // cache 缓存
                         cacheEntry = InternalCache.getInstance().findCache(route);
@@ -92,9 +92,22 @@ public class CenariusHandleRequest {
                             return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
                         }
                     }
+                    // H5 和 JS 需要从网络加载
+                    try {
+                        Log.v("cenarius", "start load h5 :" + requestUrl);
+                        final PipedOutputStream out = new PipedOutputStream();
+                        final PipedInputStream in = new PipedInputStream(out);
+                        WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+                        loadH5AndJsRequest(route, out);
+                        return xResponse;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
+                    }
                 }
-            } else {
-                // 其他资源异步加载
+            }
+            else {
+                //  以及 其他资源，异步加载
                 try {
                     Log.v("cenarius", "start load h5 :" + requestUrl);
                     final PipedOutputStream out = new PipedOutputStream();
@@ -195,6 +208,15 @@ public class CenariusHandleRequest {
         }).start();
     }
 
+    private static void loadH5AndJsRequest(final Route route, final PipedOutputStream outputStream) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                loadRequest(route, outputStream);
+            }
+        }).start();
+    }
+
     private static void loadResourceRequest(final String baseUri, final PipedOutputStream outputStream) {
         new Thread(new Runnable() {
             @Override
@@ -229,40 +251,7 @@ public class CenariusHandleRequest {
                             }
                         } else {
                             // 从网络加载
-                            RequestParams requestParams = new RequestParams(route.getHtmlFile());
-                            try {
-                                byte[] result = x.http().getSync(requestParams, byte[].class);
-                                writeOutputStream(outputStream, result);
-                                InternalCache.getInstance().saveCache(route, result);
-                            } catch (Throwable throwable) {
-                                byte[] result = wrapperErrorThrowable(throwable);
-                                writeOutputStream(outputStream, result);
-                            }
-
-//                            x.http().get(requestParams, new Callback.CommonCallback<byte[]>() {
-//
-//                                @Override
-//                                public void onSuccess(byte[] result) {
-//                                    writeOutputStream(outputStream, result);
-//                                    InternalCache.getInstance().saveCache(route, result);
-//                                }
-//
-//                                @Override
-//                                public void onError(Throwable ex, boolean isOnCallback) {
-//                                    byte[] result = wrapperErrorThrowable(ex);
-//                                    writeOutputStream(outputStream, result);
-//                                }
-//
-//                                @Override
-//                                public void onCancelled(CancelledException cex) {
-//
-//                                }
-//
-//                                @Override
-//                                public void onFinished() {
-//
-//                                }
-//                            });
+                            loadRequest(route, outputStream);
                         }
                     } else {
                         // uri 不在 route 中
@@ -271,6 +260,18 @@ public class CenariusHandleRequest {
                 }
             }
         }).start();
+    }
+
+    private static void loadRequest(final Route route, final PipedOutputStream outputStream){
+        RequestParams requestParams = new RequestParams(route.getHtmlFile());
+        try {
+            byte[] result = x.http().getSync(requestParams, byte[].class);
+            writeOutputStream(outputStream, result);
+            InternalCache.getInstance().saveCache(route, result);
+        } catch (Throwable throwable) {
+            byte[] result = wrapperErrorThrowable(throwable);
+            writeOutputStream(outputStream, result);
+        }
     }
 
     private static void writeOutputStream(PipedOutputStream outputStream, byte[] result) {
