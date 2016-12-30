@@ -52,6 +52,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
         mNextAjaxRequestContents = ajaxRequestContents;
+        isNextAjaxRequest = true;
     }
 
 
