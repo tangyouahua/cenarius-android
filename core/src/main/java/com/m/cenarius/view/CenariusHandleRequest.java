@@ -16,6 +16,7 @@ import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
+import com.m.cenarius.utils.DownloadManager;
 import com.m.cenarius.utils.MimeUtils;
 import com.m.cenarius.utils.QueryUtil;
 import com.m.cenarius.utils.XutilsInterceptor;
@@ -92,18 +93,19 @@ public class CenariusHandleRequest {
                             return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
                         }
                     }
-                    // H5 和 JS 需要从网络加载
-                    try {
-                        Log.v("cenarius", "start load h5 :" + requestUrl);
-                        final PipedOutputStream out = new PipedOutputStream();
-                        final PipedInputStream in = new PipedInputStream(out);
-                        WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-                        loadH5AndJsRequest(route, out);
-                        return xResponse;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
-                    }
+//                    // H5 和 JS 需要从网络加载
+//                    try {
+//                        Log.v("cenarius", "start load h5 :" + requestUrl);
+//                        final PipedOutputStream out = new PipedOutputStream();
+//                        final PipedInputStream in = new PipedInputStream(out);
+//                        WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+////                        loadH5AndJsRequest(route, out);
+//                        downloadManager.startDownloadH5AndJs(route, out);
+//                        return xResponse;
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                        Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
+//                    }
                 }
             }
             else {
@@ -208,14 +210,14 @@ public class CenariusHandleRequest {
         }).start();
     }
 
-    private static void loadH5AndJsRequest(final Route route, final PipedOutputStream outputStream) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                loadRequest(route, outputStream);
-            }
-        }).start();
-    }
+//    private static void loadH5AndJsRequest(final Route route, final PipedOutputStream outputStream) {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                loadRequest(route, outputStream);
+//            }
+//        }).start();
+//    }
 
     private static void loadResourceRequest(final String baseUri, final PipedOutputStream outputStream) {
         new Thread(new Runnable() {
@@ -274,7 +276,7 @@ public class CenariusHandleRequest {
         }
     }
 
-    private static void writeOutputStream(PipedOutputStream outputStream, byte[] result) {
+    public static void writeOutputStream(PipedOutputStream outputStream, byte[] result) {
         try {
             outputStream.write(result);
         } catch (IOException e) {
@@ -348,7 +350,7 @@ public class CenariusHandleRequest {
         return TextUtils.equals(fileExtension, Constants.EXTENSION_JS);
     }
 
-    private static byte[] wrapperErrorThrowable(Throwable ex) {
+    public static byte[] wrapperErrorThrowable(Throwable ex) {
         if (ex == null) {
             return new byte[0];
         }

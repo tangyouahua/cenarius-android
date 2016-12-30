@@ -7,6 +7,7 @@ import android.webkit.WebView;
 import com.alibaba.fastjson.JSON;
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
+import com.m.cenarius.utils.DownloadManager;
 import com.m.cenarius.utils.Utils;
 
 import org.crosswalk.engine.XWalkCordovaResourceClient;
@@ -49,6 +50,7 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
     private InterceptJavascriptInterface mJSIntercept = null;
     private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
     private boolean isNextAjaxRequest = false;
+    private DownloadManager downloadManager = new DownloadManager();
 
     public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
         mNextAjaxRequestContents = ajaxRequestContents;

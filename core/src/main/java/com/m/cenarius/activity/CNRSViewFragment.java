@@ -182,10 +182,11 @@ public class CNRSViewFragment extends Fragment {
             if (Cenarius.DevelopModeEnable) {
                 return getSDFile(uri);
             } else {
-                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
-                if (htmlFileURL == null) {
-                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
-                }
+//                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
+//                if (htmlFileURL == null) {
+//                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+//                }
+                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
             }
         }
         return htmlFileURL;
