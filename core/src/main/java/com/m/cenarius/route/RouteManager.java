@@ -243,7 +243,7 @@ public class RouteManager {
         x.http().get(requestParams, new Callback.CommonCallback<String>() {
 
             @Override
-            public void onSuccess(String result) {
+            public void onSuccess(final String result) {
                 if (TextUtils.isEmpty(result)) {
                     callback.onFail();
                     updatingRoutes = false;
@@ -274,7 +274,7 @@ public class RouteManager {
                             if (cacheRoutes == null) {
                                 //优先下载成功，如果没有 cacheRoutes，立马保存
                                 cacheRoutes = routes;
-                                saveCachedRoutes(data);
+                                saveCachedRoutes(result);
                             } else {
                                 //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
                                 cacheRoutes.addAll(0, downloadFirstRoutes);
@@ -289,7 +289,7 @@ public class RouteManager {
                                 public void onSuccess(String data) {
                                     // 所有文件更新到最新，保存路由表
                                     cacheRoutes = routes;
-                                    saveCachedRoutes(data);
+                                    saveCachedRoutes(result);
                                     updatingRoutes = false;
                                 }
 

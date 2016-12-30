@@ -135,8 +135,9 @@ public class CordovaFragment extends CNRSViewFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (contentView == null) {
             init();
+            setCrosswalk();
         }
-        setCrosswalk();
+
         launchUrl = htmlURL();
         if (TextUtils.isEmpty(launchUrl)) {
             LogUtil.e("launchUrl can not be null");
