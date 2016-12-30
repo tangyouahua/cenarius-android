@@ -66,7 +66,7 @@ public class CenariusHandleRequest {
         if (uriString != null) {
             // requestUrl 符合拦截规则
             Uri finalUri = Uri.parse(uriString);
-            String baseUri = finalUri.getPath();
+            final String baseUri = finalUri.getPath();
             RouteManager routeManager = RouteManager.getInstance();
 
             CacheEntry cacheEntry;
@@ -80,7 +80,7 @@ public class CenariusHandleRequest {
                         return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
                     }
                 } else {
-                    Route route = routeManager.findRoute(baseUri);
+                    final Route route = routeManager.findRoute(baseUri);
                     if (route != null) {
                         // cache 缓存
                         cacheEntry = InternalCache.getInstance().findCache(route);
