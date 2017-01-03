@@ -292,6 +292,7 @@ public class CenariusHandleRequest {
     }
 
     public static String uriForUrl(String url) {
+        url = RouteManager.getInstance().deleteSlash(url);
         String uri;
         //HTTP
         String remoteFolderUrl = RouteManager.getInstance().remoteFolderUrl + "/";

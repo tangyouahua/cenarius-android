@@ -193,7 +193,7 @@ public class RouteManager {
      * @return 能够处理uri的Route，如果没有则为null
      */
     public Route findRoute(String uri) {
-        uri = cnrs_deleteSlash(uri);
+        uri = deleteSlash(uri);
         if (TextUtils.isEmpty(uri)) {
             return null;
         }
@@ -211,10 +211,10 @@ public class RouteManager {
     /**
      * 删除多余 /
      */
-    private String cnrs_deleteSlash(String uri) {
+    public String deleteSlash(String uri) {
         if (uri.contains("//")) {
             uri = uri.replace("//", "/");
-            uri = cnrs_deleteSlash(uri);
+            uri = deleteSlash(uri);
         }
         if (uri.startsWith("/")) {
             uri = uri.substring(1);
