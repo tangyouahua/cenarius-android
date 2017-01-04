@@ -292,12 +292,12 @@ public class CenariusHandleRequest {
     }
 
     public static String uriForUrl(String url) {
-        url = RouteManager.getInstance().deleteSlash(url);
         String uri;
         //HTTP
         String remoteFolderUrl = RouteManager.getInstance().remoteFolderUrl + "/";
         uri = deleteString(remoteFolderUrl, url);
         if (uri != null) {
+            uri = RouteManager.getInstance().deleteSlash(uri);
             return uri;
         }
         //cache
