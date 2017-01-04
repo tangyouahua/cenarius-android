@@ -67,12 +67,12 @@ public class XWalkCordovaResourceClient extends XWalkResourceClient {
     @Override
     public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String url) {
         try {
-//            // Check the against the white-list.
-//            if (!parentEngine.pluginManager.shouldAllowRequest(url)) {
-//                LOG.w(TAG, "URL blocked by whitelist: " + url);
-//                // Results in a 404.
-//                return new WebResourceResponse("text/plain", "UTF-8", null);
-//            }
+            // Check the against the white-list.
+            if (!parentEngine.pluginManager.shouldAllowRequest(url)) {
+                LOG.w(TAG, "URL blocked by whitelist: " + url);
+                // Results in a 404.
+                return new WebResourceResponse("text/plain", "UTF-8", null);
+            }
 
             CordovaResourceApi resourceApi = parentEngine.resourceApi;
             Uri origUri = Uri.parse(url);
