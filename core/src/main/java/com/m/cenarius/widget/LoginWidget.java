@@ -79,6 +79,7 @@ public class LoginWidget implements CenariusWidget {
         params.put("rememberMe", "true");
         params.put("captchaId", captchaId);
         params.put("captcha", captcha);
+        params.put("locale", "zh_CN");
         String sign = OpenApi.md5Signature(params, appSecret);
         params.put("sign", sign);
 
