@@ -19,6 +19,7 @@ import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.DownloadManager;
 import com.m.cenarius.utils.MimeUtils;
 import com.m.cenarius.utils.QueryUtil;
+import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.XutilsInterceptor;
 import com.m.cenarius.utils.io.IOUtils;
 
@@ -29,6 +30,7 @@ import org.xutils.x;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -115,6 +117,11 @@ public class CenariusHandleRequest {
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+                    if (Utils.hasLollipop()) {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Access-Control-Allow-Origin", "*");
+                        xResponse.setResponseHeaders(headers);
+                    }
                     loadResourceRequest(baseUri, out);
                     return xResponse;
                 } catch (IOException e) {
@@ -141,6 +148,11 @@ public class CenariusHandleRequest {
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+                    if (Utils.hasLollipop()) {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Access-Control-Allow-Origin", "*");
+                        xResponse.setResponseHeaders(headers);
+                    }
                     loadAjaxRequest(method, requestUrl, header, body, out);
                     return xResponse;
                 } catch (IOException e) {
