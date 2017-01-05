@@ -21,6 +21,13 @@ package org.apache.cordova;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import org.apache.cordova.engine.SystemWebChromeClient;
+import org.apache.cordova.engine.SystemWebView;
+import org.apache.cordova.engine.SystemWebViewClient;
+import org.apache.cordova.engine.SystemWebViewEngine;
+import org.crosswalk.engine.XWalkCordovaUiClient;
+import org.crosswalk.engine.XWalkCordovaView;
+import org.crosswalk.engine.XWalkWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,6 +40,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +51,7 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import com.m.cenarius.activity.CNRSViewActivity;
+import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -50,7 +59,7 @@ import com.m.cenarius.activity.CNRSViewActivity;
  * html file that contains the application.
  *
  * As an example:
- *
+ * 
  * <pre>
  *     package org.apache.cordova.examples;
  *
@@ -67,8 +76,8 @@ import com.m.cenarius.activity.CNRSViewActivity;
  *       }
  *     }
  * </pre>
- *
- * Cordova xml configuration: Cordova uses a configuration file at
+ * 
+ * Cordova xml configuration: Cordova uses a configuration file at 
  * res/xml/config.xml to specify its settings. See "The config.xml File"
  * guide in cordova-docs at http://cordova.apache.org/docs for the documentation
  * for the configuration. The use of the set*Property() methods is
@@ -101,31 +110,47 @@ public class CordovaActivity extends CNRSViewActivity {
     protected CordovaInterfaceImpl cordovaInterface;
 
     /**
+     * 设置 webView 的 WebViewClient 和 WebChromeClient。
+     * 如果要自定义它们，可以 Override
+     */
+    public void setCrosswalk() {
+        View appCordovaView = appView.getView();//加载H5的View
+        Log.v("cenarius", "此手机系统用到的内核为-->" + appCordovaView.getClass().getSimpleName());
+        if (appCordovaView instanceof SystemWebView) {
+            SystemWebViewEngine engine = (SystemWebViewEngine) appView.getEngine();
+            SystemWebView webView = (SystemWebView) engine.getView();
+            webView.setWebViewClient(new SystemWebViewClient(engine));
+            webView.setWebChromeClient(new SystemWebChromeClient(engine));
+        } else if (appCordovaView instanceof XWalkCordovaView) {
+            XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
+            XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
+            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
+            webView.setUIClient(new XWalkCordovaUiClient(engine));
+        } else {
+            Log.e("cenarius", "系统内核出故障，请检查...");
+        }
+    }
+
+    /**
      * Called when the activity is first created.
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
-        loadConfig();
-
-        String logLevel = preferences.getString("loglevel", "ERROR");
-        LOG.setLogLevel(logLevel);
-
         LOG.i(TAG, "Apache Cordova native platform version " + CordovaWebView.CORDOVA_VERSION + " is starting");
         LOG.d(TAG, "CordovaActivity.onCreate()");
 
+        // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
+        loadConfig();
         if (!preferences.getBoolean("ShowTitle", false)) {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
 
         if (preferences.getBoolean("SetFullscreen", false)) {
-            LOG.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
+            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
             preferences.set("Fullscreen", true);
         }
         if (preferences.getBoolean("Fullscreen", false)) {
-            // NOTE: use the FullscreenNotImmersive configuration key to set the activity in a REAL full screen
-            // (as was the case in previous cordova versions)
-            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) && !preferences.getBoolean("FullscreenNotImmersive", false)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 immersiveMode = true;
             } else {
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -157,6 +182,9 @@ public class CordovaActivity extends CNRSViewActivity {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
+
+        // 新增：
+        setCrosswalk();
     }
 
     @SuppressWarnings("deprecation")
@@ -182,14 +210,9 @@ public class CordovaActivity extends CNRSViewActivity {
         setContentView(appView.getView());
 
         if (preferences.contains("BackgroundColor")) {
-            try {
-                int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
-                // Background of activity:
-                appView.getView().setBackgroundColor(backgroundColor);
-            }
-            catch (NumberFormatException e){
-                e.printStackTrace();
-            }
+            int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
+            // Background of activity:
+            appView.getView().setBackgroundColor(backgroundColor);
         }
 
         appView.getView().requestFocusFromTouch();

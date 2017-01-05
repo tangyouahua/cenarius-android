@@ -31,7 +31,8 @@ public class HtmlHelper {
                 final Route route = routes.get(index);
 
                 // 如果文件在本地文件存在（要么在缓存，要么在资源文件夹），什么都不需要做
-                String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(route.uri);
+//                String htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(route.uri);
+                String htmlFileURL = CacheHelper.getInstance().routeFileURLForRoute(route);
                 if (htmlFileURL != null) {
                     downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, index + 1);
                     return;

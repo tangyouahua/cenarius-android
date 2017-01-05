@@ -37,7 +37,7 @@ public class CacheHelper {
     private InternalCache mInternalCache;
     private AssetCache mAssetCache;
 
-    private String routeFileURLForRoute(Route route) {
+    public String routeFileURLForRoute(Route route) {
         if (route == null) {
             LogUtils.i(TAG, "route not found");
             return null;
@@ -56,16 +56,14 @@ public class CacheHelper {
     private String cacheRouteFileURLForRoute(Route route) {
         //路由表正在更新的时候需要对比 hash
         RouteManager routeManager = RouteManager.getInstance();
-        if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes)
-        {
+        if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes) {
             for (Route cacheRoute : routeManager.cacheRoutes) {
                 if (cacheRoute.fileHash.equals(route.fileHash)) {
                     return cacheRouteFilePathForRoute(route);
                 }
             }
             return null;
-        }
-        else {
+        } else {
             return cacheRouteFilePathForRoute(route);
         }
     }
@@ -109,6 +107,9 @@ public class CacheHelper {
      * 查找 uri 对应的本地 html 文件 URL。先查 Cache，再查 asset。如果在缓存文件和资源文件中都找不到对应的本地文件，返回 null
      */
     public String localHtmlURLForURI(String uriString) {
+        if (uriString == null) {
+            return null;
+        }
         Uri finalUri = Uri.parse(uriString);
         String baseUri = finalUri.getPath();
         //最新的在内存中的 route
@@ -122,13 +123,8 @@ public class CacheHelper {
      * 查找 uri 对应的服务器上 html 文件。
      */
     public String remoteHtmlURLForURI(String uri) {
-        Route route = RouteManager.getInstance().findRoute(uri);
-        if (null == route) {
-            LogUtils.i(TAG, "route not found");
-        } else {
-            return finalUrl(route.getHtmlFile(), Uri.parse(uri));
-        }
-        return null;
+        String remoteHTML = RouteManager.getInstance().remoteFolderUrl + "/" + uri;
+        return remoteHTML;
     }
 
 }

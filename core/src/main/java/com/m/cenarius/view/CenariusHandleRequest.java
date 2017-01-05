@@ -16,8 +16,10 @@ import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
+import com.m.cenarius.utils.DownloadManager;
 import com.m.cenarius.utils.MimeUtils;
 import com.m.cenarius.utils.QueryUtil;
+import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.XutilsInterceptor;
 import com.m.cenarius.utils.io.IOUtils;
 
@@ -28,6 +30,7 @@ import org.xutils.x;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +69,7 @@ public class CenariusHandleRequest {
         if (uriString != null) {
             // requestUrl 符合拦截规则
             Uri finalUri = Uri.parse(uriString);
-            String baseUri = finalUri.getPath();
+            final String baseUri = finalUri.getPath();
             RouteManager routeManager = RouteManager.getInstance();
 
             CacheEntry cacheEntry;
@@ -80,7 +83,7 @@ public class CenariusHandleRequest {
                         return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
                     }
                 } else {
-                    Route route = RouteManager.getInstance().findRoute(baseUri);
+                    final Route route = routeManager.findRoute(baseUri);
                     if (route != null) {
                         // cache 缓存
                         cacheEntry = InternalCache.getInstance().findCache(route);
@@ -92,14 +95,33 @@ public class CenariusHandleRequest {
                             return new WebResourceResponse(mimeType, "UTF-8", cacheEntry.inputStream);
                         }
                     }
+//                    // H5 和 JS 需要从网络加载
+//                    try {
+//                        Log.v("cenarius", "start load h5 :" + requestUrl);
+//                        final PipedOutputStream out = new PipedOutputStream();
+//                        final PipedInputStream in = new PipedInputStream(out);
+//                        WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+////                        loadH5AndJsRequest(route, out);
+//                        downloadManager.startDownloadH5AndJs(route, out);
+//                        return xResponse;
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                        Log.e("cenarius", "url : " + requestUrl + " " + e.getMessage());
+//                    }
                 }
-            } else {
-                // 其他资源异步加载
+            }
+            else {
+                //  以及 其他资源，异步加载
                 try {
                     Log.v("cenarius", "start load h5 :" + requestUrl);
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
+                    if (Utils.hasLollipop()) {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Access-Control-Allow-Origin", "*");
+                        xResponse.setResponseHeaders(headers);
+                    }
                     loadResourceRequest(baseUri, out);
                     return xResponse;
                 } catch (IOException e) {
@@ -112,10 +134,9 @@ public class CenariusHandleRequest {
         return null;
     }
 
-    public static WebResourceResponse handleAjaxRequest(String requestUrl, InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
+    public static WebResourceResponse handleAjaxRequest(final String requestUrl, final String method, final Map<String, String> header, final String body) {
         // header
-        Map header = JSON.parseObject(ajaxRequestContents.header, Map.class);
-        if ("OpenAPIRequest".equals(header.get("X-Requested-With"))) {
+        if (header != null && "OpenAPIRequest".equals(header.get("X-Requested-With"))) {
             String query = Uri.parse(requestUrl).getQuery();
             if (TextUtils.isEmpty(query) || QueryUtil.queryMap(query).get("sign") == null) {
                 // 需要签名
@@ -127,7 +148,12 @@ public class CenariusHandleRequest {
                     final PipedOutputStream out = new PipedOutputStream();
                     final PipedInputStream in = new PipedInputStream(out);
                     WebResourceResponse xResponse = new WebResourceResponse(mimeType, "UTF-8", in);
-                    loadAjaxRequest(ajaxRequestContents.method, requestUrl, ajaxRequestContents.header, ajaxRequestContents.body, out);
+                    if (Utils.hasLollipop()) {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Access-Control-Allow-Origin", "*");
+                        xResponse.setResponseHeaders(headers);
+                    }
+                    loadAjaxRequest(method, requestUrl, header, body, out);
                     return xResponse;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -139,7 +165,7 @@ public class CenariusHandleRequest {
         return null;
     }
 
-    private static void loadAjaxRequest(final String method, final String url, final String header, final String body, final PipedOutputStream outputStream) {
+    private static void loadAjaxRequest(final String method, final String url, final Map<String, String> header, final String body, final PipedOutputStream outputStream) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -158,19 +184,27 @@ public class CenariusHandleRequest {
                 RequestParams requestParams = new RequestParams(QueryUtil.baseUrlFromUrl(url));
                 QueryUtil.addQueryForRequestParams(requestParams, url);
 
-                 if (header != null) {
-                    Map<String, String> map = JSON.parseObject(header, Map.class);
-                    for (String key : map.keySet()) {
-                        String value = map.get(key);
+                boolean isJson = false;
+                if (header != null) {
+                    for (String key : header.keySet()) {
+                        String value = header.get(key);
                         requestParams.addHeader(key, value);
+                        if ("Content-Type".equals(key) && value != null && value.contains("application/json")) {
+                            isJson = true;
+                        }
                     }
                 }
 
                 if (body != null) {
-                    Map<String, List<String>> map = QueryUtil.queryMap(body);
-                    for (String key : map.keySet()) {
-                        String value = map.get(key).get(0);
-                        requestParams.addBodyParameter(key, value);
+                    if (isJson) {
+                        requestParams.setAsJsonContent(true);
+                        requestParams.setBodyContent(body);
+                    } else {
+                        Map<String, List<String>> map = QueryUtil.queryMap(body);
+                        for (String key : map.keySet()) {
+                            String value = map.get(key).get(0);
+                            requestParams.addBodyParameter(key, value);
+                        }
                     }
                 }
 
@@ -187,6 +221,15 @@ public class CenariusHandleRequest {
             }
         }).start();
     }
+
+//    private static void loadH5AndJsRequest(final Route route, final PipedOutputStream outputStream) {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                loadRequest(route, outputStream);
+//            }
+//        }).start();
+//    }
 
     private static void loadResourceRequest(final String baseUri, final PipedOutputStream outputStream) {
         new Thread(new Runnable() {
@@ -222,40 +265,7 @@ public class CenariusHandleRequest {
                             }
                         } else {
                             // 从网络加载
-                            RequestParams requestParams = new RequestParams(route.getHtmlFile());
-                            try {
-                                byte[] result = x.http().getSync(requestParams, byte[].class);
-                                writeOutputStream(outputStream, result);
-                                InternalCache.getInstance().saveCache(route, result);
-                            } catch (Throwable throwable) {
-                                byte[] result = wrapperErrorThrowable(throwable);
-                                writeOutputStream(outputStream, result);
-                            }
-
-//                            x.http().get(requestParams, new Callback.CommonCallback<byte[]>() {
-//
-//                                @Override
-//                                public void onSuccess(byte[] result) {
-//                                    writeOutputStream(outputStream, result);
-//                                    InternalCache.getInstance().saveCache(route, result);
-//                                }
-//
-//                                @Override
-//                                public void onError(Throwable ex, boolean isOnCallback) {
-//                                    byte[] result = wrapperErrorThrowable(ex);
-//                                    writeOutputStream(outputStream, result);
-//                                }
-//
-//                                @Override
-//                                public void onCancelled(CancelledException cex) {
-//
-//                                }
-//
-//                                @Override
-//                                public void onFinished() {
-//
-//                                }
-//                            });
+                            loadRequest(route, outputStream);
                         }
                     } else {
                         // uri 不在 route 中
@@ -266,7 +276,19 @@ public class CenariusHandleRequest {
         }).start();
     }
 
-    private static void writeOutputStream(PipedOutputStream outputStream, byte[] result) {
+    private static void loadRequest(final Route route, final PipedOutputStream outputStream){
+        RequestParams requestParams = new RequestParams(route.getHtmlFile());
+        try {
+            byte[] result = x.http().getSync(requestParams, byte[].class);
+            writeOutputStream(outputStream, result);
+            InternalCache.getInstance().saveCache(route, result);
+        } catch (Throwable throwable) {
+            byte[] result = wrapperErrorThrowable(throwable);
+            writeOutputStream(outputStream, result);
+        }
+    }
+
+    public static void writeOutputStream(PipedOutputStream outputStream, byte[] result) {
         try {
             outputStream.write(result);
         } catch (IOException e) {
@@ -287,6 +309,7 @@ public class CenariusHandleRequest {
         String remoteFolderUrl = RouteManager.getInstance().remoteFolderUrl + "/";
         uri = deleteString(remoteFolderUrl, url);
         if (uri != null) {
+            uri = RouteManager.getInstance().deleteSlash(uri);
             return uri;
         }
         //cache
@@ -340,7 +363,7 @@ public class CenariusHandleRequest {
         return TextUtils.equals(fileExtension, Constants.EXTENSION_JS);
     }
 
-    private static byte[] wrapperErrorThrowable(Throwable ex) {
+    public static byte[] wrapperErrorThrowable(Throwable ex) {
         if (ex == null) {
             return new byte[0];
         }

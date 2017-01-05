@@ -22,7 +22,7 @@ public class CNRSCordovaActivity extends CordovaActivity {
         super.onCreate(savedInstanceState);
         super.init();
 
-        setCrosswalk();
+//        setCrosswalk();
 
         Log.v("cenarius", "loadUri , uri = " + (null != uri ? uri : "null"));
 
@@ -36,26 +36,6 @@ public class CNRSCordovaActivity extends CordovaActivity {
 
     }
 
-    /**
-     * 设置 webView 的 WebViewClient 和 WebChromeClient。
-     * 如果要自定义它们，可以 Override
-     */
-    public void setCrosswalk() {
-        View appCordovaView = appView.getView();//加载H5的View
-        Log.v("cenarius", "此手机系统用到的内核为-->" + appCordovaView.getClass().getSimpleName());
-        if (appCordovaView instanceof SystemWebView) {
-            SystemWebViewEngine engine = (SystemWebViewEngine) appView.getEngine();
-            SystemWebView webView = (SystemWebView) engine.getView();
-            webView.setWebViewClient(new SystemWebViewClient(engine));
-            webView.setWebChromeClient(new SystemWebChromeClient(engine));
-        } else if (appCordovaView instanceof XWalkCordovaView) {
-            XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
-            XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
-            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
-            webView.setUIClient(new XWalkCordovaUiClient(engine));
-        } else {
-            Log.e("cenarius", "系统内核出故障，请检查...");
-        }
-    }
+
 
 }

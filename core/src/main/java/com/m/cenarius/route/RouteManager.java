@@ -193,7 +193,7 @@ public class RouteManager {
      * @return 能够处理uri的Route，如果没有则为null
      */
     public Route findRoute(String uri) {
-        uri = cnrs_deleteSlash(uri);
+        uri = deleteSlash(uri);
         if (TextUtils.isEmpty(uri)) {
             return null;
         }
@@ -211,10 +211,10 @@ public class RouteManager {
     /**
      * 删除多余 /
      */
-    private String cnrs_deleteSlash(String uri) {
+    public String deleteSlash(String uri) {
         if (uri.contains("//")) {
             uri = uri.replace("//", "/");
-            uri = cnrs_deleteSlash(uri);
+            uri = deleteSlash(uri);
         }
         if (uri.startsWith("/")) {
             uri = uri.substring(1);
@@ -243,7 +243,7 @@ public class RouteManager {
         x.http().get(requestParams, new Callback.CommonCallback<String>() {
 
             @Override
-            public void onSuccess(String result) {
+            public void onSuccess(final String result) {
                 if (TextUtils.isEmpty(result)) {
                     callback.onFail();
                     updatingRoutes = false;
@@ -274,7 +274,7 @@ public class RouteManager {
                             if (cacheRoutes == null) {
                                 //优先下载成功，如果没有 cacheRoutes，立马保存
                                 cacheRoutes = routes;
-                                saveCachedRoutes(data);
+                                saveCachedRoutes(result);
                             } else {
                                 //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
                                 cacheRoutes.addAll(0, downloadFirstRoutes);
@@ -289,7 +289,7 @@ public class RouteManager {
                                 public void onSuccess(String data) {
                                     // 所有文件更新到最新，保存路由表
                                     cacheRoutes = routes;
-                                    saveCachedRoutes(data);
+                                    saveCachedRoutes(result);
                                     updatingRoutes = false;
                                 }
 

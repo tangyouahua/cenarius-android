@@ -23,8 +23,8 @@ import org.xutils.common.Callback;
 import org.xutils.http.HttpMethod;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
-
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends CNRSViewActivity {
@@ -204,13 +204,18 @@ public class MainActivity extends CNRSViewActivity {
 
                 // 业务代码
                 requestParams.addHeader("X-Requested-With","OpenAPIRequest");
+                requestParams.addBodyParameter("BodyParameter","BodyParameter");
+                requestParams.setAsJsonContent(true);
+                Map m = new HashMap();
+                m.put("JSON","JSON");
+                requestParams.setBodyContent(JSON.toJSONString(m));
 
 //                // 最后设置 OpenApi 拦截器
 //                XutilsInterceptor.openApiForRequestParams(requestParams);
 
 
                 try {
-                    x.http().requestSync(HttpMethod.GET, requestParams, byte[].class);
+                    x.http().requestSync(HttpMethod.POST, requestParams, byte[].class);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
