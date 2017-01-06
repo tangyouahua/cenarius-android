@@ -19,6 +19,10 @@ import java.util.Map;
 public class QueryUtil {
 
     public static String mapToString(Map<String, String> map) {
+        if (map == null) {
+            return null;
+        }
+
         StringBuilder stringBuilder = new StringBuilder();
 
         for (String key : map.keySet()) {
