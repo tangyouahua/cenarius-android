@@ -181,7 +181,7 @@ public class CordovaFragment extends CNRSViewFragment {
     protected void init() {
         appView = makeWebView();
         createViews();
-        
+
         // 新增：
         setCrosswalk();
 
