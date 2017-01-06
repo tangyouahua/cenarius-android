@@ -34,9 +34,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
+import com.m.cenarius.R;
 import com.m.cenarius.activity.CNRSViewFragment;
 import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
 
@@ -61,7 +64,7 @@ public class CordovaFragment extends CNRSViewFragment {
 
     // The webview for our app
     protected CordovaWebView appView;
-
+    private ProgressBar progressBar;
     private static int ACTIVITY_STARTING = 0;
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
@@ -113,6 +116,15 @@ public class CordovaFragment extends CNRSViewFragment {
         return contentView;
     }
 
+    private void initProgressBar() {
+        FrameLayout containerView = (FrameLayout) contentView.getParent();
+        ViewParent parent = containerView.getParent();
+        progressBar = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        lp.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
+        progressBar.setProgressDrawable(getResources().getDrawable(R.drawable.progress_bar_bg));
+        containerView.addView(progressBar, lp);
+    }
     /**
      * 设置 webView 的 WebViewClient 和 WebChromeClient。
      * 如果要自定义它们，可以 Override
@@ -129,7 +141,7 @@ public class CordovaFragment extends CNRSViewFragment {
         } else if (appCordovaView instanceof XWalkCordovaView) {
             XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
             XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
-            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
+            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine,progressBar));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
             XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         } else {
@@ -183,7 +195,6 @@ public class CordovaFragment extends CNRSViewFragment {
         createViews();
 
         // 新增：
-        setCrosswalk();
 
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
@@ -195,6 +206,7 @@ public class CordovaFragment extends CNRSViewFragment {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
+        setCrosswalk();
     }
 
 
