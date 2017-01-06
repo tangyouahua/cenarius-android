@@ -48,19 +48,19 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
     // ajax 拦截
     private View mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
-    private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
-    private boolean isNextAjaxRequest = false;
-    private DownloadManager downloadManager = new DownloadManager();
+//    private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
+//    private boolean isNextAjaxRequest = false;
+//    private DownloadManager downloadManager = new DownloadManager();
 
-    public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
-        mNextAjaxRequestContents = ajaxRequestContents;
-        isNextAjaxRequest = true;
-    }
+//    public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
+//        mNextAjaxRequestContents = ajaxRequestContents;
+//        isNextAjaxRequest = true;
+//    }
 
 
     @Override
     public boolean shouldOverrideUrlLoading(XWalkView view, String url) {
-        mNextAjaxRequestContents = null;
+//        mNextAjaxRequestContents = null;
         mWidgets = getCenariusWidgets(view);
         if (CenariusHandleRequest.handleWidgets(view, url, mWidgets)) {
             return true;
@@ -103,14 +103,18 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
      */
     private WebResourceResponse handleResourceRequest(XWalkView webView, String requestUrl) {
         WebResourceResponse webResourceResponse;
-        if (isNextAjaxRequest) {
-            // ajax 请求
-            isNextAjaxRequest = false;
-            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
-        } else {
-            // h5 请求
-            webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
-        }
+
+//        if (isNextAjaxRequest) {
+//            // ajax 请求
+//            isNextAjaxRequest = false;
+//            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
+//        } else {
+//            // h5 请求
+//            webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
+//        }
+
+        // h5 请求
+        webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
         if (webResourceResponse != null) {
             return webResourceResponse;
         }

@@ -28,13 +28,13 @@ public class CenariusWebViewClient extends WebViewClient {
     // ajax 拦截
     private WebView mWebView = null;
     private InterceptJavascriptInterface mJSIntercept = null;
-    private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
-    private boolean isNextAjaxRequest = false;
+//    private InterceptJavascriptInterface.AjaxRequestContents mNextAjaxRequestContents = null;
+//    private boolean isNextAjaxRequest = false;
 
-    public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
-        mNextAjaxRequestContents = ajaxRequestContents;
-        isNextAjaxRequest = true;
-    }
+//    public void nextMessageIsAjaxRequest(InterceptJavascriptInterface.AjaxRequestContents ajaxRequestContents) {
+//        mNextAjaxRequestContents = ajaxRequestContents;
+//        isNextAjaxRequest = true;
+//    }
 
 
     /**
@@ -104,14 +104,18 @@ public class CenariusWebViewClient extends WebViewClient {
      */
     private WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
         WebResourceResponse webResourceResponse;
-        if (isNextAjaxRequest) {
-            // ajax 请求
-            isNextAjaxRequest = false;
-            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
-        } else {
-            // h5 请求
-            webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
-        }
+
+//        if (isNextAjaxRequest) {
+//            // ajax 请求
+//            isNextAjaxRequest = false;
+//            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
+//        } else {
+//            // h5 请求
+//            webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
+//        }
+
+        // h5 请求
+        webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
         if (webResourceResponse != null) {
             return webResourceResponse;
         }

@@ -50,6 +50,7 @@ import org.crosswalk.engine.XWalkWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xutils.common.util.LogUtil;
+import org.xwalk.core.XWalkPreferences;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -124,11 +125,13 @@ public class CordovaFragment extends CNRSViewFragment {
             SystemWebView webView = (SystemWebView) engine.getView();
             webView.setWebViewClient(new SystemWebViewClient(engine));
             webView.setWebChromeClient(new SystemWebChromeClient(engine));
+            webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
         } else if (appCordovaView instanceof XWalkCordovaView) {
             XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
             XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
             webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
+            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         } else {
             Log.v("cenarius", "系统内核出故障，请检查...");
         }

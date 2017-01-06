@@ -30,6 +30,7 @@ import org.crosswalk.engine.XWalkCordovaView;
 import org.crosswalk.engine.XWalkWebViewEngine;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xwalk.core.XWalkPreferences;
 
 import android.app.AlertDialog;
 import android.annotation.SuppressLint;
@@ -121,11 +122,13 @@ public class CordovaActivity extends CNRSViewActivity {
             SystemWebView webView = (SystemWebView) engine.getView();
             webView.setWebViewClient(new SystemWebViewClient(engine));
             webView.setWebChromeClient(new SystemWebChromeClient(engine));
+            webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
         } else if (appCordovaView instanceof XWalkCordovaView) {
             XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
             XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
             webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
+            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         } else {
             Log.e("cenarius", "系统内核出故障，请检查...");
         }

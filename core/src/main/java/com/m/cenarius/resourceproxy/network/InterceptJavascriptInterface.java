@@ -1,7 +1,15 @@
 package com.m.cenarius.resourceproxy.network;
 
+import com.alibaba.fastjson.JSON;
+import com.m.cenarius.utils.OpenApi;
+import com.m.cenarius.utils.QueryUtil;
 import com.m.cenarius.view.CenariusWebViewClient;
 import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
+
+import org.xutils.http.RequestParams;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 拦截 ajax
@@ -28,26 +36,32 @@ public class InterceptJavascriptInterface {
 //        }
 //    }
 
-    public class AjaxRequestContents {
-        public String method = null;
-        public String header = null;
-        public String body = null;
+//    public class AjaxRequestContents {
+//        public String method = null;
+//        public String header = null;
+//        public String body = null;
+//
+//        public AjaxRequestContents(String method, String header, String body) {
+//            this.method = method;
+//            this.header = header;
+//            this.body = body;
+//        }
+//    }
 
-        public AjaxRequestContents(String method, String header, String body) {
-            this.method = method;
-            this.header = header;
-            this.body = body;
-        }
-    }
+//    @org.xwalk.core.JavascriptInterface
+//    @android.webkit.JavascriptInterface
+//    public void customAjax(final String method, final String header, final String body) {
+//        if (mWebViewClient instanceof CenariusXWalkCordovaResourceClient) {
+//            ((CenariusXWalkCordovaResourceClient) mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
+//        } else if (mWebViewClient instanceof CenariusWebViewClient) {
+//            ((CenariusWebViewClient) mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
+//        }
+//    }
 
     @org.xwalk.core.JavascriptInterface
     @android.webkit.JavascriptInterface
-    public void customAjax(final String method, final String header, final String body) {
-        if (mWebViewClient instanceof CenariusXWalkCordovaResourceClient) {
-            ((CenariusXWalkCordovaResourceClient) mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
-        } else if (mWebViewClient instanceof CenariusWebViewClient) {
-            ((CenariusWebViewClient) mWebViewClient).nextMessageIsAjaxRequest(new AjaxRequestContents(method, header, body));
-        }
+    public String getUrlSign(final String url, final String headerString, final String bodyString) {
+        return OpenApi.openApiForAjax(url, headerString, bodyString);
     }
 
 //    @JavascriptInterface

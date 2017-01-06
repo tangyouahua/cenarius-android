@@ -2,6 +2,7 @@ package com.m.cenarius.utils;
 
 import android.util.Base64;
 
+import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.widget.LoginWidget;
 
@@ -69,6 +70,21 @@ public class OpenApi {
 
     public static void openApiForRequestParams(RequestParams requestParams) {
 
+        List<RequestParams.Header> headers = requestParams.getHeaders();
+        boolean isOpenApi = false;
+        if (headers != null) {
+            for (RequestParams.Header header : headers) {
+                if ("X-Requested-With".equals(header.key) && "OpenAPIRequest".equals(header.value)) {
+                    isOpenApi = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isOpenApi) {
+            return;
+        }
+
         List<KeyValue> queryStringParams = requestParams.getQueryStringParams();
         List<KeyValue> bodyParams = requestParams.getBodyParams();
         if (queryStringParams != null) {
@@ -82,14 +98,12 @@ public class OpenApi {
 
         String query = getKeyValueString(queryStringParams);
         String body;
-        if (requestParams.isAsJsonContent()){
+        if (requestParams.isAsJsonContent()) {
             // JSON
             body = "openApiBodyString=" + requestParams.getBodyContent();
-        }
-        else {
+        } else {
             body = getKeyValueString(bodyParams);
         }
-
 
 
         String parameterString = query;
@@ -135,6 +149,93 @@ public class OpenApi {
         requestParams.addQueryStringParameter("app_key", appKey);
         requestParams.addQueryStringParameter("timestamp", timestamp);
         requestParams.addQueryStringParameter("sign", sign);
+    }
+
+    public static String openApiForAjax(String url, String headerString, final String bodyString) {
+        Map<String, String> header = JSON.parseObject(headerString, Map.class);
+        boolean isOpenApi = false;
+        boolean isJson = false;
+        if (header != null) {
+            for (String key : header.keySet()) {
+                String value = header.get(key);
+                if ("X-Requested-With".equals(key) && "OpenAPIRequest".equals(value)) {
+                    isOpenApi = true;
+                }
+                if ("Content-Type".equals(key) && value != null && value.contains("application/json")) {
+                    isJson = true;
+                }
+            }
+        }
+
+        if (!isOpenApi) {
+            return url;
+        }
+
+        String query = QueryUtil.queryFromUrl(url);
+        Map<String, List<String>> queryMap = QueryUtil.queryMap(query);
+        if (queryMap != null) {
+            for (String key : queryMap.keySet()) {
+                if ("sign".equals(key))
+                // 已经有签名，不需要处理
+                return url;
+            }
+        }
+
+        String body = null;
+        if (bodyString != null) {
+            if (isJson) {
+                // JSON
+                body = "openApiBodyString=" + bodyString;
+            } else {
+                Map<String, String> bodyMap = JSON.parseObject(bodyString, Map.class);
+                body = QueryUtil.mapToString(bodyMap);
+            }
+        }
+
+        String parameterString = query;
+        if (body != null) {
+            if (parameterString != null) {
+                parameterString = parameterString + "&" + body;
+            } else {
+                parameterString = body;
+            }
+        }
+
+        // 多值合并
+        Map<String, String> parameters = new HashMap<>();
+        Map<String, List<String>> oldParameters = QueryUtil.queryMap(parameterString);
+        if (oldParameters != null) {
+            for (String key : oldParameters.keySet()) {
+                List<String> array = oldParameters.get(key);
+                Collections.sort(array);
+                String value = array.get(0);
+                for (int i = 1; i < array.size(); i++) {
+                    value = value + key + array.get(i);
+                }
+                parameters.put(key, value);
+            }
+        }
+
+        // 加入系统级参数
+        String token = LoginWidget.getAccessToken();
+        String appKey = Cenarius.LoginAppKey;
+        String appSecret = Cenarius.LoginAppSecret;
+        String timestamp = Long.toString((new Date()).getTime());
+        if (token == null) {
+            token = getAnonymousToken();
+        }
+        parameters.put("access_token", token);
+        parameters.put("app_key", appKey);
+        parameters.put("timestamp", timestamp);
+
+        // 签名
+        String sign = md5Signature(parameters, appSecret);
+
+        if (!url.contains("?")) {
+            url = url + "?";
+        }
+        url = url + "&access_token=" + token + "&app_key=" + appKey + "&timestamp=" + timestamp + "&sign=" + sign;
+        return url;
     }
 
     private static String getKeyValueString(List<KeyValue> list) {
