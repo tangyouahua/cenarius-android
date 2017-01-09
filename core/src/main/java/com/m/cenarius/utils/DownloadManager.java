@@ -10,6 +10,9 @@ import org.xutils.http.RequestParams;
 import org.xutils.x;
 
 import java.io.PipedOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
 
 import static com.m.cenarius.view.CenariusHandleRequest.writeOutputStream;
 
@@ -19,33 +22,32 @@ import static com.m.cenarius.view.CenariusHandleRequest.writeOutputStream;
 
 public class DownloadManager {
 
-    public synchronized void startDownloadH5AndJs(final Route route, final PipedOutputStream outputStream) {
-        RequestParams params = new RequestParams(route.getHtmlFile());
-        params.setExecutor(new PriorityExecutor(1, true));
+    private static volatile DownloadManager instance;
+    private final static int MAX_DOWNLOAD_THREAD = 1; // 有效的值范围[1, 3], 设置为3时, 可能阻塞图片加载.
+    private final Executor executor = new PriorityExecutor(MAX_DOWNLOAD_THREAD, true);
+    private final List<String> downloadInfoList = new ArrayList<>();
 
-        x.http().get(params, new Callback.CommonCallback<byte[]>() {
-
-            @Override
-            public void onSuccess(byte[] result) {
-                CenariusHandleRequest.writeOutputStream(outputStream, result);
-                InternalCache.getInstance().saveCache(route, result);
+    public static DownloadManager getInstance() {
+        if (instance == null) {
+            synchronized (DownloadManager.class) {
+                if (instance == null) {
+                    instance = new DownloadManager();
+                }
             }
-
-            @Override
-            public void onError(Throwable ex, boolean isOnCallback) {
-                byte[] result = CenariusHandleRequest.wrapperErrorThrowable(ex);
-                writeOutputStream(outputStream, result);
-            }
-
-            @Override
-            public void onCancelled(CancelledException cex) {
-
-            }
-
-            @Override
-            public void onFinished() {
-
-            }
-        });
+        }
+        return instance;
     }
+
+    public int getDownloadListCount() {
+        return downloadInfoList.size();
+    }
+
+    public String getDownloadInfo(int index) {
+        return downloadInfoList.get(index);
+    }
+
+    public synchronized void startDownload(String url, String savePath) {
+
+    }
+
 }
