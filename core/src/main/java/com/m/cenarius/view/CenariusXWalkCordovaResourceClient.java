@@ -1,18 +1,18 @@
 package com.m.cenarius.view;
 
+import android.os.Handler;
 import android.view.View;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
-import com.alibaba.fastjson.JSON;
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
-import com.m.cenarius.utils.DownloadManager;
 import com.m.cenarius.utils.Utils;
 
 import org.crosswalk.engine.XWalkCordovaResourceClient;
 import org.crosswalk.engine.XWalkWebViewEngine;
+import org.xutils.common.util.LogUtil;
 import org.xwalk.core.XWalkView;
 import org.xwalk.core.XWalkWebResourceRequest;
 import org.xwalk.core.XWalkWebResourceResponse;
@@ -23,6 +23,7 @@ import java.util.Map;
 
 public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClient {
     private  ProgressBar progressBar;
+    private boolean isShowOver = false;
     public CenariusXWalkCordovaResourceClient(XWalkWebViewEngine parentEngine, ProgressBar progressBar) {
         super(parentEngine);
         this.progressBar = progressBar;
@@ -59,13 +60,29 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
 //        isNextAjaxRequest = true;
 //    }
 
+
+    @Override
+    public void onLoadStarted(XWalkView view, String url) {
+        super.onLoadStarted(view, url);
+        isShowOver = false;
+    }
+
     @Override
     public void onProgressChanged(XWalkView view, int progressInPercent) {
-        if(progressBar == null){
+        super.onProgressChanged(view,progressInPercent);
+        if(progressBar == null || isShowOver == true){
             return;
         }
+        LogUtil.v("进度条加载： "+ progressInPercent);
         if (progressInPercent == 100) {
-            progressBar.setVisibility(View.GONE);//加载完网页进度条消失
+            isShowOver = true;
+            progressBar.setProgress(100);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.GONE);//加载完网页进度条消失
+                }
+            }, 800);//0.2秒后隐藏进度条
         } else {
             progressBar.setVisibility(View.VISIBLE);//开始加载网页时显示进度条
             progressBar.setProgress(progressInPercent);//设置进度值

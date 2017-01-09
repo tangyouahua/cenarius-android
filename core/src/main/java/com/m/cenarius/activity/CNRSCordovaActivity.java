@@ -30,8 +30,6 @@ public class CNRSCordovaActivity extends CordovaActivity {
         super.onCreate(savedInstanceState);
         super.init();
 
-//        setCrosswalk();
-
         Log.v("cenarius", "loadUri , uri = " + (null != uri ? uri : "null"));
 
         String htmlUrl = htmlURL();
@@ -40,18 +38,15 @@ public class CNRSCordovaActivity extends CordovaActivity {
         } else {
             Log.v("cenarius", "htmlUrl 为空");
         }
-
-        initProgressBar();
-        setCrosswalk();
     }
 
-    private void initProgressBar() {
-        FrameLayout containerView = (FrameLayout) this.findViewById(android.R.id.content);
-        ViewParent parent = containerView.getParent();
+    public View initProgressBar() {
+        LinearLayout linearLayout= new LinearLayout(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         pb = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        lp.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
+        params.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
         pb.setProgressDrawable(getResources().getDrawable(R.drawable.progress_bar_bg));
-        containerView.addView(pb, lp);
+        linearLayout.addView(pb, params);
+        return linearLayout;
     }
 }

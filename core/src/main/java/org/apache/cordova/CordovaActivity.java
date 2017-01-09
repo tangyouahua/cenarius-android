@@ -175,9 +175,9 @@ public class CordovaActivity extends CNRSViewActivity {
 
     protected void init() {
         appView = makeWebView();
-        createViews();
-
         // 新增：
+        createViews();
+        setCrosswalk();
 
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
@@ -189,7 +189,6 @@ public class CordovaActivity extends CNRSViewActivity {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
-        setCrosswalk();
     }
 
     @SuppressWarnings("deprecation")
