@@ -53,6 +53,11 @@ public class CenariusWebViewClient extends WebViewClient {
     }
 
     @Override
+    public void onScaleChanged(WebView view, float oldScale, float newScale) {
+        super.onScaleChanged(view, oldScale, newScale);
+    }
+
+    @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         if (CenariusHandleRequest.handleWidgets(view, url, mWidgets)) {
             return true;

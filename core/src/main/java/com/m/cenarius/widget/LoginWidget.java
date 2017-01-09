@@ -75,7 +75,7 @@ public class LoginWidget implements CenariusWidget {
         params.put("timestamp", Long.toString((new Date()).getTime()));
         params.put("username", username);
         params.put("password", password);
-        params.put("terminalType", "mobile");
+        params.put("terminalType", "MOBILE");
         params.put("rememberMe", "true");
         params.put("captchaId", captchaId);
         params.put("captcha", captcha);
