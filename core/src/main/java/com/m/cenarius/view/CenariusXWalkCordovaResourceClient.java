@@ -3,6 +3,7 @@ package com.m.cenarius.view;
 import android.view.View;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
+import android.widget.ProgressBar;
 
 import com.alibaba.fastjson.JSON;
 import com.m.cenarius.activity.CNRSViewActivity;
@@ -21,9 +22,10 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClient {
-
-    public CenariusXWalkCordovaResourceClient(XWalkWebViewEngine parentEngine) {
+    private  ProgressBar progressBar;
+    public CenariusXWalkCordovaResourceClient(XWalkWebViewEngine parentEngine, ProgressBar progressBar) {
         super(parentEngine);
+        this.progressBar = progressBar;
         mWebView = parentEngine.getView();
         mJSIntercept = new InterceptJavascriptInterface(this);
         if (mWebView instanceof WebView) {
@@ -57,6 +59,18 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
 //        isNextAjaxRequest = true;
 //    }
 
+    @Override
+    public void onProgressChanged(XWalkView view, int progressInPercent) {
+        if(progressBar == null){
+            return;
+        }
+        if (progressInPercent == 100) {
+            progressBar.setVisibility(View.GONE);//加载完网页进度条消失
+        } else {
+            progressBar.setVisibility(View.VISIBLE);//开始加载网页时显示进度条
+            progressBar.setProgress(progressInPercent);//设置进度值
+        }
+    }
 
     @Override
     public boolean shouldOverrideUrlLoading(XWalkView view, String url) {

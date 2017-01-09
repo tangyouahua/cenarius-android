@@ -50,6 +50,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
@@ -88,7 +89,7 @@ import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
 //修改：原来继承自 Activity
 public class CordovaActivity extends CNRSViewActivity {
     public static String TAG = "CordovaActivity";
-
+    protected ProgressBar pb;
     // The webview for our app
     protected CordovaWebView appView;
 
@@ -126,7 +127,7 @@ public class CordovaActivity extends CNRSViewActivity {
         } else if (appCordovaView instanceof XWalkCordovaView) {
             XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
             XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
-            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine));
+            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine,pb));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
             XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         } else {
@@ -177,7 +178,6 @@ public class CordovaActivity extends CNRSViewActivity {
         createViews();
 
         // 新增：
-        setCrosswalk();
 
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
@@ -189,6 +189,7 @@ public class CordovaActivity extends CNRSViewActivity {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
+        setCrosswalk();
     }
 
     @SuppressWarnings("deprecation")
