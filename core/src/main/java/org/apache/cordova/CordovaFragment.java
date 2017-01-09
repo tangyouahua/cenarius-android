@@ -113,17 +113,17 @@ public class CordovaFragment extends CNRSViewFragment {
             loadUrl(launchUrl);
         }
 
+
         return contentView;
     }
 
     private void initProgressBar() {
-        FrameLayout containerView = (FrameLayout) contentView.getParent();
-        ViewParent parent = containerView.getParent();
         progressBar = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
         lp.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
         progressBar.setProgressDrawable(getResources().getDrawable(R.drawable.progress_bar_bg));
-        containerView.addView(progressBar, lp);
+       if(contentView != null && contentView instanceof  FrameLayout)
+           ((FrameLayout)contentView) .addView(progressBar, lp);
     }
     /**
      * 设置 webView 的 WebViewClient 和 WebChromeClient。
@@ -206,6 +206,7 @@ public class CordovaFragment extends CNRSViewFragment {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
+        initProgressBar();
         setCrosswalk();
     }
 
@@ -229,8 +230,13 @@ public class CordovaFragment extends CNRSViewFragment {
         appView.getView().setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
+        FrameLayout appViewWrapperFl = new FrameLayout(getActivity());
+        appViewWrapperFl.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        appViewWrapperFl.addView(appView.getView());
 
-        setContentView(appView.getView());
+        setContentView(appViewWrapperFl);
 
         if (preferences.contains("BackgroundColor")) {
             int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
