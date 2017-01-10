@@ -25,6 +25,7 @@ import org.crosswalk.engine.XWalkWebViewEngine;
 
 public class CNRSCordovaActivity extends CordovaActivity {
 
+    public View progress;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,15 +39,5 @@ public class CNRSCordovaActivity extends CordovaActivity {
         } else {
             Log.v("cenarius", "htmlUrl 为空");
         }
-    }
-
-    public View initProgressBar() {
-        LinearLayout linearLayout= new LinearLayout(this);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        pb = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        params.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
-        pb.setProgressDrawable(getResources().getDrawable(R.drawable.progress_bar_bg));
-        linearLayout.addView(pb, params);
-        return linearLayout;
     }
 }

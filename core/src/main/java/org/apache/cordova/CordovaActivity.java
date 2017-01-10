@@ -89,7 +89,6 @@ import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
 //修改：原来继承自 Activity
 public class CordovaActivity extends CNRSViewActivity {
     public static String TAG = "CordovaActivity";
-    protected ProgressBar pb;
     // The webview for our app
     protected CordovaWebView appView;
 
@@ -211,7 +210,8 @@ public class CordovaActivity extends CNRSViewActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        setContentView(appView.getView());
+
+        setContentView(initProgressBar(appView.getView()));
 
         if (preferences.contains("BackgroundColor")) {
             int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);

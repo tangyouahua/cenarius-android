@@ -62,7 +62,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     protected final SystemCookieManager cookieManager;
     protected CordovaPreferences preferences;
     protected CordovaBridge bridge;
-    protected CordovaWebViewEngine.Client client;
+    protected Client client;
     protected CordovaWebView parentWebView;
     protected CordovaInterface cordova;
     protected PluginManager pluginManager;
@@ -86,7 +86,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
     }
 
     @Override
-    public void init(CordovaWebView parentWebView, CordovaInterface cordova, CordovaWebViewEngine.Client client,
+    public void init(CordovaWebView parentWebView, CordovaInterface cordova, Client client,
               CordovaResourceApi resourceApi, PluginManager pluginManager,
               NativeToJsMessageQueue nativeToJsMessageQueue) {
         if (this.cordova != null) {
@@ -150,10 +150,10 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         try {
             Method gingerbread_getMethod =  WebSettings.class.getMethod("setNavDump", new Class[] { boolean.class });
             
-            String manufacturer = android.os.Build.MANUFACTURER;
+            String manufacturer = Build.MANUFACTURER;
             Log.d(TAG, "CordovaWebView is running on device made by: " + manufacturer);
-            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB &&
-                    android.os.Build.MANUFACTURER.contains("HTC"))
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB &&
+                    Build.MANUFACTURER.contains("HTC"))
             {
                 gingerbread_getMethod.invoke(settings, true);
             }
@@ -173,10 +173,10 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         
         // Jellybean rightfully tried to lock this down. Too bad they didn't give us a whitelist
         // while we do this
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             settings.setAllowUniversalAccessFromFileURLs(true);
         }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             settings.setMediaPlaybackRequiresUserGesture(false);
         }
         // Enable database
@@ -189,7 +189,7 @@ public class SystemWebViewEngine implements CordovaWebViewEngine {
         //Determine whether we're in debug or release mode, and turn on Debugging!
         ApplicationInfo appInfo = webView.getContext().getApplicationContext().getApplicationInfo();
         if ((appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 &&
-            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             enableRemoteDebugging();
         }
         
