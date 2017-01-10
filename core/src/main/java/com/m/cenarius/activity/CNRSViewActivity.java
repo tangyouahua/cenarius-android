@@ -6,6 +6,10 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.R;
@@ -32,6 +36,7 @@ import java.util.List;
  * 其他Activity都应该继承它
  */
 public class CNRSViewActivity extends AppCompatActivity {
+    protected ProgressBar pb;
 
     public static final String TAG = CNRSViewActivity.class.getSimpleName();
 
@@ -222,6 +227,21 @@ public class CNRSViewActivity extends AppCompatActivity {
         String applicationName =
                 (String) packageManager.getApplicationLabel(applicationInfo);
         return applicationName;
+    }
+
+    /**
+     * 取出进度条所包含的控件
+     * @return
+     */
+    public View initProgressBar(View view) {
+        LinearLayout linearLayout= new LinearLayout(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        pb = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        params.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
+        pb.setProgressDrawable(getResources().getDrawable(R.drawable.progress_bar_bg));
+        linearLayout.addView(pb,0, params);
+        linearLayout.addView(view,1);
+        return linearLayout;
     }
 
 }

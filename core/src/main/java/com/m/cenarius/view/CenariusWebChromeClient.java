@@ -2,21 +2,32 @@ package com.m.cenarius.view;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Patterns;
+import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.ProgressBar;
 
 import com.m.cenarius.utils.LogUtils;
 
+import org.xutils.common.util.LogUtil;
+
 import java.util.regex.Matcher;
 
-public class CenariusWebChromeClient extends WebChromeClient{
+import static com.m.cenarius.R.id.progressBar;
 
+public class CenariusWebChromeClient extends WebChromeClient{
+    private ProgressBar progressBar;
+    private boolean isShowOver = false;
     static final String TAG = CenariusWebChromeClient.class.getSimpleName();
 
+    public void setProgressBar(ProgressBar progressBar) {
+        this.progressBar = progressBar;
+    }
     @Override
     public void onReceivedTitle(WebView view, String title) {
         super.onReceivedTitle(view, title);
@@ -49,8 +60,23 @@ public class CenariusWebChromeClient extends WebChromeClient{
 
     @Override
     public void onProgressChanged(WebView view, int newProgress) {
-        super.onProgressChanged(view, newProgress);
-        LogUtils.i(TAG, "process is " + newProgress);
+        LogUtil.v("进度条加载： "+ newProgress);
+        if(progressBar == null || isShowOver == true){
+            return;
+        }
+        if (newProgress == 100) {
+            isShowOver = true;
+            progressBar.setProgress(100);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.GONE);//加载完网页进度条消失
+                }
+            }, 800);//0.2秒后隐藏进度条
+        } else {
+            progressBar.setVisibility(View.VISIBLE);//开始加载网页时显示进度条
+            progressBar.setProgress(newProgress);//设置进度值
+        }
     }
 
     @Override
