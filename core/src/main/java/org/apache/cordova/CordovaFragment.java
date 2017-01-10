@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -32,11 +33,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.WindowManager;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.m.cenarius.R;
@@ -64,10 +68,7 @@ public class CordovaFragment extends CNRSViewFragment {
 
     // The webview for our app
     protected CordovaWebView appView;
-    private ProgressBar progressBar;
-    private static int ACTIVITY_STARTING = 0;
-    private static int ACTIVITY_RUNNING = 1;
-    private static int ACTIVITY_EXITING = 2;
+
 
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
@@ -102,6 +103,7 @@ public class CordovaFragment extends CNRSViewFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
         if (contentView == null) {
             init();
         }
@@ -117,39 +119,6 @@ public class CordovaFragment extends CNRSViewFragment {
         return contentView;
     }
 
-    private void initProgressBar() {
-        progressBar = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        lp.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
-        progressBar.setProgressDrawable(getResources().getDrawable(R.drawable.progress_bar_bg));
-       if(contentView != null && contentView instanceof  FrameLayout)
-           ((FrameLayout)contentView) .addView(progressBar, lp);
-    }
-    /**
-     * 设置 webView 的 WebViewClient 和 WebChromeClient。
-     * 如果要自定义它们，可以 Override
-     */
-    public void setCrosswalk() {
-        View appCordovaView = appView.getView();//加载H5的View
-        Log.v("cenarius", "此手机系统用到的内核为-->" + appCordovaView.getClass().getSimpleName());
-        if (appCordovaView instanceof SystemWebView) {
-            SystemWebViewEngine engine = (SystemWebViewEngine) appView.getEngine();
-            SystemWebView webView = (SystemWebView) engine.getView();
-            webView.setWebViewClient(new SystemWebViewClient(engine));
-            webView.setWebChromeClient(new SystemWebChromeClient(engine));
-            webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
-        } else if (appCordovaView instanceof XWalkCordovaView) {
-            XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
-            XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
-            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine,progressBar));
-            webView.setUIClient(new XWalkCordovaUiClient(engine));
-            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
-        } else {
-            Log.v("cenarius", "系统内核出故障，请检查...");
-        }
-    }
-
-
     // 从 Activity 中拷贝
 
     /**
@@ -162,25 +131,22 @@ public class CordovaFragment extends CNRSViewFragment {
 
         // need to activate preferences before super.onCreate to avoid "requestFeature() must be called before adding content" exception
         loadConfig();
+        getActivity().getWindow().setFormat(PixelFormat.TRANSPARENT);
 //        if (!preferences.getBoolean("ShowTitle", false)) {
 //            getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 //        }
 //
-//        if (preferences.getBoolean("SetFullscreen", false)) {
-//            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
-//            preferences.set("Fullscreen", true);
-//        }
-//        if (preferences.getBoolean("Fullscreen", false)) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-//                immersiveMode = true;
-//            } else {
-//                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//            }
-//        } else {
-//            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-//                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-//        }
+        if (preferences.getBoolean("SetFullscreen", false)) {
+            Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else if (preferences.getBoolean("Fullscreen", false)) {
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else {
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+        }
 
         super.onCreate(savedInstanceState);
 
@@ -188,11 +154,15 @@ public class CordovaFragment extends CNRSViewFragment {
         if (savedInstanceState != null) {
             cordovaInterface.restoreInstanceState(savedInstanceState);
         }
+
+        // If keepRunning
+        this.keepRunning = preferences.getBoolean("KeepRunning", true);
     }
 
     protected void init() {
         appView = makeWebView();
         createViews();
+        setCrosswalk();
 
         // 新增：
 
@@ -206,10 +176,51 @@ public class CordovaFragment extends CNRSViewFragment {
         if ("media".equals(volumePref.toLowerCase(Locale.ENGLISH))) {
             getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
         }
-        initProgressBar();
-        setCrosswalk();
     }
 
+
+    /**
+     * 设置 webView 的 WebViewClient 和 WebChromeClient。
+     * 如果要自定义它们，可以 Override
+     */
+    public void setCrosswalk() {
+
+        FrameLayout containerView = (FrameLayout) getActivity().findViewById(android.R.id.content);
+        ViewParent parent =containerView.getParent();
+        if (parent instanceof LinearLayout){
+            ((LinearLayout)parent).addView(initProgressBar(null),0);
+        }
+
+        View appCordovaView = appView.getView();//加载H5的View
+        Log.v("cenarius", "此手机系统用到的内核为-->" + appCordovaView.getClass().getSimpleName());
+        if (appCordovaView instanceof SystemWebView) {
+            SystemWebViewEngine engine = (SystemWebViewEngine) appView.getEngine();
+            SystemWebView webView = (SystemWebView) engine.getView();
+            webView.setWebViewClient(new SystemWebViewClient(engine));
+            webView.setWebChromeClient(new SystemWebChromeClient(engine));
+            webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        } else if (appCordovaView instanceof XWalkCordovaView) {
+            XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
+            XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
+            webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine,pb));
+            webView.setUIClient(new XWalkCordovaUiClient(engine));
+            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
+        } else {
+            Log.v("cenarius", "系统内核出故障，请检查...");
+        }
+    }
+
+    public void setXWalk(ViewGroup viewGroup){
+        for(int i = 0;i < viewGroup.getChildCount();i++){
+            View view = viewGroup.getChildAt(i);
+            if(view instanceof ViewGroup){
+                setXWalk((ViewGroup)view);
+            }else if(view instanceof SurfaceView){
+                ((SurfaceView) view).setZOrderOnTop(true);
+                ((SurfaceView) view).getHolder().setFormat(PixelFormat.TRANSPARENT);
+            }
+        }
+    }
 
     @SuppressWarnings("deprecation")
     protected void loadConfig() {
@@ -217,9 +228,10 @@ public class CordovaFragment extends CNRSViewFragment {
         parser.parse(getActivity());
         preferences = parser.getPreferences();
         preferences.setPreferencesBundle(getActivity().getIntent().getExtras());
-        launchUrl = parser.getLaunchUrl();
+        preferences.set(XWalkWebViewEngine.XWALK_Z_ORDER_ON_TOP,true);
+//        launchUrl = parser.getLaunchUrl();
         pluginEntries = parser.getPluginEntries();
-        Config.parser = parser;
+//        Config.parser = parser;
     }
 
     //Suppressing warnings in AndroidStudio
@@ -230,13 +242,8 @@ public class CordovaFragment extends CNRSViewFragment {
         appView.getView().setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        FrameLayout appViewWrapperFl = new FrameLayout(getActivity());
-        appViewWrapperFl.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        appViewWrapperFl.addView(appView.getView());
 
-        setContentView(appViewWrapperFl);
+        setContentView(appView.getView());
 
         if (preferences.contains("BackgroundColor")) {
             int backgroundColor = preferences.getInteger("BackgroundColor", Color.BLACK);
@@ -274,31 +281,28 @@ public class CordovaFragment extends CNRSViewFragment {
      * Load the url into the webview.
      */
     public void loadUrl(String url) {
-        if (appView == null) {
-            init();
+        if (!TextUtils.isEmpty(url)) {
+            appView.loadUrlIntoView(url, true);
         }
-
-        // If keepRunning
-        this.keepRunning = preferences.getBoolean("KeepRunning", true);
-
-        appView.loadUrlIntoView(url, true);
     }
+
+
 
     /**
      * Called when the system is about to start resuming a previous activity.
      */
-    @Override
-    public void onPause() {
-        super.onPause();
-        LOG.d(TAG, "Paused the activity.");
-
-        if (this.appView != null) {
-            // CB-9382 If there is an activity that started for result and main activity is waiting for callback
-            // result, we shoudn't stop WebView Javascript timers, as activity for result might be using them
-            boolean keepRunning = this.keepRunning || this.cordovaInterface.activityResultCallback != null;
-            this.appView.handlePause(keepRunning);
-        }
-    }
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        LOG.d(TAG, "Paused the activity.");
+//
+//        if (this.appView != null) {
+//            // CB-9382 If there is an activity that started for result and main activity is waiting for callback
+//            // result, we shoudn't stop WebView Javascript timers, as activity for result might be using them
+//            boolean keepRunning = this.keepRunning || this.cordovaInterface.activityResultCallback != null;
+//            this.appView.handlePause(keepRunning);
+//        }
+//    }
 
     /**
      * Called when the activity will start interacting with the user.
@@ -357,6 +361,14 @@ public class CordovaFragment extends CNRSViewFragment {
         if (this.appView != null) {
             appView.handleDestroy();
         }
+    }
+
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        // Capture requestCode here so that it is captured in the setActivityResultCallback() case.
+        cordovaInterface.setActivityResultRequestCode(requestCode);
+        super.startActivityForResult(intent, requestCode);
     }
 
     @SuppressLint("NewApi")
@@ -490,9 +502,9 @@ public class CordovaFragment extends CNRSViewFragment {
                 e.printStackTrace();
             }
         } else if ("exit".equals(id)) {
-            if (getActivity() != null) {
-                getActivity().finish();
-            }
+//            if (getActivity() != null) {
+//                getActivity().finish();
+//            }
         }
         return null;
     }
