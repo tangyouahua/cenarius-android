@@ -39,24 +39,24 @@ public class RouteManager {
          * 更新过程的状态码
          */
         enum State{
-            COPY_WWW,
+            COPY_WWW,//拷贝www
+            COPY_WWW_ERROR,//拷贝www出错
+            DOWNLOAD_CONFIG,//下载配置文件
+            DOWNLOAD_CONFIG_ERROR,//下载配置文件出错
+            DOWNLOAD_ROUTES,//下载路由表
+            DOWNLOAD_ROUTES_ERROR,//下载路由表出错
+            UPDATE_FILES,//更新文件
+            UPDATE_FILES_ERROR,//更新文件出错
+            UPDATE_FILES_SUCCESS,//更新文件成功
         }
 
-        public static final int COPY_WWW = 1;//拷贝www
-        public static final int DOWNLOAD_CONFIG = 1;//下载配置文件
-        public static final int DOWNLOAD_CONFIG_ERROR = 2;//下载配置文件出错
-        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
-        public static final int DOWNLOAD_ROUTES_ERROR = 4;//下载路由表出错
-        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
-        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
-        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
-        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
+
 
         void onSuccess(String data);
 
         void onFail();
 
-        void onResult(int state, int process);
+        void onResult(State state, int process);
     }
 
 //    public interface UriHandleCallback {
