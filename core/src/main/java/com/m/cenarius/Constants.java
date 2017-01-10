@@ -18,8 +18,10 @@ public class Constants {
      */
     public static final String CONTAINER_WIDGET_BASE = "cenarius://cenarius-container/widget";
 
-    // disk中routers.json文件
-    public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "routes.json";
+    // disk中cenarius-routers.json文件
+    public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "cenarius-routes.json";
+    // disk中cenarius-config.json文件
+    public static final String DEFAULT_DISK_CONFIG_FILE_NAME = "cenarius-config.json";
     // 本地asset的存储目录
     public static final String DEFAULT_ASSET_FILE_PATH = "www";
     // 本地asset的routes.json
@@ -141,4 +143,7 @@ public class Constants {
      * Java call js function format without parameters
      */
     public static final String FUNC_FORMAT = "javascript:window.%s()";
+
+
+
 }

@@ -34,12 +34,29 @@ public class RouteManager {
     public static final String TAG = RouteManager.class.getSimpleName();
 
     public interface RouteRefreshCallback {
+
         /**
-         * @param data raw data
+         * 更新过程的状态码
          */
+        enum State{
+            COPY_WWW,
+        }
+
+        public static final int COPY_WWW = 1;//拷贝www
+        public static final int DOWNLOAD_CONFIG = 1;//下载配置文件
+        public static final int DOWNLOAD_CONFIG_ERROR = 2;//下载配置文件出错
+        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
+        public static final int DOWNLOAD_ROUTES_ERROR = 4;//下载路由表出错
+        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
+        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
+        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
+        public static final int DOWNLOAD_ROUTES = 3;//下载路由表
+
         void onSuccess(String data);
 
         void onFail();
+
+        void onResult(int state, int process);
     }
 
 //    public interface UriHandleCallback {
