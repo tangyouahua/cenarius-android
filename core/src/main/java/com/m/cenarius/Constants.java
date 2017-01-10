@@ -26,6 +26,8 @@ public class Constants {
     public static final String DEFAULT_ASSET_FILE_PATH = "www";
     // 本地asset的routes.json
     public static final String PRESET_ROUTE_FILE_PATH = DEFAULT_ASSET_FILE_PATH + "/" + DEFAULT_DISK_ROUTES_FILE_NAME;
+    // 本地asset的config.json
+    public static final String PRESET_CONFIG_FILE_PATH = DEFAULT_ASSET_FILE_PATH + "/" + DEFAULT_DISK_CONFIG_FILE_NAME;
     // cache home
     public static final String CACHE_HOME_DIR = "cenarius";
     // disk中缓存文件的存储目录
