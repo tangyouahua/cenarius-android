@@ -176,8 +176,8 @@ public class OpenApi {
         if (queryMap != null) {
             for (String key : queryMap.keySet()) {
                 if ("sign".equals(key))
-                // 已经有签名，不需要处理
-                return url;
+                    // 已经有签名，不需要处理
+                    return url;
             }
         }
 
@@ -231,10 +231,12 @@ public class OpenApi {
         // 签名
         String sign = md5Signature(parameters, appSecret);
 
-        if (!url.contains("?")) {
+        if (url.contains("?")) {
+            url = url + "&";
+        } else {
             url = url + "?";
         }
-        url = url + "&access_token=" + token + "&app_key=" + appKey + "&timestamp=" + timestamp + "&sign=" + sign;
+        url = url + "access_token=" + token + "&app_key=" + appKey + "&timestamp=" + timestamp + "&sign=" + sign;
         return url;
     }
 
