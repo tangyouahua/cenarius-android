@@ -187,7 +187,7 @@ public class OpenApi {
                 // JSON
                 body = "openApiBodyString=" + bodyString;
             } else {
-                Map<String, String> bodyMap = JSON.parseObject(bodyString, Map.class);
+                Map<String, Object> bodyMap = JSON.parseObject(bodyString, Map.class);
                 body = QueryUtil.mapToString(bodyMap);
             }
         }
