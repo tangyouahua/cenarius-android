@@ -39,6 +39,7 @@ public class RouteManager {
          * 更新过程的状态码
          */
         enum State{
+            UPDATING_ERROR,//正在更新错误
             COPY_WWW,//拷贝www
             COPY_WWW_ERROR,//拷贝www出错
             DOWNLOAD_CONFIG,//下载配置文件
@@ -52,34 +53,14 @@ public class RouteManager {
 
 
 
-        void onSuccess(String data);
-
-        void onFail();
+//        void onSuccess(String data);
+//
+//        void onFail();
 
         void onResult(State state, int process);
     }
 
-//    public interface UriHandleCallback {
-//        void onResult(boolean handle);
-//    }
-
-//    private final int RouteRefreshCallbackOnSuccess = 1;
-//    private Handler mHandler = new Handler(){
-//        @Override
-//        public void handleMessage(Message msg) {
-//            switch (msg.what) {
-//                case RouteRefreshCallbackOnSuccess: {
-//                    showTextView.setText(editText.getText().toString());
-//                    ShowAnimation();
-//                    break;
-//                }
-//                default:
-//                    break;
-//            }
-//        }
-//    };
-
-    private static RouteManager sInstance;
+    private static RouteManager instance;
 
     private RouteManager() {
         loadLocalRoutes();
@@ -89,12 +70,17 @@ public class RouteManager {
     /**
      * Routes的远程地址
      */
-    private static String sRouteApi;
+    private static String routeUrl;
+
+    /**
+     * Config的远程地址
+     */
+    private static String configUrl;
 
     /**
      * 等待route刷新的callback
      */
-    private RouteRefreshCallback mRouteRefreshCallback;
+    private RouteRefreshCallback routeRefreshCallback;
 
     /**
      * 最新的Route列表
@@ -122,14 +108,14 @@ public class RouteManager {
     public String remoteFolderUrl;
 
     public static RouteManager getInstance() {
-        if (null == sInstance) {
+        if (null == instance) {
             synchronized (RouteManager.class) {
-                if (null == sInstance) {
-                    sInstance = new RouteManager();
+                if (null == instance) {
+                    instance = new RouteManager();
                 }
             }
         }
-        return sInstance;
+        return instance;
     }
 
     public List<Route> getRoutes() {
@@ -137,10 +123,17 @@ public class RouteManager {
     }
 
     /**
-     * 设置获取routes地址
+     * 设置routes地址
      */
-    private void setRouteApi(String routeUrl) {
-        sRouteApi = routeUrl;
+    private void setRouteUrl(String routeUrl) {
+        this.routeUrl = routeUrl;
+    }
+
+    /**
+     * 设置config地址
+     */
+    private void setConfigUrl(String configUrl) {
+        this.configUrl = configUrl;
     }
 
     /**
@@ -148,7 +141,8 @@ public class RouteManager {
      */
     public void setRemoteFolderUrl(String remoteFolderUrl) {
         this.remoteFolderUrl = remoteFolderUrl;
-        setRouteApi(remoteFolderUrl + "/" + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
+        setRouteUrl(remoteFolderUrl + "/" + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
+        setConfigUrl(remoteFolderUrl + "/" + Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
     }
 
     /**
@@ -170,91 +164,26 @@ public class RouteManager {
         }
     }
 
-//    /**
-//     * 以string方式返回Route列表, 如果Route为空则返回null
-//     */
-//    public String getRoutesString() {
-//        if (null == routes) {
-//            return null;
-//        }
-//        return JSON.toJSONString(routes);
-//    }
-//
-//    /**
-//     * uri 是否在路由表中
-//     */
-//    public boolean isInRoutes(String uri) {
-//        Route route = findRoute(uri);
-//        if (route != null) {
-//            return true;
-//        }
-//        return false;
-//    }
-
-    /**
-     * uri 是否在白名单中
-     */
-    public boolean isInWhiteList(String uri) {
-        for (String path : Cenarius.routesWhiteList) {
-            if (uri.startsWith(path)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 找到能够解析uri的Route
-     *
-     * @param uri 需要处理的uri
-     * @return 能够处理uri的Route，如果没有则为null
-     */
-    public Route findRoute(String uri) {
-        uri = deleteSlash(uri);
-        if (TextUtils.isEmpty(uri)) {
-            return null;
-        }
-        if (null == routes) {
-            return null;
-        }
-        for (Route route : routes) {
-            if (route.match(uri)) {
-                return route;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * 删除多余 /
-     */
-    public String deleteSlash(String uri) {
-        if (uri.contains("//")) {
-            uri = uri.replace("//", "/");
-            uri = deleteSlash(uri);
-        }
-        if (uri.startsWith("/")) {
-            uri = uri.substring(1);
-        }
-        return uri;
-    }
-
     /**
      * 刷新路由表
      */
     public void refreshRoute(final RouteRefreshCallback callback) {
-        mRouteRefreshCallback = callback;
+        routeRefreshCallback = callback;
 
         if (Cenarius.DevelopModeEnable) {
-            callback.onSuccess(null);
+            callback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 0);
             return;
         }
 
         if (updatingRoutes) {
-            callback.onFail();
+            callback.onResult(RouteRefreshCallback.State.UPDATING_ERROR, 0);
             return;
         }
         updatingRoutes = true;
+
+
+
+
 
         RequestParams requestParams = new RequestParams(sRouteApi);
         x.http().get(requestParams, new Callback.CommonCallback<String>() {
@@ -345,6 +274,54 @@ public class RouteManager {
 
             }
         });
+    }
+
+    /**
+     * uri 是否在白名单中
+     */
+    public boolean isInWhiteList(String uri) {
+        for (String path : Cenarius.routesWhiteList) {
+            if (uri.startsWith(path)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 找到能够解析uri的Route
+     *
+     * @param uri 需要处理的uri
+     * @return 能够处理uri的Route，如果没有则为null
+     */
+    public Route findRoute(String uri) {
+        uri = deleteSlash(uri);
+        if (TextUtils.isEmpty(uri)) {
+            return null;
+        }
+        if (null == routes) {
+            return null;
+        }
+        for (Route route : routes) {
+            if (route.match(uri)) {
+                return route;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 删除多余 /
+     */
+    public String deleteSlash(String uri) {
+        if (uri.contains("//")) {
+            uri = uri.replace("//", "/");
+            uri = deleteSlash(uri);
+        }
+        if (uri.startsWith("/")) {
+            uri = uri.substring(1);
+        }
+        return uri;
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
