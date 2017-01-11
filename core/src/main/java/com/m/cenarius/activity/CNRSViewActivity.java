@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.m.cenarius.Cenarius;
+import com.m.cenarius.Constants;
 import com.m.cenarius.R;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
@@ -192,10 +193,10 @@ public class CNRSViewActivity extends AppCompatActivity {
                 return getSDFile(uri);
             }
             else {
-                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
-                if (htmlFileURL == null) {
-                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
-                }
+//                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
+//                if (htmlFileURL == null) {
+//                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+//                }
             }
         }
         return htmlFileURL;
@@ -206,7 +207,7 @@ public class CNRSViewActivity extends AppCompatActivity {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
             String packageName = getPackageName();
-            File fileDir = new File(sdCardDir, packageName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
+            File fileDir = new File(sdCardDir, packageName + "/" + Constants.DEFAULT_ASSET_FILE_PATH + "/" + uri);
             String url = "file://" + fileDir.getPath();
             return url;
         }

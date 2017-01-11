@@ -42,7 +42,7 @@ public class ResourceProxy {
 //    }
 
     public void clearCache() {
-        InternalCache.getInstance().clear();
+        InternalCache.getInstance().clearWWW();
     }
 
     public INetwork getNetwork() {

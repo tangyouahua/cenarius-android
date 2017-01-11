@@ -629,6 +629,19 @@ public class RouteManager {
         });
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCopyWWW(BusProvider.BusEvent event) {
+        if (event.eventId == Constants.BUS_EVENT_COPY_WWW_START) {
+            // 开始拷贝www
+            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, 0);
+        } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
+            // 拷贝www成功
+        } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_ERROR) {
+            // 拷贝www失败
+            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
+        }
+    }
+
     private void downloadFile() {
 
     }
@@ -638,7 +651,7 @@ public class RouteManager {
      */
     private boolean hasMinVersion(Config config) {
         String versionName = Utils.getAppVersionName();
-        if (versionName != null && config.android_min_version != null && versionName.compareTo(config.android_min_version) > 0) {
+        if (versionName != null && config.android_min_version != null && versionName.compareTo(config.android_min_version) >= 0) {
             // 满足最小版本要求
             return true;
         } else {
@@ -698,7 +711,7 @@ public class RouteManager {
     /**
      * 把www文件夹安装到外部存储
      */
-    private void copyAssetToData(){
+    private void copyAssetToData() {
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_START, null));
         new Thread(new Runnable() {
             @Override
@@ -753,18 +766,5 @@ public class RouteManager {
         out.close();
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCopyWWW(BusProvider.BusEvent event) {
-        if (event.eventId == Constants.BUS_EVENT_COPY_WWW_START) {
-            // 开始拷贝www
-            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, 0);
-        } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
-            // 拷贝www成功
-        }
-        else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_ERROR) {
-            // 拷贝www失败
-            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
-        }
-    }
 
 }
