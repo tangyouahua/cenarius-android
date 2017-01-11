@@ -106,11 +106,21 @@ public class InternalCache implements ICache {
     }
 
     /**
+     * 创建文件夹
+     */
+    public void createWWW(){
+        File htmlDir = fileDir();
+        if (!htmlDir.exists()) {
+            htmlDir.mkdirs();
+        }
+    }
+
+    /**
      * 清除缓存
      *
      * @return whether clear cache successfully
      */
-    public boolean clear() {
+    public boolean clearWWW() {
         File htmlDir = fileDir();
         if (!htmlDir.exists()) {
             return true;
@@ -162,7 +172,7 @@ public class InternalCache implements ICache {
      * 获取www目录
      */
     public String wwwCachePath(){
-        String cachePath = "file://" + cachePath() + Constants.DEFAULT_ASSET_FILE_PATH + "/";
+        String cachePath = "file://" + cachePath() + Constants.DEFAULT_ASSET_FILE_PATH;
         return cachePath;
     }
 

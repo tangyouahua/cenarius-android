@@ -11,17 +11,22 @@ import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.BusProvider;
+import com.m.cenarius.utils.FilesUtility;
 import com.m.cenarius.utils.GsonHelper;
+import com.m.cenarius.utils.Paths;
 import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.FileUtils;
 import com.m.cenarius.utils.io.IOUtils;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -605,6 +610,7 @@ public class RouteManager {
                     routes = response.body();
                     if (isWWwFolderNeedsToBeInstalled()) {
                         // 需要拷贝www
+                        copyAssetToData();
                     } else {
                         // 不需要拷贝www
                         downloadFile();
@@ -687,6 +693,64 @@ public class RouteManager {
         }
         // 成功，进APP
         routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 0);
+    }
+
+    /**
+     * 把www文件夹安装到外部存储
+     */
+    private void copyAssetToData(){
+        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_START, null));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // 拷贝文件
+                    AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
+                    copyAssetDirectory(assetManager, Constants.DEFAULT_ASSET_FILE_PATH, InternalCache.getInstance().wwwCachePath());
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_SUCCESS, null));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_ERROR, null));
+                }
+            }
+        }).start();
+    }
+
+    private static void copyAssetDirectory(AssetManager assetManager, String fromDirectory, String toDirectory) throws IOException {
+        // 重新创建文件夹
+        FilesUtility.delete(toDirectory);
+        FilesUtility.ensureDirectoryExists(toDirectory);
+
+        // 拷贝
+        String[] files = assetManager.list(fromDirectory);
+        for (String file : files) {
+            final String destinationFileAbsolutePath = Paths.get(toDirectory, file);
+            final String assetFileAbsolutePath = Paths.get(fromDirectory, file).substring(1);
+            String subFiles[] = assetManager.list(assetFileAbsolutePath);
+            if (subFiles.length == 0) {
+                copyAssetFile(assetManager, assetFileAbsolutePath, destinationFileAbsolutePath);
+            } else {
+                copyAssetDirectory(assetManager, assetFileAbsolutePath, destinationFileAbsolutePath);
+            }
+        }
+    }
+
+    /**
+     * 拷贝本地www到外部www
+     */
+    private static void copyAssetFile(AssetManager assetManager, String assetFilePath, String destinationFilePath) throws IOException {
+        InputStream in = assetManager.open(assetFilePath);
+        OutputStream out = new FileOutputStream(destinationFilePath);
+
+        // Transfer bytes from in to out
+        byte[] buf = new byte[8192];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+
+        in.close();
+        out.close();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

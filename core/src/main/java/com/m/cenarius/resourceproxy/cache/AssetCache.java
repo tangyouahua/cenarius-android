@@ -5,6 +5,7 @@ import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
+import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -32,11 +33,11 @@ public class AssetCache implements ICache {
         return sInstance;
     }
 
-    private String mFilePath;
+//    private String mFilePath;
 
-    private AssetCache() {
-        mFilePath = Constants.DEFAULT_ASSET_FILE_PATH;
-    }
+//    private AssetCache() {
+//        mFilePath = Constants.DEFAULT_ASSET_FILE_PATH;
+//    }
 
     @Override
     public CacheEntry findCache(Route route) {
@@ -84,7 +85,7 @@ public class AssetCache implements ICache {
 
 
     private String filePath(String uri) {
-        return mFilePath + "/" + uri;
+        return Constants.DEFAULT_ASSET_FILE_PATH + "/" + uri;
     }
 
     /**
@@ -109,7 +110,7 @@ public class AssetCache implements ICache {
      * 获取www目录
      */
     public String wwwAssetsPath(){
-        String assetsPath = assetsPath() + mFilePath + "/";
+        String assetsPath = assetsPath() + Constants.DEFAULT_ASSET_FILE_PATH;
         return assetsPath;
     }
 
@@ -117,13 +118,6 @@ public class AssetCache implements ICache {
     public boolean removeCache(Route route) {
         // do nothing
         return true;
-    }
-
-    /**
-     * 把www文件夹安装到外部存储
-     */
-    public void copyAssetDirectoryToAppDirectory(){
-
     }
 
 }
