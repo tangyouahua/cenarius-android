@@ -139,11 +139,11 @@ public class InternalCache implements ICache {
     }
 
     /**
-     * 存储目录
+     * www存储目录
      *
      * @return 存储目录
      */
-    private File fileDir() {
+    public File fileDir() {
         if (fileDir == null) {
             fileDir = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
         }
@@ -172,7 +172,7 @@ public class InternalCache implements ICache {
      * 获取www目录
      */
     public String wwwCachePath(){
-        String cachePath = "file://" + cachePath() + Constants.DEFAULT_ASSET_FILE_PATH;
+        String cachePath = cachePath() + Constants.DEFAULT_ASSET_FILE_PATH;
         return cachePath;
     }
 

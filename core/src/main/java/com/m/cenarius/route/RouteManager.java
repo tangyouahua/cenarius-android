@@ -509,8 +509,7 @@ public class RouteManager {
      * route路径
      */
     private File getCachedRoutesFile() {
-        File fileDir = AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
-                Context.MODE_PRIVATE);
+        File fileDir = InternalCache.getInstance().fileDir();
         if (!fileDir.exists()) {
             fileDir.mkdirs();
         }
@@ -521,8 +520,7 @@ public class RouteManager {
      * config路径
      */
     private File getCachedConfigFile() {
-        File fileDir = AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
-                Context.MODE_PRIVATE);
+        File fileDir = InternalCache.getInstance().fileDir();
         if (!fileDir.exists()) {
             fileDir.mkdirs();
         }
@@ -563,7 +561,13 @@ public class RouteManager {
                         // 满足最小版本要求
                         if (shouldUpdateWWW(config)) {
                             // 需要更新www
-                            downloadRoute();
+                            if (isWWwFolderNeedsToBeInstalled()) {
+                                // 需要拷贝www
+                                copyAssetToData();
+                            } else {
+                                // 不需要拷贝www
+                                downloadRoute();
+                            }
                         } else {
                             // 不需要更新www
                             updateSuccess();
@@ -589,7 +593,7 @@ public class RouteManager {
     private interface DownloadService {
         @GET
         Call<Config> downloadConfig(@Url String url);
-
+        @GET
         Call<List<Route>> downloadRoute(@Url String url);
 
     }
@@ -608,13 +612,7 @@ public class RouteManager {
                 if (response.isSuccessful()) {
                     //下载route成功
                     routes = response.body();
-                    if (isWWwFolderNeedsToBeInstalled()) {
-                        // 需要拷贝www
-                        copyAssetToData();
-                    } else {
-                        // 不需要拷贝www
-                        downloadFile();
-                    }
+                    downloadFile();
                 } else {
                     //下载route失败
                     routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
@@ -636,6 +634,7 @@ public class RouteManager {
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, 0);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
             // 拷贝www成功
+            downloadRoute();
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_ERROR) {
             // 拷贝www失败
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
@@ -674,7 +673,7 @@ public class RouteManager {
      * 是否需要安装www文件夹
      */
     private boolean isWWwFolderNeedsToBeInstalled() {
-        if (cacheConfig == null || cacheConfig.release.compareTo(resourceConfig.release) <= 0) {
+        if (cacheConfig == null || cacheConfig.release.compareTo(resourceConfig.release) < 0) {
             //没有缓存或者缓存比预置低
             return true;
         }
@@ -734,7 +733,7 @@ public class RouteManager {
         FilesUtility.delete(toDirectory);
         FilesUtility.ensureDirectoryExists(toDirectory);
 
-        // 拷贝
+        // 拷贝 , 最后拷贝route和config
         String[] files = assetManager.list(fromDirectory);
         for (String file : files) {
             final String destinationFileAbsolutePath = Paths.get(toDirectory, file);
@@ -754,8 +753,6 @@ public class RouteManager {
     private static void copyAssetFile(AssetManager assetManager, String assetFilePath, String destinationFilePath) throws IOException {
         InputStream in = assetManager.open(assetFilePath);
         OutputStream out = new FileOutputStream(destinationFilePath);
-
-        // Transfer bytes from in to out
         byte[] buf = new byte[8192];
         int len;
         while ((len = in.read(buf)) > 0) {
