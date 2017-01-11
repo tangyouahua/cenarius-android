@@ -6,6 +6,9 @@ import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.LogUtils;
+
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,35 +21,21 @@ public class AssetCache implements ICache {
 
     private static AssetCache sInstance;
 
-    public static AssetCache getInstance(String filePath) {
-        if (null == sInstance) {
-            synchronized (AssetCache.class) {
-                if (null == sInstance) {
-                    sInstance = new AssetCache(filePath);
-                }
-            }
-        }
-        return sInstance;
-    }
-
     public static AssetCache getInstance() {
         if (null == sInstance) {
             synchronized (AssetCache.class) {
                 if (null == sInstance) {
-                    sInstance = new AssetCache(null);
+                    sInstance = new AssetCache();
                 }
             }
         }
         return sInstance;
     }
 
-    public String mFilePath;
+    private String mFilePath;
 
-    private AssetCache(String filePath) {
-        mFilePath = filePath;
-        if (TextUtils.isEmpty(mFilePath)) {
-            mFilePath = Constants.DEFAULT_ASSET_FILE_PATH;
-        }
+    private AssetCache() {
+        mFilePath = Constants.DEFAULT_ASSET_FILE_PATH;
     }
 
     @Override
@@ -116,10 +105,25 @@ public class AssetCache implements ICache {
         return "file:///android_asset/";
     }
 
+    /**
+     * 获取www目录
+     */
+    public String wwwAssetsPath(){
+        String assetsPath = assetsPath() + mFilePath + "/";
+        return assetsPath;
+    }
+
     @Override
     public boolean removeCache(Route route) {
         // do nothing
         return true;
+    }
+
+    /**
+     * 把www文件夹安装到外部存储
+     */
+    public void copyAssetDirectoryToAppDirectory(){
+
     }
 
 }

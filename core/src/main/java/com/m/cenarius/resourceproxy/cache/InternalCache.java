@@ -158,4 +158,12 @@ public class InternalCache implements ICache {
                 Context.MODE_PRIVATE).getPath() + "/";
     }
 
+    /**
+     * 获取www目录
+     */
+    public String wwwCachePath(){
+        String cachePath = "file://" + cachePath() + Constants.DEFAULT_ASSET_FILE_PATH + "/";
+        return cachePath;
+    }
+
 }

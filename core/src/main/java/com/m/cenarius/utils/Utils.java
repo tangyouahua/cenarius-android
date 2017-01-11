@@ -1,6 +1,11 @@
 package com.m.cenarius.utils;
 
+import android.app.Application;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
+
+import com.m.cenarius.R;
 
 public class Utils {
 
@@ -36,4 +41,22 @@ public class Utils {
 //        }
 //        return source;
 //    }
+
+    /**
+     * 获取版本号
+     *
+     * @return 当前应用的版本号
+     */
+    public static String getAppVersionName() {
+        PackageManager manager = AppContext.getInstance().getPackageManager();
+        try {
+            PackageInfo info = manager.getPackageInfo(AppContext.getInstance().getPackageName(), 0);
+            String version = info.versionName;
+            return version;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

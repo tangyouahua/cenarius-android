@@ -320,13 +320,13 @@ public class CenariusHandleRequest {
             return uri;
         }
         //cache
-        String cachePath = "file://" + InternalCache.getInstance().cachePath() + Constants.DEFAULT_ASSET_FILE_PATH + "/";
+        String cachePath = InternalCache.getInstance().wwwCachePath();
         uri = deleteString(cachePath, url);
         if (uri != null) {
             return uri;
         }
         //resource
-        String assetsPath = AssetCache.getInstance().assetsPath() + Constants.DEFAULT_ASSET_FILE_PATH + "/";
+        String assetsPath = AssetCache.getInstance().wwwAssetsPath();
         uri = deleteString(assetsPath, url);
         if (uri != null) {
             return uri;

@@ -105,6 +105,9 @@ public class Constants {
 
     public static final int BUS_EVENT_ROUTE_CHECK_VALID = 1000;
     public static final int BUS_EVENT_ROUTE_CHECK_INVALID = 2000;
+    public static final int BUS_EVENT_COPY_WWW_START = 6000;
+    public static final int BUS_EVENT_COPY_WWW_SUCCESS = 6001;
+    public static final int BUS_EVENT_COPY_WWW_ERROR = 6002;
 
     /**
      * 'Content-Encoding' header name
