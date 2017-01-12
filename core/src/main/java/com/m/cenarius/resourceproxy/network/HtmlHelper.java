@@ -15,11 +15,11 @@ public class HtmlHelper {
 
     public static final String TAG = HtmlHelper.class.getSimpleName();
 
-    public static void downloadFilesWithinRoutes(final List<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback) {
-        downloadFilesWithinRoutes(routes, shouldDownloadAll, callback, 0);
+    public static void downloadFilesWithinRoutes(final List<Route> routes, final RouteManager.RouteRefreshCallback callback) {
+        downloadFilesWithinRoutes(routes, callback, 0);
     }
 
-    private static void downloadFilesWithinRoutes(final List<Route> routes, final boolean shouldDownloadAll, final RouteManager.RouteRefreshCallback callback, final int index) {
+    private static void downloadFilesWithinRoutes(final List<Route> routes, final RouteManager.RouteRefreshCallback callback, final int index) {
         new Thread(new Runnable() {
             @Override
             public void run() {

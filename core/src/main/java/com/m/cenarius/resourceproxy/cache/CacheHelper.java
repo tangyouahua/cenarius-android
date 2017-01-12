@@ -46,10 +46,10 @@ public class CacheHelper {
         if (cacheRouteFileURL != null) {
             return cacheRouteFileURL;
         }
-        String resourceRouteFileURL = resourceRouteFileURLForRoute(route);
-        if (resourceRouteFileURL != null) {
-            return resourceRouteFileURL;
-        }
+//        String resourceRouteFileURL = resourceRouteFileURLForRoute(route);
+//        if (resourceRouteFileURL != null) {
+//            return resourceRouteFileURL;
+//        }
         return null;
     }
 

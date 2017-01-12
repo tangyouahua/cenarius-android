@@ -104,6 +104,8 @@ public class Constants {
     public static final int BUS_EVENT_COPY_WWW_START = 6000;
     public static final int BUS_EVENT_COPY_WWW_SUCCESS = 6001;
     public static final int BUS_EVENT_COPY_WWW_ERROR = 6002;
+    public static final int BUS_EVENT_DOWNLOAD_FILE_SUCCESS = 7000;
+    public static final int BUS_EVENT_DOWNLOAD_FILE_ERROR = 7001;
 
     /**
      * 'Content-Encoding' header name
