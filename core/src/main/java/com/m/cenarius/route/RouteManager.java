@@ -609,18 +609,18 @@ public class RouteManager {
                     } catch (IOException e) {
                         e.printStackTrace();
                         //下载config失败
-                        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG, 0);
+                        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
                     }
                 } else {
                     //下载config失败
-                    routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG, 0);
+                    routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 //下载config失败
-                routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG, 0);
+                routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
             }
         });
     }
@@ -833,6 +833,8 @@ public class RouteManager {
      * 更新成功
      */
     private void updateSuccess() {
+        loadLocalRoutes();
+        loadLocalConfig();
         if (isWWwFolderNeedsToBeInstalled()) {
             // 从asset加载
             wwwPath = AssetCache.getInstance().assetsPath();
