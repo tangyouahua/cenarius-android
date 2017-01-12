@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class QueryUtil {
 
-    public static String mapToString(Map<String, String> map) {
+    public static String mapToString(Map<String, Object> map) {
         if (map == null) {
             return null;
         }
@@ -29,11 +29,11 @@ public class QueryUtil {
             if (stringBuilder.length() > 0) {
                 stringBuilder.append("&");
             }
-            String value = map.get(key);
+            Object value = map.get(key);
             try {
                 stringBuilder.append((key != null ? URLEncoder.encode(key, "UTF-8") : ""));
                 stringBuilder.append("=");
-                stringBuilder.append(value != null ? URLEncoder.encode(value, "UTF-8") : "");
+                stringBuilder.append(value != null ? URLEncoder.encode(value.toString(), "UTF-8") : "");
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException("This method requires UTF-8 encoding support", e);
             }

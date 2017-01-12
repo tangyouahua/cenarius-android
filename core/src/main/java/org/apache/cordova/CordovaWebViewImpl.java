@@ -21,6 +21,7 @@ package org.apache.cordova;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -74,6 +75,9 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
         String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
+        if(Build.CPU_ABI.toLowerCase().contains("x86") || Build.CPU_ABI2.toLowerCase().contains("x86") ){
+            className =  SystemWebViewEngine.class.getCanonicalName();
+        }
         try {
             Class<?> webViewClass = Class.forName(className);
             Constructor<?> constructor = webViewClass.getConstructor(Context.class, CordovaPreferences.class);
@@ -592,7 +596,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
                         return true;
                     }
                 } else if (isBackButton) {
-                    return engine.goBack();
+//                    return engine.goBack();
+                    return false;
                 }
             }
             return null;

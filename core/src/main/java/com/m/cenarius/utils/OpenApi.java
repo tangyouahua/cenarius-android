@@ -36,7 +36,7 @@ public class OpenApi {
             MessageDigest md = MessageDigest.getInstance("MD5");
             result = byte2hex(md.digest(orgin.toString().getBytes("utf-8")));
         } catch (Exception e) {
-            throw new java.lang.RuntimeException("md5 sign error !", e);
+            throw new RuntimeException("md5 sign error !", e);
         }
         return result;
     }
@@ -58,7 +58,7 @@ public class OpenApi {
         StringBuffer hs = new StringBuffer();
         String stmp = "";
         for (int n = 0; n < b.length; n++) {
-            stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
+            stmp = (Integer.toHexString(b[n] & 0XFF));
             if (stmp.length() == 1) {
                 hs.append("0").append(stmp);
             } else {
@@ -187,7 +187,7 @@ public class OpenApi {
                 // JSON
                 body = "openApiBodyString=" + bodyString;
             } else {
-                Map<String, String> bodyMap = JSON.parseObject(bodyString, Map.class);
+                Map<String, Object> bodyMap = JSON.parseObject(bodyString, Map.class);
                 body = QueryUtil.mapToString(bodyMap);
             }
         }
