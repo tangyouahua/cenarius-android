@@ -836,10 +836,9 @@ public class RouteManager {
         if (isWWwFolderNeedsToBeInstalled()) {
             // 从asset加载
             wwwPath = AssetCache.getInstance().assetsPath();
-
         } else {
             // 从data加载
-            wwwPath = InternalCache.getInstance().wwwCachePath();
+            wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
         }
         // 成功，进APP
         routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 100);

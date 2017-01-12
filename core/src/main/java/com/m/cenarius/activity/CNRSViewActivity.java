@@ -16,6 +16,7 @@ import com.m.cenarius.Constants;
 import com.m.cenarius.R;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
+import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.view.CenariusWidget;
 import com.m.cenarius.widget.AlertDialogWidget;
 import com.m.cenarius.widget.CordovaWidget;
@@ -197,6 +198,7 @@ public class CNRSViewActivity extends AppCompatActivity {
 //                if (htmlFileURL == null) {
 //                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
 //                }
+                htmlFileURL = RouteManager.getWWWPath() + "/" + uri;
             }
         }
         return htmlFileURL;
