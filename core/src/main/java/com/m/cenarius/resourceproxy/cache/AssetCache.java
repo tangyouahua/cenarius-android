@@ -50,7 +50,7 @@ public class AssetCache implements ICache {
                 for (Route presetRoute : RouteManager.getInstance().resourceRoutes) {
                     if (presetRoute.equals(route)) {
                         //资源文件路径
-                        String pathString = filePath(presetRoute.uri);
+                        String pathString = filePath(presetRoute.file);
                         AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
                         try {
                             InputStream inputStream = assetManager.open(pathString);
@@ -92,7 +92,7 @@ public class AssetCache implements ICache {
      * 单个存储文件路径
      */
     public String fileUrl(Route route) {
-        return assetsPath() + filePath(route.uri);
+        return assetsPath() + filePath(route.file);
     }
 
     public String fileUrl(String uri) {

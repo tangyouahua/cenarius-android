@@ -12,8 +12,31 @@ public class Route {
 //    @SerializedName("file")
 //    public String uri;
 
+//    @SerializedName("file")
     public String file;
+//    @SerializedName("hash")
     public String hash;
+
+//    public String getFile(){
+//        return file;
+//    }
+//
+//    public String getHash(){
+//        return hash;
+//    }
+//
+//    public void setFile(String  file){
+//        this.file = file;
+//    }
+//
+//    public void setHash(String hash){
+//        this.hash= hash;
+//    }
+//
+//    @Override
+//    public String toString(){
+//        return file + hash;
+//    }
 
     /**
      * 匹配传入的uri，如果能匹配上则说明可以用这个html来显示

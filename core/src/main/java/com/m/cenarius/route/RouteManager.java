@@ -1,14 +1,15 @@
 package com.m.cenarius.route;
 
-import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Bundle;
 import android.text.TextUtils;
 
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
-import com.m.cenarius.resourceproxy.cache.CacheHelper;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.BusProvider;
@@ -19,7 +20,6 @@ import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.FileUtils;
 import com.m.cenarius.utils.io.IOUtils;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -36,7 +36,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Url;
 
@@ -106,10 +105,26 @@ public class RouteManager {
     private RouteRefreshCallback routeRefreshCallback;
 
     /**
+     * Routes
+     */
+    public static class Routes extends ArrayList<Route> {
+    }
+
+    /**
      * 最新的Route列表
      */
-    public List<Route> routes;
+    public Routes routes;
     private String routesString;
+
+    /**
+     * config
+     */
+    private static class Config {
+        String name;
+        String ios_min_version;
+        String android_min_version;
+        String release;
+    }
 
     /**
      * 最新的Config
@@ -120,12 +135,12 @@ public class RouteManager {
     /**
      * 缓存Route列表
      */
-    public List<Route> cacheRoutes;
+    public Routes cacheRoutes;
 
     /**
      * 资源Route列表
      */
-    public List<Route> resourceRoutes;
+    public Routes resourceRoutes;
 
     /**
      * 缓存Config列表
@@ -136,6 +151,11 @@ public class RouteManager {
      * 资源Config列表
      */
     public Config resourceConfig;
+
+    /**
+     * 进度
+     */
+    private int process;
 
 //    /**
 //     * 正在下载路由表
@@ -194,20 +214,19 @@ public class RouteManager {
      * 2. 如果没有本地缓存，则加载asset中预置的routes
      */
     private void loadLocalRoutes() {
+        routes = null;
         cacheRoutes = null;
         resourceRoutes = null;
         // 读取 cacheRoutes
         String routeContent = readCachedRoutes();
         if (!TextUtils.isEmpty(routeContent)) {
-            cacheRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, new TypeToken<List<Route>>() {
-            }.getType());
+            cacheRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, Routes.class);
         }
 
         // 读取 resourceRoutes
         routeContent = readPresetRoutes();
         if (!TextUtils.isEmpty(routeContent)) {
-            resourceRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, new TypeToken<List<Route>>() {
-            }.getType());
+            resourceRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, Routes.class);
         }
     }
 
@@ -217,6 +236,7 @@ public class RouteManager {
      * 2. 如果没有本地缓存，则加载asset中预置的config
      */
     private void loadLocalConfig() {
+        config = null;
         cacheConfig = null;
         resourceConfig = null;
         // 读取 cacheConfig
@@ -452,9 +472,9 @@ public class RouteManager {
         for (Route oldRoute : oldRoutes) {
             boolean isDeleted = true;
             for (Route newRoute : newRoutes) {
-                if (oldRoute.uri.equals(newRoute.uri)) {
+                if (oldRoute.file.equals(newRoute.file)) {
                     isDeleted = false;
-                    if (!newRoute.fileHash.equals(oldRoute.fileHash)) {
+                    if (!newRoute.hash.equals(oldRoute.hash)) {
                         changedRoutes.add(oldRoute);
                     }
                 }
@@ -634,10 +654,13 @@ public class RouteManager {
                     //下载route成功
                     try {
                         routesString = response.body().string();
-                        routes = GsonHelper.getInstance().gson.fromJson(routesString, new TypeToken<ArrayList<Route>>(){}.getType());
+                        routes = GsonHelper.getInstance().gson.fromJson(routesString, Routes.class);
+//                        routes = new Gson().fromJson(routesString, new TypeToken<List<Route>>() {}.getType());
                         downloadFiles(routes);
                     } catch (IOException e) {
                         e.printStackTrace();
+                        //下载route失败
+                        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
                     }
 
                 } else {
@@ -653,6 +676,11 @@ public class RouteManager {
             }
         });
     }
+
+//    public class Route{
+//        public String file;
+//        public String hash;
+//    }
 
     /**
      * 拷贝事件
@@ -676,19 +704,23 @@ public class RouteManager {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadFile(BusProvider.BusEvent event) {
-        if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS) {
-            // 下载成功
+        if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS) {
+            // 所有下载成功
             saveRouteAndConfig();
         } else if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR) {
             // 下载失败
             routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES_ERROR, 0);
+        } else if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS) {
+            // 单个下载成功
+            process = event.data.getInt("process");
+            routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, process);
         }
     }
 
     /**
      * 下载文件
      */
-    private void downloadFiles(List<Route> routes) {
+    private void downloadFiles(Routes routes) {
         routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, 0);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
@@ -698,19 +730,23 @@ public class RouteManager {
     /**
      * 下载文件
      */
-    private void downloadFile(final List<Route> routes, final int index, final DownloadService downloadService) {
+    private void downloadFile(final Routes routes, final int index, final DownloadService downloadService) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 if (routes == null || routes.isEmpty() || index >= routes.size()) {
                     // 下载完成
-                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS, null));
                     return;
                 }
+                // 进度
+                Bundle data = new Bundle();
+                data.putInt("process",(index+1) * 100 / routes.size());
+                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, data));
                 final Route route = routes.get(index);
                 if (shouldDownload(route)) {
                     // 需要下载
-                    Call<ResponseBody> call = downloadService.downloadFile(route.uri);
+                    Call<ResponseBody> call = downloadService.downloadFile(route.file);
                     try {
                         ResponseBody responseBody = call.execute().body();
                         if (responseBody != null) {
@@ -738,11 +774,12 @@ public class RouteManager {
      * 保存路由和配置
      */
     private void saveRouteAndConfig() {
-        String routesString = GsonHelper.getInstance().gson.toJson(routes, new TypeToken<List<Route>>() {
-        }.getType());
+//        String routesString = GsonHelper.getInstance().gson.toJson(routes, new TypeToken<List<Route>>() {
+//        }.getType());
         saveCachedRoutes(routesString);
-        String configString = GsonHelper.getInstance().gson.toJson(config, Config.class);
+//        String configString = GsonHelper.getInstance().gson.toJson(config, Config.class);
         saveCachedConfig(configString);
+        routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS,0);
     }
 
     /**
@@ -771,16 +808,6 @@ public class RouteManager {
             // 不满足最小版本要求
             return false;
         }
-    }
-
-    /**
-     * config
-     */
-    private static class Config {
-        String name;
-        String ios_min_version;
-        String android_min_version;
-        String release;
     }
 
     /**
@@ -818,7 +845,7 @@ public class RouteManager {
             wwwPath = InternalCache.getInstance().wwwCachePath();
         }
         // 成功，进APP
-        routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 0);
+        routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 100);
     }
 
     /**

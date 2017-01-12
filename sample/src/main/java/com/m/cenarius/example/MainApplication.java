@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.route.RouteManager;
+import com.m.cenarius.utils.LogUtils;
 
 import java.util.ArrayList;
 
@@ -27,7 +28,10 @@ public class MainApplication extends Application {
         RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
             @Override
             public void onResult(State state, int process) {
-
+                LogUtils.i("process",String.valueOf(process));
+                if (state == State.UPDATE_FILES_SUCCESS){
+                    LogUtils.i("更新","成功");
+                }
             }
         });
 //        // 设置需要代理的资源

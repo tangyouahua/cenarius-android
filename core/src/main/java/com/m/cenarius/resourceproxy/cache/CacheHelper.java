@@ -58,7 +58,7 @@ public class CacheHelper {
         RouteManager routeManager = RouteManager.getInstance();
         if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes) {
             for (Route cacheRoute : routeManager.cacheRoutes) {
-                if (cacheRoute.fileHash.equals(route.fileHash)) {
+                if (cacheRoute.hash.equals(route.hash)) {
                     return cacheRouteFilePathForRoute(route);
                 }
             }

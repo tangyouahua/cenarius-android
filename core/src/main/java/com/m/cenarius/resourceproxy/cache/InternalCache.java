@@ -157,7 +157,7 @@ public class InternalCache implements ICache {
      * @return html对应的存储文件
      */
     public File file(Route route) {
-        return new File(fileDir(), route.uri);
+        return new File(fileDir(), route.file);
     }
 
     /**
