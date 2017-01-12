@@ -66,19 +66,19 @@ public class CenariusWebViewClient extends WebViewClient {
         return super.shouldOverrideUrlLoading(view, url);
     }
 
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        if (Utils.hasLollipop()) {
-            return handleResourceRequest(view, request.getUrl().toString());
-        } else {
-            return super.shouldInterceptRequest(view, request);
-        }
-    }
-
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        return handleResourceRequest(view, url);
-    }
+//    @Override
+//    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+//        if (Utils.hasLollipop()) {
+//            return handleResourceRequest(view, request.getUrl().toString());
+//        } else {
+//            return super.shouldInterceptRequest(view, request);
+//        }
+//    }
+//
+//    @Override
+//    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+//        return handleResourceRequest(view, url);
+//    }
 
 //    @Override
 //    public void onPageStarted(WebView view, String url, Bitmap favicon) {

@@ -100,28 +100,28 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
         return super.shouldOverrideUrlLoading(view, url);
     }
 
-    @Override
-    public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
-        if (Utils.hasLollipop()) {
-            WebResourceResponse webResourceResponse = handleResourceRequest(view, request.getUrl().toString());
-            //创建新的 XWalkWebResourceResponse
-            if (webResourceResponse != null) {
-                String mimeType = webResourceResponse.getMimeType();
-                String encoding = webResourceResponse.getEncoding();
-                int statusCode = webResourceResponse.getStatusCode();
-                String reasonPhrase = webResourceResponse.getReasonPhrase();
-                Map<String, String> headers = webResourceResponse.getResponseHeaders();
-                InputStream data = webResourceResponse.getData();
-                return createXWalkWebResourceResponse(mimeType, encoding, data, statusCode, reasonPhrase, headers);
-            }
-        }
-        return super.shouldInterceptLoadRequest(view, request);
-    }
-
-    @Override
-    public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String url) {
-        return handleResourceRequest(view, url);
-    }
+//    @Override
+//    public XWalkWebResourceResponse shouldInterceptLoadRequest(XWalkView view, XWalkWebResourceRequest request) {
+//        if (Utils.hasLollipop()) {
+//            WebResourceResponse webResourceResponse = handleResourceRequest(view, request.getUrl().toString());
+//            //创建新的 XWalkWebResourceResponse
+//            if (webResourceResponse != null) {
+//                String mimeType = webResourceResponse.getMimeType();
+//                String encoding = webResourceResponse.getEncoding();
+//                int statusCode = webResourceResponse.getStatusCode();
+//                String reasonPhrase = webResourceResponse.getReasonPhrase();
+//                Map<String, String> headers = webResourceResponse.getResponseHeaders();
+//                InputStream data = webResourceResponse.getData();
+//                return createXWalkWebResourceResponse(mimeType, encoding, data, statusCode, reasonPhrase, headers);
+//            }
+//        }
+//        return super.shouldInterceptLoadRequest(view, request);
+//    }
+//
+//    @Override
+//    public WebResourceResponse shouldInterceptLoadRequest(XWalkView view, String url) {
+//        return handleResourceRequest(view, url);
+//    }
 
     /**
      * 拦截资源请求，部分资源需要返回本地资源
