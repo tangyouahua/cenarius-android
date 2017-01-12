@@ -837,7 +837,7 @@ public class RouteManager {
         loadLocalConfig();
         if (isWWwFolderNeedsToBeInstalled()) {
             // 从asset加载
-            wwwPath = AssetCache.getInstance().assetsPath();
+            wwwPath = AssetCache.getInstance().wwwAssetsPath();
         } else {
             // 从data加载
             wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
