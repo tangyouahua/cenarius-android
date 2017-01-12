@@ -54,12 +54,12 @@ public class QueryUtil {
 
         try {
             // 原 query, 需要 decode
-            query = URLDecoder.decode(query, "UTF-8");
+//            query = URLDecoder.decode(query, "UTF-8");
             String[] nameValuePairs = query.split("&");
             for (String nameValuePair : nameValuePairs) {
                 String[] nameValue = nameValuePair.split("=");
-                String key = nameValue[0];
-                String value = nameValuePair.substring(key.length() + 1);
+                String key = URLDecoder.decode(nameValue[0], "UTF-8");
+                String value = URLDecoder.decode(nameValuePair.substring(key.length() + 1), "UTF-8");
                 map = addItemToMap(map, value, key);
             }
         } catch (UnsupportedEncodingException e) {
