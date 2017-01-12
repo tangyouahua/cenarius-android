@@ -18,6 +18,7 @@ import org.xwalk.core.XWalkWebResourceRequest;
 import org.xwalk.core.XWalkWebResourceResponse;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -29,11 +30,12 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
         this.progressBar = progressBar;
         mWebView = parentEngine.getView();
         mJSIntercept = new InterceptJavascriptInterface(this);
-        if (mWebView instanceof WebView) {
-            ((WebView) mWebView).addJavascriptInterface(mJSIntercept, "cenariusInterception");
-        } else if (mWebView instanceof XWalkView) {
+       if (mWebView instanceof XWalkView) {
             ((XWalkView) mWebView).addJavascriptInterface(mJSIntercept, "cenariusInterception");
         }
+        isShowOver = false;
+        progress = 50;
+        handler.removeCallbacksAndMessages(null);
     }
 
     private ArrayList<CenariusWidget> mWidgets;
@@ -60,32 +62,49 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
 //        isNextAjaxRequest = true;
 //    }
 
+    int progress = 0;
+    Handler handler = new Handler();
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            progress+=5;
+            LogUtil.v("后半部分进度条增加值：" +progress);
+            if (progress > 100) {
+                progressBar.setProgress(100);
+                handler.removeCallbacks(runnable);
+                progressBar.setVisibility(View.GONE);//加载完网页进度条消失
+            }else{
+                progressBar.setProgress(progress);
+                handler.postDelayed(this,50);
+            }
+        }
+    };
 
     @Override
     public void onLoadStarted(XWalkView view, String url) {
         super.onLoadStarted(view, url);
-        isShowOver = false;
+        LogUtil.v("进度条加载： onLoadStarted");
     }
 
     @Override
     public void onProgressChanged(XWalkView view, int progressInPercent) {
         super.onProgressChanged(view,progressInPercent);
-        if(progressBar == null || isShowOver == true){
+        if(progressBar == null || (isShowOver == true && progressInPercent >= 100)){
             return;
         }
+
         LogUtil.v("进度条加载： "+ progressInPercent);
         if (progressInPercent == 100) {
             isShowOver = true;
-            progressBar.setProgress(100);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setVisibility(View.GONE);//加载完网页进度条消失
-                }
-            }, 800);//0.2秒后隐藏进度条
+            LogUtil.v("进度条加载到100,开始定时加载后面一部分的进度");
+            handler.post(runnable);
         } else {
+            isShowOver =false;
+            //先加载一半值，四舍五入取值，先取
+            int progress = new BigDecimal(progressInPercent*0.5).setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
             progressBar.setVisibility(View.VISIBLE);//开始加载网页时显示进度条
-            progressBar.setProgress(progressInPercent);//设置进度值
+            LogUtil.v("前半部分进度条增加值：" +progress);
+            progressBar.setProgress(progress);//设置进度值
         }
     }
 
