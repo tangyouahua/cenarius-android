@@ -776,7 +776,7 @@ public class RouteManager {
         saveCachedRoutes(routesString);
 //        String configString = GsonHelper.getInstance().gson.toJson(config, Config.class);
         saveCachedConfig(configString);
-        routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS,0);
+        updateSuccess();
     }
 
     /**
