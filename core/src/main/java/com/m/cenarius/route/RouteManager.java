@@ -426,9 +426,15 @@ public class RouteManager {
     public boolean deleteCachedRoutes() {
         File file = getCachedRoutesFile();
         boolean result = file.exists() && file.delete();
-//        if (result) {
-//            loadLocalRoutes();
-//        }
+        return result;
+    }
+
+    /**
+     * 删除缓存的Config
+     */
+    public boolean deleteCachedConfig() {
+        File file = getCachedConfigFile();
+        boolean result = file.exists() && file.delete();
         return result;
     }
 
@@ -732,6 +738,9 @@ public class RouteManager {
      * 下载文件
      */
     private void downloadFiles(Routes routes) {
+        // 为了保证www的完整性，必须在下载时把原来的删掉
+        deleteCachedRoutes();
+        deleteCachedConfig();
         routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, 0);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
@@ -865,6 +874,9 @@ public class RouteManager {
      */
     private void copyAssetToData() {
         copyFileIndex = 0;
+        // 为了保证www的完整性，必须在拷贝时把原来的删掉
+        deleteCachedRoutes();
+        deleteCachedConfig();
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_START, null));
         new Thread(new Runnable() {
             @Override
