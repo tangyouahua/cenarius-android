@@ -929,8 +929,9 @@ public class RouteManager {
         out.close();
 
         // 进度
+        copyFileIndex = copyFileIndex + 1;
         Bundle data = new Bundle();
-        data.putInt("process", (copyFileIndex + 1) * 100 / resourceRoutes.size());
+        data.putInt("process", copyFileIndex * 100 / resourceRoutes.size());
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW, data));
     }
 
