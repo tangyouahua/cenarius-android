@@ -155,9 +155,9 @@ public class RouteManager {
     private int process;
 
     /**
-     * 当前下载份数
+     * 拷贝份数
      */
-    private int downloadFileIndex;
+    private int copyFileIndex;
 
 //    /**
 //     * 正在下载路由表
@@ -737,7 +737,6 @@ public class RouteManager {
      * 下载文件
      */
     private void downloadFile(final Routes routes, final int index, final DownloadService downloadService) {
-        downloadFileIndex = 0;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -860,7 +859,7 @@ public class RouteManager {
      * 把www文件夹安装到外部存储
      */
     private void copyAssetToData() {
-//        process = 0;
+        copyFileIndex = 0;
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_START, null));
         new Thread(new Runnable() {
             @Override
@@ -914,7 +913,7 @@ public class RouteManager {
 
         // 进度
         Bundle data = new Bundle();
-        data.putInt("process", (downloadFileIndex + 1) * 100 / resourceRoutes.size());
+        data.putInt("process", (copyFileIndex + 1) * 100 / resourceRoutes.size());
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW, data));
     }
 
