@@ -216,7 +216,6 @@ public class RouteManager {
      * 2. 如果没有本地缓存，则加载asset中预置的routes
      */
     private void loadLocalRoutes() {
-        routes = null;
         cacheRoutes = null;
         resourceRoutes = null;
         // 读取 cacheRoutes
@@ -238,7 +237,6 @@ public class RouteManager {
      * 2. 如果没有本地缓存，则加载asset中预置的config
      */
     private void loadLocalConfig() {
-        config = null;
         cacheConfig = null;
         resourceConfig = null;
         // 读取 cacheConfig
@@ -270,6 +268,13 @@ public class RouteManager {
 //            callback.onResult(RouteRefreshCallback.State.UPDATING_ERROR, 0);
 //            return;
 //        }
+
+        // 重置变量
+        routes = null;
+        config = null;
+        process = 0;
+        copyFileIndex = 0;
+
 
         routeRefreshCallback = callback;
 //        updatingRoutes = true;
