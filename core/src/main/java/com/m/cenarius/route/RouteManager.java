@@ -698,6 +698,8 @@ public class RouteManager {
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, process);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
             // 拷贝www成功
+            loadLocalConfig();
+            loadLocalRoutes();
             downloadRoute();
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_ERROR) {
             // 拷贝www失败
