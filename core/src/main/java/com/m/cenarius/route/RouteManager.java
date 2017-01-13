@@ -274,8 +274,6 @@ public class RouteManager {
         config = null;
         process = 0;
         copyFileIndex = 0;
-
-
         routeRefreshCallback = callback;
 //        updatingRoutes = true;
 
