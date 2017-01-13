@@ -154,6 +154,11 @@ public class RouteManager {
      */
     private int process;
 
+    /**
+     * 当前下载份数
+     */
+    private int downloadFileIndex;
+
 //    /**
 //     * 正在下载路由表
 //     */
@@ -687,6 +692,10 @@ public class RouteManager {
         if (event.eventId == Constants.BUS_EVENT_COPY_WWW_START) {
             // 开始拷贝www
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, 0);
+        } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW) {
+            // 正在拷贝www
+            process = event.data.getInt("process");
+            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, process);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
             // 拷贝www成功
             downloadRoute();
@@ -728,6 +737,7 @@ public class RouteManager {
      * 下载文件
      */
     private void downloadFile(final Routes routes, final int index, final DownloadService downloadService) {
+        downloadFileIndex = 0;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -738,7 +748,7 @@ public class RouteManager {
                 }
                 // 进度
                 Bundle data = new Bundle();
-                data.putInt("process",(index+1) * 100 / routes.size());
+                data.putInt("process", (index + 1) * 100 / routes.size());
                 BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, data));
                 final Route route = routes.get(index);
                 if (shouldDownload(route)) {
@@ -850,6 +860,7 @@ public class RouteManager {
      * 把www文件夹安装到外部存储
      */
     private void copyAssetToData() {
+//        process = 0;
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_START, null));
         new Thread(new Runnable() {
             @Override
@@ -867,7 +878,7 @@ public class RouteManager {
         }).start();
     }
 
-    private static void copyAssetDirectory(AssetManager assetManager, String fromDirectory, String toDirectory) throws IOException {
+    private void copyAssetDirectory(AssetManager assetManager, String fromDirectory, String toDirectory) throws IOException {
         // 重新创建文件夹
         FilesUtility.delete(toDirectory);
         FilesUtility.ensureDirectoryExists(toDirectory);
@@ -889,7 +900,7 @@ public class RouteManager {
     /**
      * 拷贝本地www到外部www
      */
-    private static void copyAssetFile(AssetManager assetManager, String assetFilePath, String destinationFilePath) throws IOException {
+    private void copyAssetFile(AssetManager assetManager, String assetFilePath, String destinationFilePath) throws IOException {
         InputStream in = assetManager.open(assetFilePath);
         OutputStream out = new FileOutputStream(destinationFilePath);
         byte[] buf = new byte[8192];
@@ -900,6 +911,11 @@ public class RouteManager {
 
         in.close();
         out.close();
+
+        // 进度
+        Bundle data = new Bundle();
+        data.putInt("process", (downloadFileIndex + 1) * 100 / resourceRoutes.size());
+        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW, data));
     }
 
 
