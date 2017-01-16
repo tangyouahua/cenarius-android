@@ -66,7 +66,7 @@ public class LoginWidget implements CenariusWidget {
      * @param captcha 验证码
      * @param callback  登录后将执行这个回调
      */
-    public static void login(final Context context, String username, String password, String captchaId, String captcha, final LoginCallback callback) {
+    public static void login(String username, String password, String captchaId, String captcha, final LoginCallback callback) {
         String service = Cenarius.LoginService;
         String appKey = Cenarius.LoginAppKey;
         String appSecret = Cenarius.LoginAppSecret;
@@ -98,7 +98,7 @@ public class LoginWidget implements CenariusWidget {
         x.http().post(requestParams, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
-                setWebViewCookies(context);
+                setWebViewCookies();
                 Map map = JSON.parseObject(result, Map.class);
                 String token = (String) map.get("access_token");
                 String error_msg = (String) map.get("error_msg");
@@ -139,13 +139,12 @@ public class LoginWidget implements CenariusWidget {
 
     /**
      * 同步cookies到webview
-     * @param context
      */
-    public static void setWebViewCookies(Context context) {
+    public static void setWebViewCookies() {
         DbCookieStore instance = DbCookieStore.INSTANCE;
         List<HttpCookie> cookiesAll = instance.getCookies();
         // TODO Auto-generated method stub
-        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(context);
+        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(AppContext.getInstance());
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         //以下注释了防上出现cookie更新不同步问题
