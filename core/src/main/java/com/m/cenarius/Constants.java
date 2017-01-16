@@ -25,7 +25,7 @@ public class Constants {
     // 本地asset的存储目录
     public static final String DEFAULT_ASSET_FILE_PATH = "www";
     // 本地asset的zip
-    public static final String DEFAULT_ASSET_ZIP_PATH = "www.zip";
+    public static final String DEFAULT_ASSET_ZIP_PATH = DEFAULT_ASSET_FILE_PATH + "/" + "www.zip";
     // 本地asset的routes.json
     public static final String PRESET_ROUTE_FILE_PATH = DEFAULT_ASSET_FILE_PATH + "/" + DEFAULT_DISK_ROUTES_FILE_NAME;
     // 本地asset的config.json

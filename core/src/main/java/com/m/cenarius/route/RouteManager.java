@@ -160,6 +160,11 @@ public class RouteManager {
     private int copyFileIndex;
 
     /**
+     * 下载份数份数
+     */
+    private int downloadFileIndex;
+
+    /**
      * 需要下载www
      */
     private boolean shouldDownloadWWW;
@@ -279,6 +284,7 @@ public class RouteManager {
         config = null;
         process = 0;
         copyFileIndex = 0;
+        downloadFileIndex = 0;
         routeRefreshCallback = callback;
 //        updatingRoutes = true;
 
@@ -606,22 +612,29 @@ public class RouteManager {
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, 0);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW) {
             // 正在拷贝www
-            process = event.data.getInt("process");
+            process = copyFileIndex * 100 / resourceRoutes.size();
+            if (process > 100) {
+                process = 100;
+            }
+            if (shouldDownloadWWW) {
+                process = process / 2;
+            }
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, process);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
             // 拷贝www成功
-            String cachePath= InternalCache.getInstance().wwwCachePath();
+            String cachePath = InternalCache.getInstance().wwwCachePath();
             try {
-                copyAssetFile(Constants.PRESET_CONFIG_FILE_PATH, cachePath+Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
-                copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath+Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
-                if (shouldDownloadWWW){
+                copyAssetFile(Constants.PRESET_CONFIG_FILE_PATH, cachePath + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
+                copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath + Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
+                if (shouldDownloadWWW) {
                     downloadRoute();
-                }
-                else {
+                } else {
                     updateSuccess();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                // 拷贝www失败
+                routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
             }
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_ERROR) {
             // 拷贝www失败
@@ -642,7 +655,13 @@ public class RouteManager {
             routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES_ERROR, 0);
         } else if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS) {
             // 单个下载成功
-            process = event.data.getInt("process");
+            int copyProcess = process;
+            int downloadProcess = downloadFileIndex * 100 / resourceRoutes.size() * (100 - copyProcess);
+            process = copyProcess + downloadProcess;
+            if (process > 100) {
+                process = 100;
+            }
+
             routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, process);
         }
     }
@@ -673,9 +692,8 @@ public class RouteManager {
                     return;
                 }
                 // 进度
-                Bundle data = new Bundle();
-                data.putInt("process", (index + 1) * 100 / routes.size());
-                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, data));
+                downloadFileIndex = downloadFileIndex + 1;
+                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
                 final Route route = routes.get(index);
                 if (shouldDownload(route)) {
                     // 需要下载
@@ -798,8 +816,14 @@ public class RouteManager {
                 try {
                     // 解压文件
                     // TODO:假的进度条
-                    String outputDirectory = InternalCache.getInstance().cachePath();
-                    FilesUtility.unZip(AppContext.getInstance(), Constants.DEFAULT_ASSET_ZIP_PATH, outputDirectory, true);
+                    String outputDirectory = InternalCache.getInstance().wwwCachePath();
+                    FilesUtility.unZip(AppContext.getInstance(), Constants.DEFAULT_ASSET_ZIP_PATH, outputDirectory, true, new FilesUtility.UnZipCallback() {
+                        @Override
+                        public void onUnzipFile() {
+                            copyFileIndex = copyFileIndex + 1;
+                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW, null));
+                        }
+                    });
                     BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_SUCCESS, null));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -816,7 +840,7 @@ public class RouteManager {
         AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
         InputStream in = assetManager.open(assetFilePath);
         OutputStream out = new FileOutputStream(destinationFilePath);
-        byte[] buf = new byte[1024*1024];
+        byte[] buf = new byte[1024 * 1024];
         int len;
         while ((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);
@@ -824,12 +848,6 @@ public class RouteManager {
 
         in.close();
         out.close();
-
-        // 进度
-        copyFileIndex = copyFileIndex + 1;
-        Bundle data = new Bundle();
-        data.putInt("process", copyFileIndex * 100 / resourceRoutes.size());
-        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW, data));
     }
 
 

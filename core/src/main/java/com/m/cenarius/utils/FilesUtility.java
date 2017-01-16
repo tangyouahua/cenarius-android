@@ -217,6 +217,11 @@ public class FilesUtility {
         return md5.calculateHash();
     }
 
+
+    public interface UnZipCallback{
+        void onUnzipFile();
+    }
+
     /**
      * 解压assets的zip压缩文件到指定目录
      * @param context 上下文对象
@@ -226,7 +231,7 @@ public class FilesUtility {
      * @throws IOException
      */
     public static void unZip(Context context, String assetName,
-                             String outputDirectory,boolean isReWrite) throws IOException {
+                             String outputDirectory,boolean isReWrite, UnZipCallback unZipCallback) throws IOException {
         //创建解压目标目录
         File file = new File(outputDirectory);
         //如果目标目录不存在，则创建
@@ -252,6 +257,9 @@ public class FilesUtility {
                     file.mkdir();
                 }
             } else {
+                if (unZipCallback != null){
+                    unZipCallback.onUnzipFile();
+                }
                 //如果是文件
                 file = new File(outputDirectory + File.separator
                         + zipEntry.getName());
