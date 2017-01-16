@@ -159,6 +159,11 @@ public class RouteManager {
      */
     private int copyFileIndex;
 
+    /**
+     * 需要下载www
+     */
+    private boolean shouldDownloadWWW;
+
 //    /**
 //     * 正在下载路由表
 //     */
@@ -280,96 +285,6 @@ public class RouteManager {
         loadLocalConfig();
         loadLocalRoutes();
         downloadConfig();
-//
-//        RequestParams requestParams = new RequestParams(sRouteApi);
-//        x.http().get(requestParams, new Callback.CommonCallback<String>() {
-//
-//            @Override
-//            public void onSuccess(final String result) {
-//                if (TextUtils.isEmpty(result)) {
-//                    callback.onFail();
-//                    updatingRoutes = false;
-//                } else {
-//                    //先更新内存中的 routes
-//                    routes = JSON.parseArray(result, Route.class);
-//
-//                    //优先下载
-//                    List<String> downloadFirstList = Cenarius.downloadFirstList;
-//                    final List<Route> downloadFirstRoutes = new ArrayList<>();
-//                    if (downloadFirstList != null) {
-//                        for (String uri : downloadFirstList) {
-//                            Route route = findRoute(uri);
-//                            if (route != null) {
-//                                downloadFirstRoutes.add(route);
-//                            } else {
-//                                //优先下载失败
-//                                callback.onFail();
-//                                updatingRoutes = false;
-//                                return;
-//                            }
-//                        }
-//                    }
-//                    HtmlHelper.downloadFilesWithinRoutes(downloadFirstRoutes, true, new RouteRefreshCallback() {
-//                        @Override
-//                        public void onSuccess(String data) {
-//
-//                            if (cacheRoutes == null) {
-//                                //优先下载成功，如果没有 cacheRoutes，立马保存
-//                                cacheRoutes = routes;
-//                                saveCachedRoutes(result);
-//                            } else {
-//                                //优先下载成功，把下载成功的 routes 加入 cacheRoutes 的最前面
-//                                cacheRoutes.addAll(0, downloadFirstRoutes);
-//                            }
-//
-////                            callback.onSuccess(null);
-//                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_VALID, null));
-//
-//                            //然后下载最新 routes 中的资源文件
-//                            HtmlHelper.downloadFilesWithinRoutes(routes, false, new RouteRefreshCallback() {
-//                                @Override
-//                                public void onSuccess(String data) {
-//                                    // 所有文件更新到最新，保存路由表
-//                                    cacheRoutes = routes;
-//                                    saveCachedRoutes(result);
-//                                    updatingRoutes = false;
-//                                }
-//
-//                                @Override
-//                                public void onFail() {
-//                                    updatingRoutes = false;
-//                                }
-//                            });
-//
-//                        }
-//
-//                        @Override
-//                        public void onFail() {
-//                            //优先下载失败
-////                            callback.onFail();
-//                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_ROUTE_CHECK_INVALID, null));
-//                            updatingRoutes = false;
-//                        }
-//                    });
-//                }
-//            }
-//
-//            @Override
-//            public void onError(Throwable ex, boolean isOnCallback) {
-//                callback.onFail();
-//                updatingRoutes = false;
-//            }
-//
-//            @Override
-//            public void onCancelled(CancelledException cex) {
-//
-//            }
-//
-//            @Override
-//            public void onFinished() {
-//
-//            }
-//        });
     }
 
     /**
@@ -601,23 +516,15 @@ public class RouteManager {
                     try {
                         configString = response.body().string();
                         config = GsonHelper.getInstance().gson.fromJson(configString, Config.class);
-                        if (hasMinVersion(config)) {
-                            // 满足最小版本要求
-                            if (shouldUpdateWWW(config)) {
-                                // 需要更新www
-                                if (isWWwFolderNeedsToBeInstalled()) {
-                                    // 需要拷贝www
-                                    copyAssetToData();
-                                } else {
-                                    // 不需要拷贝www
-                                    downloadRoute();
-                                }
-                            } else {
-                                // 不需要更新www
-                                updateSuccess();
-                            }
+                        shouldDownloadWWW = shouldDownloadWWW(config);
+                        if (isWWwFolderNeedsToBeInstalled()) {
+                            // 需要拷贝www
+                            unzipAssetToData();
+                        } else if (shouldDownloadWWW) {
+                            // 下载路由表
+                            downloadRoute();
                         } else {
-                            // 不满足最小版本要求
+                            // 不需要更新www
                             updateSuccess();
                         }
                     } catch (IOException e) {
@@ -654,6 +561,8 @@ public class RouteManager {
      * 下载路由表
      */
     private void downloadRoute() {
+        loadLocalConfig();
+        loadLocalRoutes();
         routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_ROUTES, 0);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
@@ -666,7 +575,6 @@ public class RouteManager {
                     try {
                         routesString = response.body().string();
                         routes = GsonHelper.getInstance().gson.fromJson(routesString, Routes.class);
-//                        routes = new Gson().fromJson(routesString, new TypeToken<List<Route>>() {}.getType());
                         downloadFiles(routes);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -688,11 +596,6 @@ public class RouteManager {
         });
     }
 
-//    public class Route{
-//        public String file;
-//        public String hash;
-//    }
-
     /**
      * 拷贝事件
      */
@@ -707,9 +610,19 @@ public class RouteManager {
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, process);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
             // 拷贝www成功
-            loadLocalConfig();
-            loadLocalRoutes();
-            downloadRoute();
+            String cachePath= InternalCache.getInstance().wwwCachePath();
+            try {
+                copyAssetFile(Constants.PRESET_CONFIG_FILE_PATH, cachePath+Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
+                copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath+Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
+                if (shouldDownloadWWW){
+                    downloadRoute();
+                }
+                else {
+                    updateSuccess();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_ERROR) {
             // 拷贝www失败
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
@@ -794,10 +707,7 @@ public class RouteManager {
      * 保存路由和配置
      */
     private void saveRouteAndConfig() {
-//        String routesString = GsonHelper.getInstance().gson.toJson(routes, new TypeToken<List<Route>>() {
-//        }.getType());
         saveCachedRoutes(routesString);
-//        String configString = GsonHelper.getInstance().gson.toJson(config, Config.class);
         saveCachedConfig(configString);
         updateSuccess();
     }
@@ -844,12 +754,16 @@ public class RouteManager {
     /**
      * 是否需要更新www文件夹
      */
-    private boolean shouldUpdateWWW(Config config) {
-        if (isWWwFolderNeedsToBeInstalled()) {
-            return config.release.compareTo(resourceConfig.release) > 0;
-        } else {
-            return config.release.compareTo(cacheConfig.release) > 0;
+    private boolean shouldDownloadWWW(Config config) {
+        if (hasMinVersion(config)) {
+            // 满足最小版本要求
+            if (isWWwFolderNeedsToBeInstalled()) {
+                return config.release.compareTo(resourceConfig.release) > 0;
+            } else {
+                return config.release.compareTo(cacheConfig.release) > 0;
+            }
         }
+        return false;
     }
 
     /**
@@ -858,13 +772,14 @@ public class RouteManager {
     private void updateSuccess() {
         loadLocalRoutes();
         loadLocalConfig();
-        if (isWWwFolderNeedsToBeInstalled()) {
-            // 从asset加载
-            wwwPath = AssetCache.getInstance().wwwAssetsPath();
-        } else {
-            // 从data加载
-            wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
-        }
+//        if (isWWwFolderNeedsToBeInstalled()) {
+//            // 从asset加载
+//            wwwPath = AssetCache.getInstance().wwwAssetsPath();
+//        } else {
+//            // 从data加载
+//            wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
+//        }
+        wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
         // 成功，进APP
         routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 100);
     }
@@ -872,8 +787,7 @@ public class RouteManager {
     /**
      * 把www文件夹安装到外部存储
      */
-    private void copyAssetToData() {
-        copyFileIndex = 0;
+    private void unzipAssetToData() {
         // 为了保证www的完整性，必须在拷贝时把原来的删掉
         deleteCachedRoutes();
         deleteCachedConfig();
@@ -882,9 +796,10 @@ public class RouteManager {
             @Override
             public void run() {
                 try {
-                    // 拷贝文件
-                    AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
-                    copyAssetDirectory(assetManager, Constants.DEFAULT_ASSET_FILE_PATH, InternalCache.getInstance().wwwCachePath());
+                    // 解压文件
+                    // TODO:假的进度条
+                    String outputDirectory = InternalCache.getInstance().cachePath();
+                    FilesUtility.unZip(AppContext.getInstance(), Constants.DEFAULT_ASSET_ZIP_PATH, outputDirectory, true);
                     BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_SUCCESS, null));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -894,32 +809,14 @@ public class RouteManager {
         }).start();
     }
 
-    private void copyAssetDirectory(AssetManager assetManager, String fromDirectory, String toDirectory) throws IOException {
-        // 重新创建文件夹
-        FilesUtility.delete(toDirectory);
-        FilesUtility.ensureDirectoryExists(toDirectory);
-
-        // 拷贝 , 最后拷贝route和config
-        String[] files = assetManager.list(fromDirectory);
-        for (String file : files) {
-            final String destinationFileAbsolutePath = Paths.get(toDirectory, file);
-            final String assetFileAbsolutePath = Paths.get(fromDirectory, file).substring(1);
-            String subFiles[] = assetManager.list(assetFileAbsolutePath);
-            if (subFiles.length == 0) {
-                copyAssetFile(assetManager, assetFileAbsolutePath, destinationFileAbsolutePath);
-            } else {
-                copyAssetDirectory(assetManager, assetFileAbsolutePath, destinationFileAbsolutePath);
-            }
-        }
-    }
-
     /**
      * 拷贝本地www到外部www
      */
-    private void copyAssetFile(AssetManager assetManager, String assetFilePath, String destinationFilePath) throws IOException {
+    private void copyAssetFile(String assetFilePath, String destinationFilePath) throws IOException {
+        AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
         InputStream in = assetManager.open(assetFilePath);
         OutputStream out = new FileOutputStream(destinationFilePath);
-        byte[] buf = new byte[8192];
+        byte[] buf = new byte[1024*1024];
         int len;
         while ((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);
