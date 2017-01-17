@@ -145,7 +145,8 @@ public class InternalCache implements ICache {
      */
     public File fileDir() {
         if (fileDir == null) {
-            fileDir = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
+//            fileDir = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
+    fileDir = new File(wwwCachePath());
         }
         return fileDir;
     }

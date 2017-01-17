@@ -19,6 +19,7 @@ import com.m.cenarius.utils.io.IOUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.xutils.common.util.LogUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,19 +62,12 @@ public class RouteManager {
             UPDATE_FILES_SUCCESS,//更新文件成功
         }
 
-
-//        void onSuccess(String data);
-//
-//        void onFail();
-
         void onResult(State state, int process);
     }
 
     private static RouteManager instance;
 
     private RouteManager() {
-//        loadLocalRoutes();
-//        loadLocalConfig();
         BusProvider.getInstance().register(this);
     }
 
@@ -162,17 +156,35 @@ public class RouteManager {
     /**
      * 下载份数份数
      */
-    private int downloadFileCount;
+    private  int downloadFileCount;
+
+    /**
+     * 当前状态
+     */
+    private RouteRefreshCallback.State mState;
+
+    /**
+     * 当前进度
+     */
+    private int mProcess;
+
+    public synchronized void setDownloadFileCount(int downloadFileCount) {
+        this.downloadFileCount = downloadFileCount;
+    }
+
+    public synchronized int getDownloadFileCount() {
+        return downloadFileCount;
+    }
+
+    public synchronized void addDownloadFileCount() {
+        downloadFileCount++;
+//        LogUtil.i("已经下载的数量： " + downloadFileCount);
+    }
 
     /**
      * 需要下载www
      */
     private boolean shouldDownloadWWW;
-
-//    /**
-//     * 正在下载路由表
-//     */
-//    private boolean updatingRoutes;
 
     /**
      * 远程目录 url
@@ -190,31 +202,24 @@ public class RouteManager {
         return instance;
     }
 
-    public List<Route> getRoutes() {
-        return routes;
-    }
-
     /**
      * 设置routes地址
      */
     private void setRouteUrl(String routeUrl) {
-        this.routeUrl = routeUrl;
+        RouteManager.routeUrl = routeUrl;
     }
 
     /**
      * 设置config地址
      */
     private void setConfigUrl(String configUrl) {
-        this.configUrl = configUrl;
+        RouteManager.configUrl = configUrl;
     }
 
     /**
      * 设置远程资源地址
      */
     public void setRemoteFolderUrl(String remoteFolderUrl) {
-//        this.remoteFolderUrl = remoteFolderUrl;
-//        setRouteUrl(remoteFolderUrl + "/" + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
-//        setConfigUrl(remoteFolderUrl + "/" + Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
         this.remoteFolderUrl = remoteFolderUrl + "/";
         setRouteUrl(Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
         setConfigUrl(Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
@@ -273,20 +278,13 @@ public class RouteManager {
             return;
         }
 
-//        // 正在更新
-//        if (isUpdatingRoutes()) {
-//            callback.onResult(RouteRefreshCallback.State.UPDATING_ERROR, 0);
-//            return;
-//        }
-
         // 重置变量
         routes = null;
         config = null;
         process = 0;
         copyFileCount = 0;
-        downloadFileCount = 0;
+        setDownloadFileCount(0);
         routeRefreshCallback = callback;
-//        updatingRoutes = true;
 
         loadLocalConfig();
         loadLocalRoutes();
@@ -510,7 +508,7 @@ public class RouteManager {
      * 下载配置
      */
     private void downloadConfig() {
-        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG, 0);
+        setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_CONFIG, 0);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
         Call<ResponseBody> call = downloadService.downloadConfig(configUrl);
@@ -536,20 +534,28 @@ public class RouteManager {
                     } catch (IOException e) {
                         e.printStackTrace();
                         //下载config失败
-                        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
+                        setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
                     }
                 } else {
                     //下载config失败
-                    routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
+                    setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 //下载config失败
-                routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
+                setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_CONFIG_ERROR, 0);
             }
         });
+    }
+
+    private void setStateAndProcess(RouteRefreshCallback.State state, int process){
+        if (routeRefreshCallback != null && (mState != state || mProcess != process)) {
+            mProcess = process;
+            mState = state;
+            routeRefreshCallback.onResult(state, process);
+        }
     }
 
     private interface DownloadService {
@@ -569,7 +575,7 @@ public class RouteManager {
     private void downloadRoute() {
         loadLocalConfig();
         loadLocalRoutes();
-        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_ROUTES, 0);
+        setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_ROUTES, 0);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
         Call<ResponseBody> call = downloadService.downloadRoute(routeUrl);
@@ -585,19 +591,19 @@ public class RouteManager {
                     } catch (IOException e) {
                         e.printStackTrace();
                         //下载route失败
-                        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
+                        setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
                     }
 
                 } else {
                     //下载route失败
-                    routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
+                    setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 //下载route失败
-                routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
+                setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
             }
         });
     }
@@ -609,7 +615,7 @@ public class RouteManager {
     public void onCopyWWW(BusProvider.BusEvent event) {
         if (event.eventId == Constants.BUS_EVENT_COPY_WWW_START) {
             // 开始拷贝www
-            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, 0);
+            setStateAndProcess(RouteRefreshCallback.State.COPY_WWW, 0);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW) {
             // 正在拷贝www
             process = copyFileCount * 100 / resourceRoutes.size();
@@ -619,13 +625,13 @@ public class RouteManager {
             if (shouldDownloadWWW) {
                 process = process / 2;
             }
-            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, process);
+            setStateAndProcess(RouteRefreshCallback.State.COPY_WWW, process);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_SUCCESS) {
             // 拷贝www成功
-            String cachePath = InternalCache.getInstance().wwwCachePath();
+            String cachePath = InternalCache.getInstance().wwwCachePath() + File.separator;
             try {
-                copyAssetFile(Constants.PRESET_CONFIG_FILE_PATH, cachePath + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
-                copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath + Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
+                copyAssetFile(Constants.PRESET_CONFIG_FILE_PATH, cachePath + Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
+                copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
                 if (shouldDownloadWWW) {
                     downloadRoute();
                 } else {
@@ -634,11 +640,11 @@ public class RouteManager {
             } catch (IOException e) {
                 e.printStackTrace();
                 // 拷贝www失败
-                routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
+                setStateAndProcess(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
             }
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW_ERROR) {
             // 拷贝www失败
-            routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
+            setStateAndProcess(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
         }
     }
 
@@ -652,17 +658,18 @@ public class RouteManager {
             saveRouteAndConfig();
         } else if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR) {
             // 下载失败
-            routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES_ERROR, 0);
+            setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_FILES_ERROR, 0);
         } else if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS) {
             // 单个下载成功
             int copyProcess = process;
-            int downloadProcess = downloadFileCount * (100 - copyProcess) / routes.size();
+            int downloadProcess = getDownloadFileCount() * (100 - copyProcess) / routes.size();
             process = copyProcess + downloadProcess;
-            if (process > 100) {
-                process = 100;
+            if (process > 99) {
+                process = 99;
             }
-            routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, process);
-            if (downloadFileCount == routes.size()) {
+            setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_FILES, process);
+            LogUtil.v("已下载的文件数量： "+ getDownloadFileCount() +"  文件总数: "+routes.size());
+            if (getDownloadFileCount() == routes.size()) {
                 // 所有下载成功
                 saveRouteAndConfig();
             }
@@ -676,11 +683,16 @@ public class RouteManager {
         // 为了保证www的完整性，必须在下载时把原来的删掉
         deleteCachedRoutes();
         deleteCachedConfig();
-
-        routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, 0);
+        
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
-        final DownloadService downloadService = retrofit.create(DownloadService.class);
+        DownloadService downloadService = retrofit.create(DownloadService.class);
+        downloadFile(routes, downloadService);
+    }
 
+    /**
+     * 下载文件
+     */
+    private void downloadFile(final Routes routes, final DownloadService downloadService) {
         // 智能并发调度控制器：设置[最大并发数]，和[等待队列]大小
         final SmartExecutor smallExecutor = new SmartExecutor();
         // 开发者均衡性能和业务场景，自己调整同一时段的最大并发数量
@@ -696,7 +708,7 @@ public class RouteManager {
             smallExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    boolean success = downloadFile(route, downloadService);
+                    boolean success = doDownloadFile(route, downloadService);
                     if (!success) {
                         smallExecutor.cancelWaitingTask(null);
                     }
@@ -705,20 +717,20 @@ public class RouteManager {
         }
     }
 
-    /**
-     * 下载文件
-     */
-    private boolean downloadFile(final Route route, final DownloadService downloadService) {
+    private boolean doDownloadFile(final Route route, final DownloadService downloadService) {
         // 进度
         if (shouldDownload(route)) {
             // 需要下载
+            LogUtil.v("需要下载的文件地址： " + route.file);
             Call<ResponseBody> call = downloadService.downloadFile(route.file);
             try {
                 ResponseBody responseBody = call.execute().body();
                 if (responseBody != null) {
                     // 下载成功，保存
                     InternalCache.getInstance().saveCache(route, responseBody.bytes());
-                    downloadFileCount++;
+//                    downloadFileCount++;
+//                    setDownloadFileCount(getDownloadFileCount()+1);
+                    addDownloadFileCount();
                     BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
                 } else {
                     // 下载失败
@@ -733,49 +745,15 @@ public class RouteManager {
             }
         } else {
             // 不需要下载
-            InternalCache.getInstance().removeCache(route);
-            downloadFileCount++;
+//            InternalCache.getInstance().removeCache(route);
+//            downloadFileCount++;
+//            setDownloadFileCount(getDownloadFileCount()+1);
+            addDownloadFileCount();
+            if (getDownloadFileCount() == routes.size()) {
+                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS, null));
+            }
         }
         return true;
-
-
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (routes == null || routes.isEmpty() || index >= routes.size()) {
-//                    // 下载完成
-//                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS, null));
-//                    return;
-//                }
-//                // 进度
-//                downloadFileIndex = downloadFileIndex + 1;
-//                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
-//                final Route route = routes.get(index);
-//                if (shouldDownload(route)) {
-//                    // 需要下载
-//                    Call<ResponseBody> call = downloadService.downloadFile(route.file);
-//                    try {
-//                        ResponseBody responseBody = call.execute().body();
-//                        if (responseBody != null) {
-//                            // 下载成功，保存
-//                            InternalCache.getInstance().saveCache(route, responseBody.bytes());
-//                            downloadFile(routes, index + 1, downloadService);
-//                        } else {
-//                            // 下载失败
-//                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
-//                        }
-//                    } catch (IOException e) {
-//                        // 下载失败
-//                        e.printStackTrace();
-//                        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
-//                    }
-//                } else {
-//                    // 不需要下载
-//                    InternalCache.getInstance().removeCache(route);
-//                    downloadFile(routes, index + 1, downloadService);
-//                }
-//            }
-//        }).start();
     }
 
     /**
@@ -856,7 +834,7 @@ public class RouteManager {
 //        }
         wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
         // 成功，进APP
-        routeRefreshCallback.onResult(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 100);
+        setStateAndProcess(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 100);
     }
 
     /**
@@ -864,15 +842,13 @@ public class RouteManager {
      */
     private void unzipAssetToData() {
         // 为了保证www的完整性，必须在拷贝时把原来的删掉
-        deleteCachedRoutes();
-        deleteCachedConfig();
+        InternalCache.getInstance().clearWWW();
         BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW_START, null));
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     // 解压文件
-                    // TODO:假的进度条
                     String outputDirectory = InternalCache.getInstance().wwwCachePath();
                     FilesUtility.unZip(AppContext.getInstance(), Constants.DEFAULT_ASSET_ZIP_PATH, outputDirectory, true, new FilesUtility.UnZipCallback() {
                         @Override
