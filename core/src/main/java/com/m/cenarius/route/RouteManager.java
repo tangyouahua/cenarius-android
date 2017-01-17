@@ -676,20 +676,15 @@ public class RouteManager {
         // 为了保证www的完整性，必须在下载时把原来的删掉
         deleteCachedRoutes();
         deleteCachedConfig();
+
         routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, 0);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
-        DownloadService downloadService = retrofit.create(DownloadService.class);
-        downloadFile(routes, downloadService);
-    }
+        final DownloadService downloadService = retrofit.create(DownloadService.class);
 
-    /**
-     * 下载文件
-     */
-    private void downloadFile(final Routes routes, final DownloadService downloadService) {
         // 智能并发调度控制器：设置[最大并发数]，和[等待队列]大小
         final SmartExecutor smallExecutor = new SmartExecutor();
         // 开发者均衡性能和业务场景，自己调整同一时段的最大并发数量
-        smallExecutor.setCoreSize(2);
+        smallExecutor.setCoreSize(4);
         // 开发者均衡性能和业务场景，自己调整最大排队线程数量
         smallExecutor.setQueueSize(routes.size());
         // 任务数量超出[最大并发数]后，自动进入[等待队列]，等待当前执行任务完成后按策略进入执行状态：先进先执行。
@@ -701,13 +696,47 @@ public class RouteManager {
             smallExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    boolean success = doDownloadFile(route, downloadService);
+                    boolean success = downloadFile(route, downloadService);
                     if (!success) {
                         smallExecutor.cancelWaitingTask(null);
                     }
                 }
             });
         }
+    }
+
+    /**
+     * 下载文件
+     */
+    private boolean downloadFile(final Route route, final DownloadService downloadService) {
+        // 进度
+        if (shouldDownload(route)) {
+            // 需要下载
+            Call<ResponseBody> call = downloadService.downloadFile(route.file);
+            try {
+                ResponseBody responseBody = call.execute().body();
+                if (responseBody != null) {
+                    // 下载成功，保存
+                    InternalCache.getInstance().saveCache(route, responseBody.bytes());
+                    downloadFileCount++;
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
+                } else {
+                    // 下载失败
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
+                    return false;
+                }
+            } catch (IOException e) {
+                // 下载失败
+                e.printStackTrace();
+                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
+                return false;
+            }
+        } else {
+            // 不需要下载
+            InternalCache.getInstance().removeCache(route);
+            downloadFileCount++;
+        }
+        return true;
 
 
 //        new Thread(new Runnable() {
@@ -747,37 +776,6 @@ public class RouteManager {
 //                }
 //            }
 //        }).start();
-    }
-
-    private boolean doDownloadFile(final Route route, final DownloadService downloadService) {
-        // 进度
-        if (shouldDownload(route)) {
-            // 需要下载
-            Call<ResponseBody> call = downloadService.downloadFile(route.file);
-            try {
-                ResponseBody responseBody = call.execute().body();
-                if (responseBody != null) {
-                    // 下载成功，保存
-                    InternalCache.getInstance().saveCache(route, responseBody.bytes());
-                    downloadFileCount++;
-                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
-                } else {
-                    // 下载失败
-                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
-                    return false;
-                }
-            } catch (IOException e) {
-                // 下载失败
-                e.printStackTrace();
-                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
-                return false;
-            }
-        } else {
-            // 不需要下载
-            InternalCache.getInstance().removeCache(route);
-            downloadFileCount++;
-        }
-        return true;
     }
 
     /**
