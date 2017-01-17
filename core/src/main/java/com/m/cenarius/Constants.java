@@ -101,15 +101,16 @@ public class Constants {
 
     public static final String KEY_ERROR_TYPE = "key_error_type";
 
-    public static final int BUS_EVENT_ROUTE_CHECK_VALID = 1000;
-    public static final int BUS_EVENT_ROUTE_CHECK_INVALID = 2000;
-    public static final int BUS_EVENT_COPY_WWW_START = 6000;
-    public static final int BUS_EVENT_COPY_WWW = 6001;
-    public static final int BUS_EVENT_COPY_WWW_SUCCESS = 6002;
-    public static final int BUS_EVENT_COPY_WWW_ERROR = 6003;
-    public static final int BUS_EVENT_DOWNLOAD_FILE_SUCCESS = 7000;
-    public static final int BUS_EVENT_DOWNLOAD_FILE_ERROR = 7001;
-    public static final int BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS = 7003;
+//    public static final int BUS_EVENT_ROUTE_CHECK_VALID = 1000;
+//    public static final int BUS_EVENT_ROUTE_CHECK_INVALID = 2000;
+//    public static final int BUS_EVENT_COPY_WWW_START = 6000;
+//    public static final int BUS_EVENT_COPY_WWW = 6001;
+//    public static final int BUS_EVENT_COPY_WWW_SUCCESS = 6002;
+//    public static final int BUS_EVENT_COPY_WWW_ERROR = 6003;
+//    public static final int BUS_EVENT_DOWNLOAD_FILE_SUCCESS = 7000;
+//    public static final int BUS_EVENT_DOWNLOAD_FILE_ERROR = 7001;
+//    public static final int BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS = 7003;
+    public static final int BUS_EVENT_UPDATE_STATE_AND_PROCESS = 8000;
 
     /**
      * 'Content-Encoding' header name
