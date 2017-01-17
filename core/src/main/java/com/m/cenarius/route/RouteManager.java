@@ -1,18 +1,18 @@
 package com.m.cenarius.route;
 
 import android.content.res.AssetManager;
-import android.os.Bundle;
 import android.text.TextUtils;
 
+import com.litesuits.go.OverloadPolicy;
+import com.litesuits.go.SchedulePolicy;
+import com.litesuits.go.SmartExecutor;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
-import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.FilesUtility;
 import com.m.cenarius.utils.GsonHelper;
-import com.m.cenarius.utils.Paths;
 import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.FileUtils;
 import com.m.cenarius.utils.io.IOUtils;
@@ -157,12 +157,12 @@ public class RouteManager {
     /**
      * 拷贝份数
      */
-    private int copyFileIndex;
+    private int copyFileCount;
 
     /**
      * 下载份数份数
      */
-    private int downloadFileIndex;
+    private int downloadFileCount;
 
     /**
      * 需要下载www
@@ -283,8 +283,8 @@ public class RouteManager {
         routes = null;
         config = null;
         process = 0;
-        copyFileIndex = 0;
-        downloadFileIndex = 0;
+        copyFileCount = 0;
+        downloadFileCount = 0;
         routeRefreshCallback = callback;
 //        updatingRoutes = true;
 
@@ -612,9 +612,9 @@ public class RouteManager {
             routeRefreshCallback.onResult(RouteRefreshCallback.State.COPY_WWW, 0);
         } else if (event.eventId == Constants.BUS_EVENT_COPY_WWW) {
             // 正在拷贝www
-            process = copyFileIndex * 100 / resourceRoutes.size();
-            if (process > 100) {
-                process = 100;
+            process = copyFileCount * 100 / resourceRoutes.size();
+            if (process > 99) {
+                process = 99;
             }
             if (shouldDownloadWWW) {
                 process = process / 2;
@@ -656,13 +656,16 @@ public class RouteManager {
         } else if (event.eventId == Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS) {
             // 单个下载成功
             int copyProcess = process;
-            int downloadProcess = downloadFileIndex * 100 / resourceRoutes.size() * (100 - copyProcess);
+            int downloadProcess = downloadFileCount * (100 - copyProcess) / routes.size();
             process = copyProcess + downloadProcess;
             if (process > 100) {
                 process = 100;
             }
-
             routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, process);
+            if (downloadFileCount == routes.size()) {
+                // 所有下载成功
+                saveRouteAndConfig();
+            }
         }
     }
 
@@ -676,49 +679,105 @@ public class RouteManager {
         routeRefreshCallback.onResult(RouteRefreshCallback.State.DOWNLOAD_FILES, 0);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
-        downloadFile(routes, 0, downloadService);
+        downloadFile(routes, downloadService);
     }
 
     /**
      * 下载文件
      */
-    private void downloadFile(final Routes routes, final int index, final DownloadService downloadService) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (routes == null || routes.isEmpty() || index >= routes.size()) {
-                    // 下载完成
-                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS, null));
-                    return;
-                }
-                // 进度
-                downloadFileIndex = downloadFileIndex + 1;
-                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
-                final Route route = routes.get(index);
-                if (shouldDownload(route)) {
-                    // 需要下载
-                    Call<ResponseBody> call = downloadService.downloadFile(route.file);
-                    try {
-                        ResponseBody responseBody = call.execute().body();
-                        if (responseBody != null) {
-                            // 下载成功，保存
-                            InternalCache.getInstance().saveCache(route, responseBody.bytes());
-                            downloadFile(routes, index + 1, downloadService);
-                        } else {
-                            // 下载失败
-                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
-                        }
-                    } catch (IOException e) {
-                        // 下载失败
-                        e.printStackTrace();
-                        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
+    private void downloadFile(final Routes routes, final DownloadService downloadService) {
+        // 智能并发调度控制器：设置[最大并发数]，和[等待队列]大小
+        final SmartExecutor smallExecutor = new SmartExecutor();
+        // 开发者均衡性能和业务场景，自己调整同一时段的最大并发数量
+        smallExecutor.setCoreSize(2);
+        // 开发者均衡性能和业务场景，自己调整最大排队线程数量
+        smallExecutor.setQueueSize(routes.size());
+        // 任务数量超出[最大并发数]后，自动进入[等待队列]，等待当前执行任务完成后按策略进入执行状态：先进先执行。
+        smallExecutor.setSchedulePolicy(SchedulePolicy.FirstInFistRun);
+        // 后续添加新任务数量超出[等待队列]大小时，执行过载策略：抛出异常
+        smallExecutor.setOverloadPolicy(OverloadPolicy.ThrowExecption);
+
+        for (final Route route : routes) {
+            smallExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    boolean success = doDownloadFile(route, downloadService);
+                    if (!success) {
+                        smallExecutor.cancelWaitingTask(null);
                     }
-                } else {
-                    // 不需要下载
-                    downloadFile(routes, index + 1, downloadService);
                 }
+            });
+        }
+
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (routes == null || routes.isEmpty() || index >= routes.size()) {
+//                    // 下载完成
+//                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS, null));
+//                    return;
+//                }
+//                // 进度
+//                downloadFileIndex = downloadFileIndex + 1;
+//                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
+//                final Route route = routes.get(index);
+//                if (shouldDownload(route)) {
+//                    // 需要下载
+//                    Call<ResponseBody> call = downloadService.downloadFile(route.file);
+//                    try {
+//                        ResponseBody responseBody = call.execute().body();
+//                        if (responseBody != null) {
+//                            // 下载成功，保存
+//                            InternalCache.getInstance().saveCache(route, responseBody.bytes());
+//                            downloadFile(routes, index + 1, downloadService);
+//                        } else {
+//                            // 下载失败
+//                            BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
+//                        }
+//                    } catch (IOException e) {
+//                        // 下载失败
+//                        e.printStackTrace();
+//                        BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
+//                    }
+//                } else {
+//                    // 不需要下载
+//                    InternalCache.getInstance().removeCache(route);
+//                    downloadFile(routes, index + 1, downloadService);
+//                }
+//            }
+//        }).start();
+    }
+
+    private boolean doDownloadFile(final Route route, final DownloadService downloadService) {
+        // 进度
+        if (shouldDownload(route)) {
+            // 需要下载
+            Call<ResponseBody> call = downloadService.downloadFile(route.file);
+            try {
+                ResponseBody responseBody = call.execute().body();
+                if (responseBody != null) {
+                    // 下载成功，保存
+                    InternalCache.getInstance().saveCache(route, responseBody.bytes());
+                    downloadFileCount++;
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_SUCCESS, null));
+                } else {
+                    // 下载失败
+                    BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
+                    return false;
+                }
+            } catch (IOException e) {
+                // 下载失败
+                e.printStackTrace();
+                BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_DOWNLOAD_FILE_ERROR, null));
+                return false;
             }
-        }).start();
+        } else {
+            // 不需要下载
+            InternalCache.getInstance().removeCache(route);
+            downloadFileCount++;
+        }
+        return true;
     }
 
     /**
@@ -820,7 +879,7 @@ public class RouteManager {
                     FilesUtility.unZip(AppContext.getInstance(), Constants.DEFAULT_ASSET_ZIP_PATH, outputDirectory, true, new FilesUtility.UnZipCallback() {
                         @Override
                         public void onUnzipFile() {
-                            copyFileIndex = copyFileIndex + 1;
+                            copyFileCount++;
                             BusProvider.getInstance().post(new BusProvider.BusEvent(Constants.BUS_EVENT_COPY_WWW, null));
                         }
                     });
