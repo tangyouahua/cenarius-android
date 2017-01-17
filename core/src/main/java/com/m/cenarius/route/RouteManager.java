@@ -545,7 +545,7 @@ public class RouteManager {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    private void onsetStateAndProcess(BusProvider.BusEvent event) {
+    public void onsetStateAndProcess(BusProvider.BusEvent event) {
         if (event.eventId == Constants.BUS_EVENT_UPDATE_STATE_AND_PROCESS) {
             routeRefreshCallback.onResult(mState, mProcess);
         }
