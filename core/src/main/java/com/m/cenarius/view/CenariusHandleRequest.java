@@ -16,7 +16,6 @@ import com.m.cenarius.resourceproxy.cache.InternalCache;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
-import com.m.cenarius.utils.DownloadManager;
 import com.m.cenarius.utils.MimeUtils;
 import com.m.cenarius.utils.QueryUtil;
 import com.m.cenarius.utils.Utils;
