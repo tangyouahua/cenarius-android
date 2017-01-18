@@ -3,6 +3,7 @@ package com.m.cenarius.route;
 import android.content.res.AssetManager;
 import android.text.TextUtils;
 
+import com.google.gson.reflect.TypeToken;
 import com.litesuits.go.OverloadPolicy;
 import com.litesuits.go.SchedulePolicy;
 import com.litesuits.go.SmartExecutor;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -95,16 +97,16 @@ public class RouteManager {
      */
     private RouteRefreshCallback routeRefreshCallback;
 
-    /**
-     * Routes
-     */
-    public static class Routes extends ArrayList<Route> {
-    }
+//    /**
+//     * Routes
+//     */
+//    public static class Routes extends ArrayList<Route> {
+//    }
 
     /**
      * 最新的Route列表
      */
-    public Routes routes;
+    private List<Route> routes;
     private String routesString;
 
     /**
@@ -126,12 +128,12 @@ public class RouteManager {
     /**
      * 缓存Route列表
      */
-    public Routes cacheRoutes;
+    private List<Route> cacheRoutes;
 
     /**
      * 资源Route列表
      */
-    public Routes resourceRoutes;
+    private List<Route> resourceRoutes;
 
     /**
      * 缓存Config列表
@@ -230,12 +232,12 @@ public class RouteManager {
 //        if (!TextUtils.isEmpty(routeContent)) {
 //            cacheRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, Routes.class);
 //        }
-        cacheRoutes = (Routes) liteOrm.query(Route.class);
+        cacheRoutes = liteOrm.query(Route.class);
 
         // 读取 resourceRoutes
         String routeContent = readPresetRoutes();
         if (!TextUtils.isEmpty(routeContent)) {
-            resourceRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, Routes.class);
+            resourceRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, new TypeToken<List<Route>>(){}.getType());
         }
     }
 
@@ -279,9 +281,7 @@ public class RouteManager {
         routeRefreshCallback = callback;
 
         if (liteOrm == null) {
-            String cachePath = InternalCache.getInstance().wwwCachePath() + File.separator;
-            String dbName = cachePath + Constants.DEFAULT_DISK_ROUTES_DB_NAME;
-            DataBaseConfig dataBaseConfig = new DataBaseConfig(AppContext.getInstance(), dbName);
+            DataBaseConfig dataBaseConfig = new DataBaseConfig(AppContext.getInstance(), Constants.DEFAULT_DISK_ROUTES_DB_NAME);
             liteOrm = LiteOrm.newSingleInstance(dataBaseConfig);
             liteOrm.setDebugged(Cenarius.DEBUG);
         }
@@ -593,7 +593,7 @@ public class RouteManager {
                     //下载route成功
                     try {
                         routesString = response.body().string();
-                        routes = GsonHelper.getInstance().gson.fromJson(routesString, Routes.class);
+                        routes = GsonHelper.getInstance().gson.fromJson(routesString, new TypeToken<List<Route>>(){}.getType());
                         downloadFiles(routes);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -641,7 +641,7 @@ public class RouteManager {
         String cachePath = InternalCache.getInstance().wwwCachePath() + File.separator;
         try {
             copyAssetFile(Constants.PRESET_CONFIG_FILE_PATH, cachePath + Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
-            copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
+//            copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
             // 保存路由表到数据库中
             liteOrm.save(resourceRoutes);
             if (shouldDownloadWWW) {
@@ -689,7 +689,7 @@ public class RouteManager {
     /**
      * 下载文件
      */
-    private void downloadFiles(Routes routes) {
+    private void downloadFiles(List<Route> routes) {
 //        // 为了保证www的完整性，必须在下载时把原来的删掉
 //        deleteCachedRoutes();
 //        deleteCachedConfig();
@@ -847,6 +847,7 @@ public class RouteManager {
                 try {
                     // 为了保证www的完整性，必须在拷贝时把原来的删掉
                     InternalCache.getInstance().clearWWW();
+                    liteOrm.deleteAll(Route.class);
                     // 解压文件
                     String outputDirectory = InternalCache.getInstance().wwwCachePath();
                     FilesUtility.unZip(AppContext.getInstance(), Constants.DEFAULT_ASSET_ZIP_PATH, outputDirectory, true, new FilesUtility.UnZipCallback() {

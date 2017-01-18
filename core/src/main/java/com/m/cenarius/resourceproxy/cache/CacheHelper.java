@@ -37,71 +37,71 @@ public class CacheHelper {
     private InternalCache mInternalCache;
     private AssetCache mAssetCache;
 
-    public String routeFileURLForRoute(Route route) {
-        if (route == null) {
-            LogUtils.i(TAG, "route not found");
-            return null;
-        }
-        String cacheRouteFileURL = cacheRouteFileURLForRoute(route);
-        if (cacheRouteFileURL != null) {
-            return cacheRouteFileURL;
-        }
-//        String resourceRouteFileURL = resourceRouteFileURLForRoute(route);
-//        if (resourceRouteFileURL != null) {
-//            return resourceRouteFileURL;
+//    public String routeFileURLForRoute(Route route) {
+//        if (route == null) {
+//            LogUtils.i(TAG, "route not found");
+//            return null;
 //        }
-        return null;
-    }
-
-    private String cacheRouteFileURLForRoute(Route route) {
-        //路由表正在更新的时候需要对比 hash
-        RouteManager routeManager = RouteManager.getInstance();
-        if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes) {
-            for (Route cacheRoute : routeManager.cacheRoutes) {
-                if (cacheRoute.hash.equals(route.hash)) {
-                    return cacheRouteFilePathForRoute(route);
-                }
-            }
-            return null;
-        } else {
-            return cacheRouteFilePathForRoute(route);
-        }
-    }
-
-    private String cacheRouteFilePathForRoute(Route route) {
-        CacheEntry cacheEntry = mInternalCache.findCache(route);
-        if (cacheEntry != null) {
-            File cacheFile = mInternalCache.file(route);
-            cacheEntry.close();
-            return "file://" + cacheFile.getPath();
-        }
-        InternalCache.getInstance().removeCache(route);
-        return null;
-    }
-
-    private String resourceRouteFileURLForRoute(Route route) {
-        CacheEntry cacheEntry = mAssetCache.findCache(route);
-        if (cacheEntry != null) {
-            cacheEntry.close();
-            return mAssetCache.fileUrl(route);
-        }
-        return null;
-    }
-
-    public String finalUrl(String url, Uri uri) {
-        if (url != null) {
-            String query = uri.getQuery();
-            String fragment = uri.getFragment();
-            if (query != null) {
-                url = url + "?" + query;
-            }
-            if (fragment != null) {
-                url = url + "#" + fragment;
-            }
-        }
-
-        return url;
-    }
+//        String cacheRouteFileURL = cacheRouteFileURLForRoute(route);
+//        if (cacheRouteFileURL != null) {
+//            return cacheRouteFileURL;
+//        }
+////        String resourceRouteFileURL = resourceRouteFileURLForRoute(route);
+////        if (resourceRouteFileURL != null) {
+////            return resourceRouteFileURL;
+////        }
+//        return null;
+//    }
+//
+//    private String cacheRouteFileURLForRoute(Route route) {
+//        //路由表正在更新的时候需要对比 hash
+//        RouteManager routeManager = RouteManager.getInstance();
+//        if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes) {
+//            for (Route cacheRoute : routeManager.cacheRoutes) {
+//                if (cacheRoute.hash.equals(route.hash)) {
+//                    return cacheRouteFilePathForRoute(route);
+//                }
+//            }
+//            return null;
+//        } else {
+//            return cacheRouteFilePathForRoute(route);
+//        }
+//    }
+//
+//    private String cacheRouteFilePathForRoute(Route route) {
+//        CacheEntry cacheEntry = mInternalCache.findCache(route);
+//        if (cacheEntry != null) {
+//            File cacheFile = mInternalCache.file(route);
+//            cacheEntry.close();
+//            return "file://" + cacheFile.getPath();
+//        }
+//        InternalCache.getInstance().removeCache(route);
+//        return null;
+//    }
+//
+//    private String resourceRouteFileURLForRoute(Route route) {
+//        CacheEntry cacheEntry = mAssetCache.findCache(route);
+//        if (cacheEntry != null) {
+//            cacheEntry.close();
+//            return mAssetCache.fileUrl(route);
+//        }
+//        return null;
+//    }
+//
+//    public String finalUrl(String url, Uri uri) {
+//        if (url != null) {
+//            String query = uri.getQuery();
+//            String fragment = uri.getFragment();
+//            if (query != null) {
+//                url = url + "?" + query;
+//            }
+//            if (fragment != null) {
+//                url = url + "#" + fragment;
+//            }
+//        }
+//
+//        return url;
+//    }
 
     /**
      * 查找 uri 对应的本地 html 文件 URL。先查 Cache，再查 asset。如果在缓存文件和资源文件中都找不到对应的本地文件，返回 null

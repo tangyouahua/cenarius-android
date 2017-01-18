@@ -16,7 +16,7 @@ import java.io.InputStream;
 /**
  * 预置到asset中的只读cache
  */
-public class AssetCache implements ICache {
+public class AssetCache {
 
     public static final String TAG = "AssetCache";
 
@@ -33,55 +33,49 @@ public class AssetCache implements ICache {
         return sInstance;
     }
 
-//    private String mFilePath;
-
-//    private AssetCache() {
-//        mFilePath = Constants.DEFAULT_ASSET_FILE_PATH;
+//    @Override
+//    public CacheEntry findCache(Route route) {
+//        if (route == null) {
+//            return null;
+//        }
+//        //读取资源文件夹routes
+//        try {
+//            if (RouteManager.getInstance().resourceRoutes != null) {
+//                for (Route presetRoute : RouteManager.getInstance().resourceRoutes) {
+//                    if (presetRoute.equals(route)) {
+//                        //资源文件路径
+//                        String pathString = filePath(presetRoute.file);
+//                        AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
+//                        try {
+//                            InputStream inputStream = assetManager.open(pathString);
+//                            CacheEntry cacheEntry = new CacheEntry(0, inputStream);
+//                            LogUtils.i(TAG, "hit");
+//                            return cacheEntry;
+//                        } catch (IOException e) {
+//
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            LogUtils.i(TAG, e.getMessage());
+//        }
+//        return null;
 //    }
 
-    @Override
-    public CacheEntry findCache(Route route) {
-        if (route == null) {
-            return null;
-        }
-        //读取资源文件夹routes
-        try {
-            if (RouteManager.getInstance().resourceRoutes != null) {
-                for (Route presetRoute : RouteManager.getInstance().resourceRoutes) {
-                    if (presetRoute.equals(route)) {
-                        //资源文件路径
-                        String pathString = filePath(presetRoute.file);
-                        AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
-                        try {
-                            InputStream inputStream = assetManager.open(pathString);
-                            CacheEntry cacheEntry = new CacheEntry(0, inputStream);
-                            LogUtils.i(TAG, "hit");
-                            return cacheEntry;
-                        } catch (IOException e) {
-
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LogUtils.i(TAG, e.getMessage());
-        }
-        return null;
-    }
-
-    public CacheEntry findWhiteListCache(String uri){
-        //资源文件路径
-        String pathString = filePath(uri);
-        AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
-        try {
-            InputStream inputStream = assetManager.open(pathString);
-            CacheEntry cacheEntry = new CacheEntry(0, inputStream);
-            return cacheEntry;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    public CacheEntry findWhiteListCache(String uri){
+//        //资源文件路径
+//        String pathString = filePath(uri);
+//        AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
+//        try {
+//            InputStream inputStream = assetManager.open(pathString);
+//            CacheEntry cacheEntry = new CacheEntry(0, inputStream);
+//            return cacheEntry;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
 
     private String filePath(String uri) {
@@ -114,10 +108,10 @@ public class AssetCache implements ICache {
         return assetsPath;
     }
 
-    @Override
-    public boolean removeCache(Route route) {
-        // do nothing
-        return true;
-    }
+//    @Override
+//    public boolean removeCache(Route route) {
+//        // do nothing
+//        return true;
+//    }
 
 }

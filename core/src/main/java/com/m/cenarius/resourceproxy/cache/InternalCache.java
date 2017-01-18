@@ -20,7 +20,7 @@ import java.io.OutputStream;
  * 存储位置默认在/data/data/www下
  */
 
-public class InternalCache implements ICache {
+public class InternalCache {
 
     public static final String TAG = "InternalCache";
 
@@ -38,33 +38,32 @@ public class InternalCache implements ICache {
         return sInstance;
     }
 
-    @Override
-    public CacheEntry findCache(Route route) {
-        if (route == null) {
-            return null;
-        }
-        File file = file(route);
-        if (file.exists() && file.canRead()) {
-            try {
-                FileInputStream fileInputStream = new FileInputStream(file);
-                byte[] bytes = IOUtils.toByteArray(fileInputStream);
-                CacheEntry cacheEntry = new CacheEntry(file.length(), new ByteArrayInputStream(bytes));
-                fileInputStream.close();
-                LogUtils.i(TAG, "hit");
-                return cacheEntry;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
+//    @Override
+//    public CacheEntry findCache(Route route) {
+//        if (route == null) {
+//            return null;
+//        }
+//        File file = file(route);
+//        if (file.exists() && file.canRead()) {
+//            try {
+//                FileInputStream fileInputStream = new FileInputStream(file);
+//                byte[] bytes = IOUtils.toByteArray(fileInputStream);
+//                CacheEntry cacheEntry = new CacheEntry(file.length(), new ByteArrayInputStream(bytes));
+//                fileInputStream.close();
+//                LogUtils.i(TAG, "hit");
+//                return cacheEntry;
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * 删除单个资源缓存
      *
      * @param route 资源地址
      */
-    @Override
     public boolean removeCache(Route route) {
         File file = file(route);
         return file.exists() && file.delete();

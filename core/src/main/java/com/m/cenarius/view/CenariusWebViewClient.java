@@ -107,25 +107,25 @@ public class CenariusWebViewClient extends WebViewClient {
      * <p>
      * <note>这个方法会在渲染线程执行，如果做了耗时操作会block渲染</note>
      */
-    private WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
-        WebResourceResponse webResourceResponse;
-
-//        if (isNextAjaxRequest) {
-//            // ajax 请求
-//            isNextAjaxRequest = false;
-//            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
-//        } else {
-//            // h5 请求
-//            webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
+//    private WebResourceResponse handleResourceRequest(WebView webView, String requestUrl) {
+//        WebResourceResponse webResourceResponse;
+//
+////        if (isNextAjaxRequest) {
+////            // ajax 请求
+////            isNextAjaxRequest = false;
+////            webResourceResponse = CenariusHandleRequest.handleAjaxRequest(requestUrl, mNextAjaxRequestContents.method, JSON.parseObject(mNextAjaxRequestContents.header, Map.class), mNextAjaxRequestContents.body);
+////        } else {
+////            // h5 请求
+////            webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
+////        }
+//
+//        // h5 请求
+//        webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
+//        if (webResourceResponse != null) {
+//            return webResourceResponse;
 //        }
-
-        // h5 请求
-        webResourceResponse = CenariusHandleRequest.handleResourceRequest(requestUrl);
-        if (webResourceResponse != null) {
-            return webResourceResponse;
-        }
-
-        return super.shouldInterceptRequest(webView, requestUrl);
-    }
+//
+//        return super.shouldInterceptRequest(webView, requestUrl);
+//    }
 }
 
