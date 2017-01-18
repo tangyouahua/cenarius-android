@@ -37,7 +37,13 @@ public class GsonHelper {
         Uri uri = Uri.parse(url);
         if (TextUtils.equals(uri.getPath(), path)) {
             String dataJson = uri.getQueryParameter(KEY_DATA);
-            HashMap dataMap = JSON.parseObject(dataJson, HashMap.class);
+            HashMap dataMap = null;
+            try {
+                dataMap = JSON.parseObject(dataJson, HashMap.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
             if (dataMap != null) {
                 return dataMap;
             }
