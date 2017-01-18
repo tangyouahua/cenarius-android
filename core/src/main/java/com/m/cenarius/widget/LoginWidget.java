@@ -3,6 +3,8 @@ package com.m.cenarius.widget;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 
 import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
@@ -12,12 +14,17 @@ import com.m.cenarius.utils.OpenApi;
 import com.m.cenarius.view.CenariusWidget;
 
 import org.xutils.common.Callback;
+import org.xutils.common.util.LogUtil;
 import org.xutils.http.RequestParams;
+import org.xutils.http.cookie.DbCookieStore;
 import org.xutils.x;
+import org.xwalk.core.XWalkCookieManager;
 
+import java.net.HttpCookie;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -75,7 +82,7 @@ public class LoginWidget implements CenariusWidget {
         params.put("timestamp", Long.toString((new Date()).getTime()));
         params.put("username", username);
         params.put("password", password);
-        params.put("terminalType", "mobile");
+        params.put("terminalType", "MOBILE");
         params.put("rememberMe", "true");
         params.put("captchaId", captchaId);
         params.put("captcha", captcha);
@@ -91,6 +98,7 @@ public class LoginWidget implements CenariusWidget {
         x.http().post(requestParams, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
+                setWebViewCookies();
                 Map map = JSON.parseObject(result, Map.class);
                 String token = (String) map.get("access_token");
                 String error_msg = (String) map.get("error_msg");
@@ -130,10 +138,55 @@ public class LoginWidget implements CenariusWidget {
     }
 
     /**
+     * 同步cookies到webview
+     */
+    public static void setWebViewCookies() {
+        DbCookieStore instance = DbCookieStore.INSTANCE;
+        List<HttpCookie> cookiesAll = instance.getCookies();
+        // TODO Auto-generated method stub
+        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(AppContext.getInstance());
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        //以下注释了防上出现cookie更新不同步问题
+//		cookieManager.removeSessionCookie();
+        String domainName="";
+        XWalkCookieManager xwalkCookieManager =  new XWalkCookieManager();;
+        xwalkCookieManager.setAcceptCookie(true);
+        for(int i=0;i<cookiesAll.size();i++){
+            HttpCookie cookie=cookiesAll.get(i);
+            String cookieString = cookie.getName() + "=" + cookie.getValue() + "; path=/";// +cookie.getDomain();
+            domainName=cookie.getDomain();
+            cookieManager.setCookie(cookie.getDomain(), cookieString);
+            xwalkCookieManager.setCookie(cookie.getDomain(), cookieString);
+            domainName="https://"+domainName;
+            cookieManager.setCookie(domainName, cookieString);
+            xwalkCookieManager.setCookie(domainName, cookieString);
+            LogUtil.d( domainName+"__"+cookieString);
+        }
+
+        LogUtil.d( "WebKit Cookies domain:"+domainName);
+        String cookieString=cookieManager.getCookie(domainName);
+        LogUtil.d("WebKit Cookies:"+cookieString);
+
+        CookieSyncManager.getInstance().sync();
+    }
+
+    public static void clearWebViewCookies(Context context ){
+        DbCookieStore instance = DbCookieStore.INSTANCE;
+        instance.removeAll();
+        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(context);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        cookieManager.removeAllCookie();
+        CookieSyncManager.getInstance().sync();
+    }
+
+    /**
      * 登出
      */
-    public static void logout() {
+    public static void logout(Context context) {
         deleteAccessToken();
+       clearWebViewCookies(context);
     }
 
     /**

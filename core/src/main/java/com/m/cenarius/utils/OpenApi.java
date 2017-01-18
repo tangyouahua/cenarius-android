@@ -36,7 +36,7 @@ public class OpenApi {
             MessageDigest md = MessageDigest.getInstance("MD5");
             result = byte2hex(md.digest(orgin.toString().getBytes("utf-8")));
         } catch (Exception e) {
-            throw new java.lang.RuntimeException("md5 sign error !", e);
+            throw new RuntimeException("md5 sign error !", e);
         }
         return result;
     }
@@ -58,7 +58,7 @@ public class OpenApi {
         StringBuffer hs = new StringBuffer();
         String stmp = "";
         for (int n = 0; n < b.length; n++) {
-            stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
+            stmp = (Integer.toHexString(b[n] & 0XFF));
             if (stmp.length() == 1) {
                 hs.append("0").append(stmp);
             } else {
@@ -176,8 +176,8 @@ public class OpenApi {
         if (queryMap != null) {
             for (String key : queryMap.keySet()) {
                 if ("sign".equals(key))
-                // 已经有签名，不需要处理
-                return url;
+                    // 已经有签名，不需要处理
+                    return url;
             }
         }
 
@@ -187,8 +187,13 @@ public class OpenApi {
                 // JSON
                 body = "openApiBodyString=" + bodyString;
             } else {
-                Map<String, String> bodyMap = JSON.parseObject(bodyString, Map.class);
-                body = QueryUtil.mapToString(bodyMap);
+                try{
+                    Map<String, Object> bodyMap = JSON.parseObject(bodyString, Map.class);
+                    body = QueryUtil.mapToString(bodyMap);
+                }catch (Exception e){
+                    body = "";
+                }
+
             }
         }
 
@@ -231,10 +236,12 @@ public class OpenApi {
         // 签名
         String sign = md5Signature(parameters, appSecret);
 
-        if (!url.contains("?")) {
+        if (url.contains("?")) {
+            url = url + "&";
+        } else {
             url = url + "?";
         }
-        url = url + "&access_token=" + token + "&app_key=" + appKey + "&timestamp=" + timestamp + "&sign=" + sign;
+        url = url + "access_token=" + token + "&app_key=" + appKey + "&timestamp=" + timestamp + "&sign=" + sign;
         return url;
     }
 

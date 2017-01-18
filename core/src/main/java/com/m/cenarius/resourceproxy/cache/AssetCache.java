@@ -5,7 +5,11 @@ import com.m.cenarius.Constants;
 import com.m.cenarius.route.Route;
 import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.utils.AppContext;
+import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.LogUtils;
+
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,36 +22,22 @@ public class AssetCache implements ICache {
 
     private static AssetCache sInstance;
 
-    public static AssetCache getInstance(String filePath) {
-        if (null == sInstance) {
-            synchronized (AssetCache.class) {
-                if (null == sInstance) {
-                    sInstance = new AssetCache(filePath);
-                }
-            }
-        }
-        return sInstance;
-    }
-
     public static AssetCache getInstance() {
         if (null == sInstance) {
             synchronized (AssetCache.class) {
                 if (null == sInstance) {
-                    sInstance = new AssetCache(null);
+                    sInstance = new AssetCache();
                 }
             }
         }
         return sInstance;
     }
 
-    public String mFilePath;
+//    private String mFilePath;
 
-    private AssetCache(String filePath) {
-        mFilePath = filePath;
-        if (TextUtils.isEmpty(mFilePath)) {
-            mFilePath = Constants.DEFAULT_ASSET_FILE_PATH;
-        }
-    }
+//    private AssetCache() {
+//        mFilePath = Constants.DEFAULT_ASSET_FILE_PATH;
+//    }
 
     @Override
     public CacheEntry findCache(Route route) {
@@ -60,7 +50,7 @@ public class AssetCache implements ICache {
                 for (Route presetRoute : RouteManager.getInstance().resourceRoutes) {
                     if (presetRoute.equals(route)) {
                         //资源文件路径
-                        String pathString = filePath(presetRoute.uri);
+                        String pathString = filePath(presetRoute.file);
                         AssetManager assetManager = AppContext.getInstance().getResources().getAssets();
                         try {
                             InputStream inputStream = assetManager.open(pathString);
@@ -95,14 +85,14 @@ public class AssetCache implements ICache {
 
 
     private String filePath(String uri) {
-        return mFilePath + "/" + uri;
+        return Constants.DEFAULT_ASSET_FILE_PATH + "/" + uri;
     }
 
     /**
      * 单个存储文件路径
      */
     public String fileUrl(Route route) {
-        return assetsPath() + filePath(route.uri);
+        return assetsPath() + filePath(route.file);
     }
 
     public String fileUrl(String uri) {
@@ -114,6 +104,14 @@ public class AssetCache implements ICache {
      */
     public String assetsPath() {
         return "file:///android_asset/";
+    }
+
+    /**
+     * 获取www目录
+     */
+    public String wwwAssetsPath(){
+        String assetsPath = assetsPath() + Constants.DEFAULT_ASSET_FILE_PATH;
+        return assetsPath;
     }
 
     @Override

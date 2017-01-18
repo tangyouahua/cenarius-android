@@ -43,6 +43,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import com.m.cenarius.view.CenariusWebChromeClient;
+
 import org.apache.cordova.CordovaDialogsHelper;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
@@ -53,7 +55,7 @@ import org.apache.cordova.LOG;
  * such as onCreateWindow(), onConsoleMessage(), onProgressChanged(), etc. Related
  * to but different than CordovaWebViewClient.
  */
-public class SystemWebChromeClient extends WebChromeClient {
+public class SystemWebChromeClient extends CenariusWebChromeClient {
 
     private static final int FILECHOOSER_RESULTCODE = 5173;
     private static final String LOG_TAG = "SystemWebChromeClient";
@@ -66,7 +68,7 @@ public class SystemWebChromeClient extends WebChromeClient {
     private CordovaDialogsHelper dialogsHelper;
     private Context appContext;
 
-    private WebChromeClient.CustomViewCallback mCustomViewCallback;
+    private CustomViewCallback mCustomViewCallback;
     private View mCustomView;
 
     public SystemWebChromeClient(SystemWebViewEngine parentEngine) {
@@ -157,7 +159,7 @@ public class SystemWebChromeClient extends WebChromeClient {
     public void onConsoleMessage(String message, int lineNumber, String sourceID)
     {
         //This is only for Android 2.1
-        if(android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.ECLAIR_MR1)
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.ECLAIR_MR1)
         {
             LOG.d(LOG_TAG, "%s: Line %d : %s", sourceID, lineNumber, message);
             super.onConsoleMessage(message, lineNumber, sourceID);
@@ -196,7 +198,7 @@ public class SystemWebChromeClient extends WebChromeClient {
     
     // API level 7 is required for this, see if we could lower this using something else
     @Override
-    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+    public void onShowCustomView(View view, CustomViewCallback callback) {
         parentEngine.getCordovaWebView().showCustomView(view, callback);
     }
 
@@ -262,13 +264,13 @@ public class SystemWebChromeClient extends WebChromeClient {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final WebChromeClient.FileChooserParams fileChooserParams) {
+    public boolean onShowFileChooser(WebView webView, final ValueCallback<Uri[]> filePathsCallback, final FileChooserParams fileChooserParams) {
         Intent intent = fileChooserParams.createIntent();
         try {
             parentEngine.cordova.startActivityForResult(new CordovaPlugin() {
                 @Override
                 public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                    Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, intent);
+                    Uri[] result = FileChooserParams.parseResult(resultCode, intent);
                     Log.d(LOG_TAG, "Receive file chooser URL: " + result);
                     filePathsCallback.onReceiveValue(result);
                 }

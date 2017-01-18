@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.route.RouteManager;
+import com.m.cenarius.utils.LogUtils;
 
 import java.util.ArrayList;
 
@@ -22,17 +23,15 @@ public class MainApplication extends Application {
         Cenarius.setRoutesWhiteList(whiteList);
 //        Cenarius.setDevelopModeEnable(true);//开启调试模式，会禁用路由表，从SD卡读取。
         // 设置并刷新route
-        RouteManager.getInstance().setRemoteFolderUrl("http://172.20.70.80/a");
+        RouteManager.getInstance().setRemoteFolderUrl("http://172.20.70.80/www");
 //        RouteManager.getInstance().setRemoteFolderUrl("http://10.86.21.64:9080/h5/www");
         RouteManager.getInstance().refreshRoute(new RouteManager.RouteRefreshCallback() {
             @Override
-            public void onSuccess(String data) {
-
-            }
-
-            @Override
-            public void onFail() {
-
+            public void onResult(State state, int process) {
+                LogUtils.i("process",String.valueOf(process));
+                if (state == State.UPDATE_FILES_SUCCESS){
+                    LogUtils.i("更新","成功");
+                }
             }
         });
 //        // 设置需要代理的资源

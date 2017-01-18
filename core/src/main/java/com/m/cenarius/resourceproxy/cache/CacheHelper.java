@@ -46,10 +46,10 @@ public class CacheHelper {
         if (cacheRouteFileURL != null) {
             return cacheRouteFileURL;
         }
-        String resourceRouteFileURL = resourceRouteFileURLForRoute(route);
-        if (resourceRouteFileURL != null) {
-            return resourceRouteFileURL;
-        }
+//        String resourceRouteFileURL = resourceRouteFileURLForRoute(route);
+//        if (resourceRouteFileURL != null) {
+//            return resourceRouteFileURL;
+//        }
         return null;
     }
 
@@ -58,7 +58,7 @@ public class CacheHelper {
         RouteManager routeManager = RouteManager.getInstance();
         if (routeManager.cacheRoutes != null && routeManager.cacheRoutes != routeManager.routes) {
             for (Route cacheRoute : routeManager.cacheRoutes) {
-                if (cacheRoute.fileHash.equals(route.fileHash)) {
+                if (cacheRoute.hash.equals(route.hash)) {
                     return cacheRouteFilePathForRoute(route);
                 }
             }
@@ -107,16 +107,17 @@ public class CacheHelper {
      * 查找 uri 对应的本地 html 文件 URL。先查 Cache，再查 asset。如果在缓存文件和资源文件中都找不到对应的本地文件，返回 null
      */
     public String localHtmlURLForURI(String uriString) {
-        if (uriString == null) {
-            return null;
-        }
-        Uri finalUri = Uri.parse(uriString);
-        String baseUri = finalUri.getPath();
-        //最新的在内存中的 route
-        Route route = RouteManager.getInstance().findRoute(baseUri);
-        String urlString = routeFileURLForRoute(route);
-        String finalUrl = finalUrl(urlString, finalUri);
-        return finalUrl;
+//        if (uriString == null) {
+//            return null;
+//        }
+//        Uri finalUri = Uri.parse(uriString);
+//        String baseUri = finalUri.getPath();
+//        //最新的在内存中的 route
+//        Route route = RouteManager.getInstance().findRoute(baseUri);
+//        String urlString = routeFileURLForRoute(route);
+//        String finalUrl = finalUrl(urlString, finalUri);
+//        return finalUrl;
+        return InternalCache.getInstance().wwwCachePath()+File.separator+uriString;
     }
 
     /**

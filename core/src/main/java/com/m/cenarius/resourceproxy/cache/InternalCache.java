@@ -106,11 +106,21 @@ public class InternalCache implements ICache {
     }
 
     /**
+     * 创建文件夹
+     */
+    public void createWWW(){
+        File htmlDir = fileDir();
+        if (!htmlDir.exists()) {
+            htmlDir.mkdirs();
+        }
+    }
+
+    /**
      * 清除缓存
      *
      * @return whether clear cache successfully
      */
-    public boolean clear() {
+    public boolean clearWWW() {
         File htmlDir = fileDir();
         if (!htmlDir.exists()) {
             return true;
@@ -129,13 +139,14 @@ public class InternalCache implements ICache {
     }
 
     /**
-     * 存储目录
+     * www存储目录
      *
      * @return 存储目录
      */
-    private File fileDir() {
+    public File fileDir() {
         if (fileDir == null) {
-            fileDir = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
+//            fileDir = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
+    fileDir = new File(wwwCachePath());
         }
         return fileDir;
     }
@@ -147,7 +158,7 @@ public class InternalCache implements ICache {
      * @return html对应的存储文件
      */
     public File file(Route route) {
-        return new File(fileDir(), route.uri);
+        return new File(fileDir(), route.file);
     }
 
     /**
@@ -156,6 +167,14 @@ public class InternalCache implements ICache {
     public String cachePath() {
         return AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR,
                 Context.MODE_PRIVATE).getPath() + "/";
+    }
+
+    /**
+     * 获取www目录
+     */
+    public String wwwCachePath(){
+        String cachePath = cachePath() + Constants.DEFAULT_ASSET_FILE_PATH;
+        return cachePath;
     }
 
 }

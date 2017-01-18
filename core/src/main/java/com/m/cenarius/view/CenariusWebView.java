@@ -61,6 +61,9 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
         mCore = (CenariusWebViewCore) findViewById(R.id.webview);
         mErrorView = (CenariusErrorView) findViewById(R.id.cenarius_error_view);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
+        //临时加上屏蔽下拉刷新，如需开启，请注释下句代码
+        mSwipeRefreshLayout.setEnabled(false);
     }
 
     /**
@@ -95,7 +98,7 @@ public class CenariusWebView extends FrameLayout implements CenariusWebViewCore.
      * @param enable
      */
     public void enableRefresh(boolean enable) {
-        mSwipeRefreshLayout.setEnabled(enable);
+//        mSwipeRefreshLayout.setEnabled(enable);
     }
 
     /**

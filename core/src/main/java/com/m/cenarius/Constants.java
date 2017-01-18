@@ -18,18 +18,20 @@ public class Constants {
      */
     public static final String CONTAINER_WIDGET_BASE = "cenarius://cenarius-container/widget";
 
-    // disk中routers.json文件
-    public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "routes.json";
+    // disk中cenarius-routers.json文件
+    public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "cenarius-routes.json";
+    // disk中cenarius-config.json文件
+    public static final String DEFAULT_DISK_CONFIG_FILE_NAME = "cenarius-config.json";
     // 本地asset的存储目录
     public static final String DEFAULT_ASSET_FILE_PATH = "www";
+    // 本地asset的zip
+    public static final String DEFAULT_ASSET_ZIP_PATH = DEFAULT_ASSET_FILE_PATH + "/" + "www.zip";
     // 本地asset的routes.json
     public static final String PRESET_ROUTE_FILE_PATH = DEFAULT_ASSET_FILE_PATH + "/" + DEFAULT_DISK_ROUTES_FILE_NAME;
-    // cache home
-    public static final String CACHE_HOME_DIR = "cenarius";
+    // 本地asset的config.json
+    public static final String PRESET_CONFIG_FILE_PATH = DEFAULT_ASSET_FILE_PATH + "/" + DEFAULT_DISK_CONFIG_FILE_NAME;
     // disk中缓存文件的存储目录
-    public static final String DEFAULT_DISK_FILE_PATH = "cache";
-    // disk中html的存储目录
-    public static final String DEFAULT_DISK_HTML_FILE_PATH = "html";
+    public static final String CACHE_HOME_DIR = "cenarius";
     // disk中缓存目录
     public static final String DEFAULT_DISK_INTERNAL_FILE_PATH = DEFAULT_ASSET_FILE_PATH;
 
@@ -99,8 +101,16 @@ public class Constants {
 
     public static final String KEY_ERROR_TYPE = "key_error_type";
 
-    public static final int BUS_EVENT_ROUTE_CHECK_VALID = 1000;
-    public static final int BUS_EVENT_ROUTE_CHECK_INVALID = 2000;
+//    public static final int BUS_EVENT_ROUTE_CHECK_VALID = 1000;
+//    public static final int BUS_EVENT_ROUTE_CHECK_INVALID = 2000;
+//    public static final int BUS_EVENT_COPY_WWW_START = 6000;
+//    public static final int BUS_EVENT_COPY_WWW = 6001;
+//    public static final int BUS_EVENT_COPY_WWW_SUCCESS = 6002;
+//    public static final int BUS_EVENT_COPY_WWW_ERROR = 6003;
+//    public static final int BUS_EVENT_DOWNLOAD_FILE_SUCCESS = 7000;
+//    public static final int BUS_EVENT_DOWNLOAD_FILE_ERROR = 7001;
+//    public static final int BUS_EVENT_DOWNLOAD_ALL_FILE_SUCCESS = 7003;
+    public static final int BUS_EVENT_UPDATE_STATE_AND_PROCESS = 8000;
 
     /**
      * 'Content-Encoding' header name
@@ -141,4 +151,7 @@ public class Constants {
      * Java call js function format without parameters
      */
     public static final String FUNC_FORMAT = "javascript:window.%s()";
+
+
+
 }

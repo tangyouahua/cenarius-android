@@ -358,7 +358,7 @@ public class SystemWebViewClient extends CenariusWebViewClient {
     }
 
     private static boolean needsKitKatContentUrlFix(Uri uri) {
-        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT && "content".equals(uri.getScheme());
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && "content".equals(uri.getScheme());
     }
 
     private static boolean needsSpecialsInAssetUrlFix(Uri uri) {
@@ -373,9 +373,9 @@ public class SystemWebViewClient extends CenariusWebViewClient {
             return false;
         }
 
-        switch(android.os.Build.VERSION.SDK_INT){
-            case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH:
-            case android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1:
+        switch(Build.VERSION.SDK_INT){
+            case Build.VERSION_CODES.ICE_CREAM_SANDWICH:
+            case Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1:
                 return true;
         }
         return false;

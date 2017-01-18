@@ -53,6 +53,11 @@ public class CenariusWebViewClient extends WebViewClient {
     }
 
     @Override
+    public void onScaleChanged(WebView view, float oldScale, float newScale) {
+        super.onScaleChanged(view, oldScale, newScale);
+    }
+
+    @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         if (CenariusHandleRequest.handleWidgets(view, url, mWidgets)) {
             return true;
@@ -61,19 +66,19 @@ public class CenariusWebViewClient extends WebViewClient {
         return super.shouldOverrideUrlLoading(view, url);
     }
 
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        if (Utils.hasLollipop()) {
-            return handleResourceRequest(view, request.getUrl().toString());
-        } else {
-            return super.shouldInterceptRequest(view, request);
-        }
-    }
-
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        return handleResourceRequest(view, url);
-    }
+//    @Override
+//    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+//        if (Utils.hasLollipop()) {
+//            return handleResourceRequest(view, request.getUrl().toString());
+//        } else {
+//            return super.shouldInterceptRequest(view, request);
+//        }
+//    }
+//
+//    @Override
+//    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+//        return handleResourceRequest(view, url);
+//    }
 
 //    @Override
 //    public void onPageStarted(WebView view, String url, Bitmap favicon) {

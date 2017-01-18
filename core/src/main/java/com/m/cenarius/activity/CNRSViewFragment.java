@@ -10,10 +10,16 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.m.cenarius.Cenarius;
+import com.m.cenarius.Constants;
+import com.m.cenarius.R;
 import com.m.cenarius.resourceproxy.cache.AssetCache;
 import com.m.cenarius.resourceproxy.cache.CacheHelper;
+import com.m.cenarius.route.RouteManager;
 import com.m.cenarius.view.CenariusWidget;
 import com.m.cenarius.widget.AlertDialogWidget;
 import com.m.cenarius.widget.CordovaWidget;
@@ -30,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CNRSViewFragment extends Fragment {
-
+    public ProgressBar pb;
 
     public CNRSViewFragment() {
         // Required empty public constructor
@@ -186,7 +192,7 @@ public class CNRSViewFragment extends Fragment {
 //                if (htmlFileURL == null) {
 //                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
 //                }
-                htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
+                htmlFileURL = RouteManager.getWWWPath() + "/" + uri;
             }
         }
         return htmlFileURL;
@@ -197,7 +203,7 @@ public class CNRSViewFragment extends Fragment {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File sdCardDir = Environment.getExternalStorageDirectory();//获取SDCard目录
             String packageName = getActivity().getPackageName();
-            File fileDir = new File(sdCardDir, packageName + "/" + AssetCache.getInstance().mFilePath + "/" + uri);
+            File fileDir = new File(sdCardDir, packageName + "/" + Constants.DEFAULT_ASSET_FILE_PATH + "/" + uri);
             String url = "file://" + fileDir.getPath();
             return url;
         }
@@ -219,4 +225,20 @@ public class CNRSViewFragment extends Fragment {
         return applicationName;
     }
 
+    /**
+     * 取出进度条所包含的控件
+     * @return
+     */
+    public View initProgressBar(View view) {
+        LinearLayout linearLayout= new LinearLayout(getActivity());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        pb = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
+        params.height = (int) getResources().getDimension(R.dimen.progress_bar_height);
+        pb.setProgressDrawable(getResources().getDrawable(R.drawable.progress_bar_bg));
+        linearLayout.addView(pb,0, params);
+        if (view != null){
+            linearLayout.addView(view,1);
+        }
+        return linearLayout;
+    }
 }

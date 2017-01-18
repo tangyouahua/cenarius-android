@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class QueryUtil {
 
-    public static String mapToString(Map<String, String> map) {
+    public static String mapToString(Map<String, Object> map) {
         if (map == null) {
             return null;
         }
@@ -29,11 +29,11 @@ public class QueryUtil {
             if (stringBuilder.length() > 0) {
                 stringBuilder.append("&");
             }
-            String value = map.get(key);
+            Object value = map.get(key);
             try {
                 stringBuilder.append((key != null ? URLEncoder.encode(key, "UTF-8") : ""));
                 stringBuilder.append("=");
-                stringBuilder.append(value != null ? URLEncoder.encode(value, "UTF-8") : "");
+                stringBuilder.append(value != null ? URLEncoder.encode(value.toString(), "UTF-8") : "");
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException("This method requires UTF-8 encoding support", e);
             }
@@ -54,12 +54,12 @@ public class QueryUtil {
 
         try {
             // 原 query, 需要 decode
-            query = URLDecoder.decode(query, "UTF-8");
+//            query = URLDecoder.decode(query, "UTF-8");
             String[] nameValuePairs = query.split("&");
             for (String nameValuePair : nameValuePairs) {
                 String[] nameValue = nameValuePair.split("=");
-                String key = nameValue[0];
-                String value = nameValuePair.substring(key.length() + 1);
+                String key = URLDecoder.decode(nameValue[0], "UTF-8");
+                String value = URLDecoder.decode(nameValuePair.substring(key.length() + 1), "UTF-8");
                 map = addItemToMap(map, value, key);
             }
         } catch (UnsupportedEncodingException e) {
