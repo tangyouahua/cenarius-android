@@ -18,10 +18,12 @@ public class Constants {
      */
     public static final String CONTAINER_WIDGET_BASE = "cenarius://cenarius-container/widget";
 
-    // disk中cenarius-routers.json文件
+    // disk中cenarius-routes.json文件
     public static final String DEFAULT_DISK_ROUTES_FILE_NAME = "cenarius-routes.json";
     // disk中cenarius-config.json文件
     public static final String DEFAULT_DISK_CONFIG_FILE_NAME = "cenarius-config.json";
+    // disk中cenarius-routes.db文件
+    public static final String DEFAULT_DISK_ROUTES_DB_NAME = "cenarius-routes.db";
     // 本地asset的存储目录
     public static final String DEFAULT_ASSET_FILE_PATH = "www";
     // 本地asset的zip

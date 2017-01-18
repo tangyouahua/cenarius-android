@@ -6,6 +6,8 @@ import android.text.TextUtils;
 import com.litesuits.go.OverloadPolicy;
 import com.litesuits.go.SchedulePolicy;
 import com.litesuits.go.SmartExecutor;
+import com.litesuits.orm.LiteOrm;
+import com.litesuits.orm.db.DataBaseConfig;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.Constants;
 import com.m.cenarius.resourceproxy.cache.InternalCache;
@@ -19,7 +21,6 @@ import com.m.cenarius.utils.io.IOUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.xutils.common.util.LogUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -178,6 +178,11 @@ public class RouteManager {
      */
     public String remoteFolderUrl;
 
+    /**
+     * 缓存路由表的数据库
+     */
+    private LiteOrm liteOrm;
+
     public static RouteManager getInstance() {
         if (null == instance) {
             synchronized (RouteManager.class) {
@@ -221,13 +226,14 @@ public class RouteManager {
         cacheRoutes = null;
         resourceRoutes = null;
         // 读取 cacheRoutes
-        String routeContent = readCachedRoutes();
-        if (!TextUtils.isEmpty(routeContent)) {
-            cacheRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, Routes.class);
-        }
+//        String routeContent = readCachedRoutes();
+//        if (!TextUtils.isEmpty(routeContent)) {
+//            cacheRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, Routes.class);
+//        }
+        cacheRoutes = (Routes) liteOrm.query(Route.class);
 
         // 读取 resourceRoutes
-        routeContent = readPresetRoutes();
+        String routeContent = readPresetRoutes();
         if (!TextUtils.isEmpty(routeContent)) {
             resourceRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, Routes.class);
         }
@@ -271,6 +277,14 @@ public class RouteManager {
         copyFileCount = 0;
         downloadFileCount = 0;
         routeRefreshCallback = callback;
+
+        if (liteOrm == null) {
+            String cachePath = InternalCache.getInstance().wwwCachePath() + File.separator;
+            String dbName = cachePath + Constants.DEFAULT_DISK_ROUTES_DB_NAME;
+            DataBaseConfig dataBaseConfig = new DataBaseConfig(AppContext.getInstance(), dbName);
+            liteOrm = LiteOrm.newSingleInstance(dataBaseConfig);
+            liteOrm.setDebugged(Cenarius.DEBUG);
+        }
 
         loadLocalConfig();
         loadLocalRoutes();
@@ -604,12 +618,12 @@ public class RouteManager {
     /**
      * 拷贝事件
      */
-    private void copyWWWStart(){
+    private void copyWWWStart() {
         // 开始拷贝www
         setStateAndProcess(RouteRefreshCallback.State.COPY_WWW, 0);
     }
 
-    private void copyWWW(){
+    private void copyWWW() {
         // 正在拷贝www
         copyFileCount++;
         process = copyFileCount * 100 / resourceRoutes.size();
@@ -622,12 +636,14 @@ public class RouteManager {
         setStateAndProcess(RouteRefreshCallback.State.COPY_WWW, process);
     }
 
-    private void copyWWWSuccess(){
+    private void copyWWWSuccess() {
         // 拷贝www成功
         String cachePath = InternalCache.getInstance().wwwCachePath() + File.separator;
         try {
             copyAssetFile(Constants.PRESET_CONFIG_FILE_PATH, cachePath + Constants.DEFAULT_DISK_CONFIG_FILE_NAME);
             copyAssetFile(Constants.PRESET_ROUTE_FILE_PATH, cachePath + Constants.DEFAULT_DISK_ROUTES_FILE_NAME);
+            // 保存路由表到数据库中
+            liteOrm.save(resourceRoutes);
             if (shouldDownloadWWW) {
                 downloadRoute();
             } else {
@@ -640,7 +656,7 @@ public class RouteManager {
         }
     }
 
-    private void copyWWWError(){
+    private void copyWWWError() {
         // 拷贝www失败
         setStateAndProcess(RouteRefreshCallback.State.COPY_WWW_ERROR, 0);
     }
@@ -674,9 +690,9 @@ public class RouteManager {
      * 下载文件
      */
     private void downloadFiles(Routes routes) {
-        // 为了保证www的完整性，必须在下载时把原来的删掉
-        deleteCachedRoutes();
-        deleteCachedConfig();
+//        // 为了保证www的完整性，必须在下载时把原来的删掉
+//        deleteCachedRoutes();
+//        deleteCachedConfig();
 
         Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
         final DownloadService downloadService = retrofit.create(DownloadService.class);
@@ -719,6 +735,7 @@ public class RouteManager {
                 if (responseBody != null) {
                     // 下载成功，保存
                     InternalCache.getInstance().saveCache(route, responseBody.bytes());
+                    liteOrm.save(route);
                     downloadFileSuccess();
                 } else {
                     // 下载失败
@@ -742,7 +759,7 @@ public class RouteManager {
      * 保存路由和配置
      */
     private void saveRouteAndConfig() {
-        saveCachedRoutes(routesString);
+//        saveCachedRoutes(routesString);
         saveCachedConfig(configString);
         updateSuccess();
     }
