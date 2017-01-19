@@ -3,4 +3,11 @@
     <color name="green">#42bd56</color>
     <color name="text_gray_light">#cccccc</color>
     <color name="text_black_light">#494949</color>
+
+    <!-- 10%透明 -->
+    <color name="translitter">#1e000000</color>
+    <!-- 透明 -->
+    <color name="transparent">#00000000</color>
+
+    <color name="home_tab_line">#f0f0f0</color>
 </resources>

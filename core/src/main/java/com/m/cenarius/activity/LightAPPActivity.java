@@ -3,12 +3,12 @@ package com.m.cenarius.activity;
 import android.os.Bundle;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.m.cenarius.R;
@@ -19,8 +19,8 @@ import com.m.cenarius.view.CenariusWebViewClient;
 public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClickListener{
 
     private TextView titleView;
-    private TextView back;
-    private TextView x;
+    private RelativeLayout back;
+    private TextView closeTv;
     private TextView refresh;
     private ProgressBar bar;
 
@@ -34,15 +34,18 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
         String url = intent.getStringExtra("url");
 //        loadUrl(url);
         titleView = (TextView) findViewById(R.id.textView);
-        x = (TextView) findViewById(R.id.xx);
+        closeTv = (TextView) findViewById(R.id.closeTv);
         refresh = (TextView) findViewById(R.id.refresh);
-        back = (TextView) findViewById(R.id.back);
-        x.setOnClickListener(this);
+        back = (RelativeLayout) findViewById(R.id.relate_back);
+        closeTv.setOnClickListener(this);
         refresh.setOnClickListener(this);
         back.setOnClickListener(this);
         cenariusWebView = (CenariusWebView) findViewById(R.id.webView);
         bar = (ProgressBar) findViewById(R.id.progressBar);
         bar.setProgress(0);
+        if (TextUtils.isEmpty(title)) {
+            title = "";
+        }
         titleView.setText(title + "");
 
 //        WebSettings webSettings = webviewddd.getSettings();
@@ -83,10 +86,10 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
                 bar.setProgress(0);
                 super.onPageFinished(view, url);
                 String title = view.getTitle();
-                if (title == null) {
+                if (TextUtils.isEmpty(title)) {
                     title = "";
                 }
-                // titleView.setText(title + "");
+                 titleView.setText(title + "");
             }
 
             @Override
@@ -102,11 +105,11 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
                 bar.setProgress(newProgress);
             }
 
-//            @Override
-//            public void onReceivedTitle(WebView view, String title) {
-//                super.onReceivedTitle(view, title);
-//                titleView.setText(title + "");
-//            }
+            @Override
+            public void onReceivedTitle(WebView view, String title) {
+                super.onReceivedTitle(view, title);
+                titleView.setText(title + "");
+            }
         });
     }
 
@@ -117,13 +120,29 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            back();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void back(){
+        if (cenariusWebView.canGoBack()) {
+            cenariusWebView.goBack();
+            closeTv.setVisibility(View.VISIBLE);
+        }else{
+            finish();
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         if (v == back){
-            if (cenariusWebView.canGoBack()) {
-                cenariusWebView.goBack();
-            }
+           back();
         }
-        else if (v == x)
+        else if (v == closeTv)
         {
             finish();
         }
