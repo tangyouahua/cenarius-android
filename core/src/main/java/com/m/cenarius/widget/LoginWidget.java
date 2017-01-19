@@ -152,6 +152,7 @@ public class LoginWidget implements CenariusWidget {
         String domainName="";
         XWalkCookieManager xwalkCookieManager =  new XWalkCookieManager();;
         xwalkCookieManager.setAcceptCookie(true);
+        xwalkCookieManager.removeAllCookie();
         for(int i=0;i<cookiesAll.size();i++){
             HttpCookie cookie=cookiesAll.get(i);
             String cookieString = cookie.getName() + "=" + cookie.getValue() + "; path=/";// +cookie.getDomain();
