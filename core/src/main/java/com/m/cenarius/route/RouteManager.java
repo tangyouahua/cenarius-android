@@ -127,6 +127,11 @@ public class RouteManager {
     private List<Route> resourceRoutes;
 
     /**
+     * 下载的Route列表
+     */
+    private List<Route> downloadRoutes;
+
+    /**
      * 缓存Config列表
      */
     public Config cacheConfig;
@@ -228,7 +233,8 @@ public class RouteManager {
         // 读取 resourceRoutes
         String routeContent = readPresetRoutes();
         if (!TextUtils.isEmpty(routeContent)) {
-            resourceRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, new TypeToken<List<Route>>(){}.getType());
+            resourceRoutes = GsonHelper.getInstance().gson.fromJson(routeContent, new TypeToken<List<Route>>() {
+            }.getType());
         }
     }
 
@@ -584,8 +590,10 @@ public class RouteManager {
                     //下载route成功
                     try {
                         routesString = response.body().string();
-                        routes = GsonHelper.getInstance().gson.fromJson(routesString, new TypeToken<List<Route>>(){}.getType());
-                        downloadFiles(routes);
+                        routes = GsonHelper.getInstance().gson.fromJson(routesString, new TypeToken<List<Route>>() {
+                        }.getType());
+                        downloadRoutes = getDownloadRoutes();
+                        downloadFiles();
                     } catch (IOException e) {
                         e.printStackTrace();
                         //下载route失败
@@ -604,6 +612,16 @@ public class RouteManager {
                 setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_ROUTES_ERROR, 0);
             }
         });
+    }
+
+    private List<Route> getDownloadRoutes() {
+        downloadRoutes = new ArrayList<>();
+        for (Route route : routes) {
+            if (shouldDownload(route)) {
+                downloadRoutes.add(route);
+            }
+        }
+        return downloadRoutes;
     }
 
     /**
@@ -658,17 +676,17 @@ public class RouteManager {
     private synchronized void downloadFileSuccess() {
         // 单个下载成功
         downloadFileCount++;
-        int copyProcess = process;
-        int downloadProcess = downloadFileCount * (100 - copyProcess) / routes.size();
-        process = copyProcess + downloadProcess;
-        if (process > 99) {
-            process = 99;
-        }
-        setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_FILES, process);
-//            LogUtil.v("已下载的文件数量： "+ getDownloadFileCount() +"  文件总数: "+routes.size());
-        if (downloadFileCount == routes.size()) {
+        if (downloadFileCount == downloadRoutes.size()) {
             // 所有下载成功
             saveRouteAndConfig();
+        } else {
+            int copyProcess = process;
+            int downloadProcess = downloadFileCount * (100 - copyProcess) / downloadRoutes.size();
+            process = copyProcess + downloadProcess;
+            if (process > 99) {
+                process = 99;
+            }
+            setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_FILES, process);
         }
     }
 
@@ -680,7 +698,7 @@ public class RouteManager {
     /**
      * 下载文件
      */
-    private void downloadFiles(List<Route> routes) {
+    private void downloadFiles() {
 //        // 为了保证www的完整性，必须在下载时把原来的删掉
 //        deleteCachedRoutes();
 //        deleteCachedConfig();
@@ -693,13 +711,13 @@ public class RouteManager {
         // 开发者均衡性能和业务场景，自己调整同一时段的最大并发数量
         smallExecutor.setCoreSize(4);
         // 开发者均衡性能和业务场景，自己调整最大排队线程数量
-        smallExecutor.setQueueSize(routes.size());
+        smallExecutor.setQueueSize(downloadRoutes.size());
         // 任务数量超出[最大并发数]后，自动进入[等待队列]，等待当前执行任务完成后按策略进入执行状态：先进先执行。
         smallExecutor.setSchedulePolicy(SchedulePolicy.FirstInFistRun);
         // 后续添加新任务数量超出[等待队列]大小时，执行过载策略：抛出异常
         smallExecutor.setOverloadPolicy(OverloadPolicy.ThrowExecption);
 
-        for (final Route route : routes) {
+        for (final Route route : downloadRoutes) {
             smallExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -716,32 +734,24 @@ public class RouteManager {
      * 下载文件
      */
     private boolean downloadFile(final Route route, final DownloadService downloadService) {
-        // 进度
-        if (shouldDownload(route)) {
-            // 需要下载
-//            LogUtil.v("需要下载的文件地址： " + route.file);
-            Call<ResponseBody> call = downloadService.downloadFile(route.file);
-            try {
-                ResponseBody responseBody = call.execute().body();
-                if (responseBody != null) {
-                    // 下载成功，保存
-                    InternalCache.getInstance().saveCache(route, responseBody.bytes());
-                    liteOrm.save(route);
-                    downloadFileSuccess();
-                } else {
-                    // 下载失败
-                    downloadFileError();
-                    return false;
-                }
-            } catch (IOException e) {
+        Call<ResponseBody> call = downloadService.downloadFile(route.file);
+        try {
+            ResponseBody responseBody = call.execute().body();
+            if (responseBody != null) {
+                // 下载成功，保存
+                InternalCache.getInstance().saveCache(route, responseBody.bytes());
+                liteOrm.save(route);
+                downloadFileSuccess();
+            } else {
                 // 下载失败
-                e.printStackTrace();
                 downloadFileError();
                 return false;
             }
-        } else {
-            // 不需要下载
-            downloadFileSuccess();
+        } catch (IOException e) {
+            // 下载失败
+            e.printStackTrace();
+            downloadFileError();
+            return false;
         }
         return true;
     }
