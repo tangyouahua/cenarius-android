@@ -34,6 +34,7 @@ public class GsonHelper {
         if (TextUtils.isEmpty(url)) {
             return null;
         }
+
         Uri uri = Uri.parse(url);
         if (TextUtils.equals(uri.getPath(), path)) {
             String dataJson = uri.getQueryParameter(KEY_DATA);

@@ -73,15 +73,6 @@ public class RouteManager {
         BusProvider.getInstance().register(this);
     }
 
-    private String wwwPath;
-
-    /**
-     * 获取H5加载目录
-     */
-    public static String getWWWPath() {
-        return RouteManager.getInstance().wwwPath;
-    }
-
     /**
      * Routes的远程地址
      */
@@ -831,7 +822,6 @@ public class RouteManager {
 //            // 从data加载
 //            wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
 //        }
-        wwwPath = "file://" + InternalCache.getInstance().wwwCachePath();
         // 成功，进APP
         setStateAndProcess(RouteRefreshCallback.State.UPDATE_FILES_SUCCESS, 100);
     }

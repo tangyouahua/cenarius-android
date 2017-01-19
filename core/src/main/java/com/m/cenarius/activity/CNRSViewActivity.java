@@ -198,7 +198,7 @@ public class CNRSViewActivity extends AppCompatActivity {
 //                if (htmlFileURL == null) {
 //                    htmlFileURL = CacheHelper.getInstance().remoteHtmlURLForURI(uri);
 //                }
-                htmlFileURL = RouteManager.getWWWPath() + "/" + uri;
+                htmlFileURL = CacheHelper.getInstance().localHtmlURLForURI(uri);
             }
         }
         return htmlFileURL;
