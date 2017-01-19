@@ -3,6 +3,7 @@ package com.m.cenarius.activity;
 import android.os.Bundle;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -16,8 +17,9 @@ import com.m.cenarius.view.CenariusWebChromeClient;
 import com.m.cenarius.view.CenariusWebView;
 import com.m.cenarius.view.CenariusWebViewClient;
 
-public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClickListener{
+public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private WebView webView;
     private TextView titleView;
     private RelativeLayout back;
     private TextView closeTv;
@@ -40,7 +42,7 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
         closeTv.setOnClickListener(this);
         refresh.setOnClickListener(this);
         back.setOnClickListener(this);
-        cenariusWebView = (CenariusWebView) findViewById(R.id.webView);
+        webView = (WebView) findViewById(R.id.webView);
         bar = (ProgressBar) findViewById(R.id.progressBar);
         bar.setProgress(0);
         if (TextUtils.isEmpty(title)) {
@@ -71,9 +73,9 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
 //        // enable Web Storage: localStorage, sessionStorage
 //        webSettings.setDomStorageEnabled(true);
 
-        cenariusWebView.loadUrl(url);
+        webView.loadUrl(url);
 
-        cenariusWebView.setWebViewClient(new CenariusWebViewClient(cenariusWebView.getWebView()) {
+        webView.setWebViewClient(new CenariusWebViewClient(webView) {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 bar.setVisibility(View.VISIBLE);
@@ -98,7 +100,7 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
                 return super.shouldOverrideUrlLoading(view, url);
             }
         });
-        cenariusWebView.setWebChromeClient(new CenariusWebChromeClient() {
+        webView.setWebChromeClient(new CenariusWebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
@@ -116,7 +118,7 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
     @Override
     public void onPause() {
         super.onPause();
-        cenariusWebView.onPause();
+        webView.onPause();
     }
 
     @Override
@@ -129,8 +131,8 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
     }
 
     public void back(){
-        if (cenariusWebView.canGoBack()) {
-            cenariusWebView.goBack();
+        if (webView.canGoBack()) {
+            webView.goBack();
             closeTv.setVisibility(View.VISIBLE);
         }else{
             finish();
@@ -147,7 +149,7 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
             finish();
         }
         else if (v == refresh) {
-            cenariusWebView.reload();
+            webView.reload();
         }
     }
 }

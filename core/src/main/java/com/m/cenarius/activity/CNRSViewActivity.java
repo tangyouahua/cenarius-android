@@ -62,10 +62,9 @@ public class CNRSViewActivity extends AppCompatActivity {
      * @param parameters  参数
      */
     public void openLightApp(String htmlFileURL, HashMap parameters) {
-        Intent intent = new Intent(this, LightAPPActivity.class);
+        Intent intent = new Intent(this, CNRSLightAPPActivity.class);
         intent.putExtra("url", htmlFileURL);
         intent.putExtra("parameters", parameters);
-        intent.putExtra("isLightApp", true);
         startActivity(intent);
     }
 

@@ -18,7 +18,6 @@ public class CNRSWebViewActivity extends CNRSViewActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.cnrs_web_view_activity);
 
-
         cenariusWebView = (CenariusWebView) findViewById(R.id.webView);
 
         // add widget
