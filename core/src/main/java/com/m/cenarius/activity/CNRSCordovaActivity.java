@@ -35,7 +35,7 @@ public class CNRSCordovaActivity extends CordovaActivity {
 
         String htmlUrl = htmlURL();
         if (htmlUrl != null) {
-            loadUrl(htmlUrl);
+            loadUrl("https://wechat-dev.infinitus.com.cn/wechat-front/html5/build/magazineAddress/index.html?staffNum=220023706#modify");
         } else {
             Log.v("cenarius", "htmlUrl 为空");
         }

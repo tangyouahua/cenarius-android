@@ -23,7 +23,7 @@
         <activity
             android:name="org.apache.cordova.CordovaActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".activity.LightAPPActivity" />
+        <activity android:name=".activity.CNRSLightAPPActivity" />
         <activity android:name=".activity.CNRSCordovaActivity"></activity>
     </application>
 

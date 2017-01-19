@@ -122,13 +122,13 @@ public class CordovaActivity extends CNRSViewActivity {
             SystemWebView webView = (SystemWebView) engine.getView();
             webView.setWebViewClient(new SystemWebViewClient(engine));
             webView.setWebChromeClient(new SystemWebChromeClient(engine));
-            webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+//            webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
         } else if (appCordovaView instanceof XWalkCordovaView) {
             XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
             XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
             webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine,pb));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
-            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
+//            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         } else {
             Log.e("cenarius", "系统内核出故障，请检查...");
         }

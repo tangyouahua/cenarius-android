@@ -4,10 +4,7 @@ import android.os.Bundle;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.view.View;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -16,7 +13,7 @@ import com.m.cenarius.view.CenariusWebChromeClient;
 import com.m.cenarius.view.CenariusWebView;
 import com.m.cenarius.view.CenariusWebViewClient;
 
-public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClickListener{
+public class CNRSLightAPPActivity extends CNRSWebViewActivity implements View.OnClickListener {
 
     private TextView titleView;
     private TextView back;
@@ -118,16 +115,13 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        if (v == back){
+        if (v == back) {
             if (cenariusWebView.canGoBack()) {
                 cenariusWebView.goBack();
             }
-        }
-        else if (v == x)
-        {
+        } else if (v == x) {
             finish();
-        }
-        else if (v == refresh) {
+        } else if (v == refresh) {
             cenariusWebView.reload();
         }
     }
