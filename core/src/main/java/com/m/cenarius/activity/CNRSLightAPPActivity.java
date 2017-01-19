@@ -14,8 +14,8 @@ import android.widget.TextView;
 
 import com.m.cenarius.R;
 import com.m.cenarius.view.CenariusWebChromeClient;
-import com.m.cenarius.view.CenariusWebView;
 import com.m.cenarius.view.CenariusWebViewClient;
+import com.m.cenarius.view.WebViewSettings;
 
 public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -73,8 +73,7 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
 //        // enable Web Storage: localStorage, sessionStorage
 //        webSettings.setDomStorageEnabled(true);
 
-        webView.loadUrl(url);
-
+        WebViewSettings.setupWebSettings(webView.getSettings());
         webView.setWebViewClient(new CenariusWebViewClient(webView) {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -113,6 +112,9 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
                 titleView.setText(title + "");
             }
         });
+
+
+        webView.loadUrl(url);
     }
 
     @Override

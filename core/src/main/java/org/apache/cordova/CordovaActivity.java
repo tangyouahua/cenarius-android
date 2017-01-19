@@ -54,6 +54,7 @@ import android.widget.ProgressBar;
 
 import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.view.CenariusXWalkCordovaResourceClient;
+import com.m.cenarius.view.WebViewSettings;
 
 /**
  * This class is the main Android activity that represents the Cordova
@@ -122,13 +123,11 @@ public class CordovaActivity extends CNRSViewActivity {
             SystemWebView webView = (SystemWebView) engine.getView();
             webView.setWebViewClient(new SystemWebViewClient(engine));
             webView.setWebChromeClient(new SystemWebChromeClient(engine));
-//            webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
         } else if (appCordovaView instanceof XWalkCordovaView) {
             XWalkWebViewEngine engine = (XWalkWebViewEngine) appView.getEngine();
             XWalkCordovaView webView = (XWalkCordovaView) engine.getView();
             webView.setResourceClient(new CenariusXWalkCordovaResourceClient(engine,pb));
             webView.setUIClient(new XWalkCordovaUiClient(engine));
-//            XWalkPreferences.setValue(XWalkPreferences.ALLOW_UNIVERSAL_ACCESS_FROM_FILE, true);
         } else {
             Log.e("cenarius", "系统内核出故障，请检查...");
         }

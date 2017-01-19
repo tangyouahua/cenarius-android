@@ -147,7 +147,7 @@ public class CenariusWebViewCore extends SafeWebView {
     private void setup() {
         setBackgroundColor(Color.WHITE);
         WebSettings ws = getSettings();
-        setupWebSettings(ws);
+        WebViewSettings.setupWebSettings(ws);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             setWebContentsDebuggingEnabled(Cenarius.DEBUG);
         }
@@ -162,43 +162,6 @@ public class CenariusWebViewCore extends SafeWebView {
         setDownloadListener(getDownloadListener());
     }
 
-    @TargetApi(16)
-    @SuppressLint("SetJavaScriptEnabled")
-    protected void setupWebSettings(WebSettings ws) {
-        ws.setAppCacheEnabled(true);
-        ws.setJavaScriptEnabled(true);
-        ws.setGeolocationEnabled(true);
-        ws.setBuiltInZoomControls(true);
-        ws.setDisplayZoomControls(false);
-
-        ws.setAllowFileAccess(true);
-        if (Utils.hasJellyBean()) {
-            ws.setAllowFileAccessFromFileURLs(true);
-            ws.setAllowUniversalAccessFromFileURLs(true);
-        }
-
-        // enable html cache
-        ws.setDomStorageEnabled(true);
-        ws.setAppCacheEnabled(true);
-        // Set cache size to 8 mb by default. should be more than enough
-        ws.setAppCacheMaxSize(1024 * 1024 * 8);
-        // This next one is crazy. It's the DEFAULT location for your app's cache
-        // But it didn't work for me without this line
-        ws.setAppCachePath("/data/data/" + getContext().getPackageName() + "/cache");
-        ws.setAllowFileAccess(true);
-        ws.setCacheMode(WebSettings.LOAD_DEFAULT);
-
-        String ua = ws.getUserAgentString() + " " + Cenarius.getUserAgent();
-        ws.setUserAgentString(ua);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            ws.setUseWideViewPort(true);
-        }
-
-        if (Utils.hasLollipop()) {
-            ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        }
-    }
 
     protected DownloadListener getDownloadListener() {
         return new DownloadListener() {
