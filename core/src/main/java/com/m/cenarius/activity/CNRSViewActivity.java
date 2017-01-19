@@ -62,16 +62,11 @@ public class CNRSViewActivity extends AppCompatActivity {
      * @param parameters  参数
      */
     public void openLightApp(String htmlFileURL, HashMap parameters) {
-//        Intent intent = new Intent(this, CNRSWebViewActivity.class);
-//        intent.putExtra("htmlFileURL", htmlFileURL);
-//        intent.putExtra("parameters", parameters);
-//        startActivity(intent);
-
-        Intent intent = new Intent("com.infinitus.bupm.activity.CubeAndroid");
-        intent.putExtra("htmlFileURL",htmlFileURL);
-        intent.putExtra("showtitle", true);
+        Intent intent = new Intent(this, LightAPPActivity.class);
+        intent.putExtra("url", htmlFileURL);
+        intent.putExtra("parameters", parameters);
+        intent.putExtra("isLightApp", true);
         startActivity(intent);
-
     }
 
     /**
