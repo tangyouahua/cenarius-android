@@ -275,6 +275,7 @@ public class RouteManager {
         process = 0;
         copyFileCount = 0;
         downloadFileCount = 0;
+        isDownloadFileError = false;
         routeRefreshCallback = callback;
 
         if (liteOrm == null) {
@@ -675,6 +676,9 @@ public class RouteManager {
      */
     private synchronized void downloadFileSuccess() {
         // 单个下载成功
+        if (isDownloadFileError){
+            return;
+        }
         downloadFileCount++;
         if (downloadFileCount == downloadRoutes.size()) {
             // 所有下载成功
@@ -690,9 +694,15 @@ public class RouteManager {
         }
     }
 
+    private boolean isDownloadFileError = false;
+
     protected synchronized void downloadFileError() {
         // 下载失败
-        setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_FILES_ERROR, 0);
+        if (!isDownloadFileError)
+        {
+            isDownloadFileError = true;
+            setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_FILES_ERROR, 0);
+        }
     }
 
     /**
