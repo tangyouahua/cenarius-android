@@ -36,7 +36,7 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
         String url = intent.getStringExtra("url");
 //        loadUrl(url);
         titleView = (TextView) findViewById(R.id.textView);
-        closeTv = (TextView) findViewById(R.id.closeTv);
+        closeTv = (TextView) findViewById(R.id.close_tv);
         refresh = (TextView) findViewById(R.id.refresh);
         back = (RelativeLayout) findViewById(R.id.relate_back);
         closeTv.setOnClickListener(this);
