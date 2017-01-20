@@ -58,7 +58,7 @@ public class MainActivity extends CNRSViewActivity {
     }
 
     public void openCordova(View view){
-        openCordovaPage("sign/sign.html", null);
+        openCordovaPage("build/index.html", null);
     }
 
     // 获取验证码随机码
