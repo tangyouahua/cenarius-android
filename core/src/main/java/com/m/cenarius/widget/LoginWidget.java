@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.m.cenarius.Cenarius;
 import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.GsonHelper;
+import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.utils.OpenApi;
 import com.m.cenarius.view.CenariusWidget;
 
@@ -89,6 +90,7 @@ public class LoginWidget implements CenariusWidget {
         params.put("locale", "zh_CN");
         String sign = OpenApi.md5Signature(params, appSecret);
         params.put("sign", sign);
+        LogUtils.i("登录参数：",params.toString());
 
         RequestParams requestParams = new RequestParams(service);
         for (String key : params.keySet()) {
@@ -100,6 +102,7 @@ public class LoginWidget implements CenariusWidget {
             public void onSuccess(String result) {
                 setWebViewCookies();
                 Map map = JSON.parseObject(result, Map.class);
+                LogUtils.i("登录结果：",map.toString());
                 String token = (String) map.get("access_token");
                 String error_msg = (String) map.get("error_msg");
                 if (token != null && token.length() > 0) {
@@ -120,6 +123,7 @@ public class LoginWidget implements CenariusWidget {
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
+                LogUtils.i("登录结果：",ex.toString());
                 if (callback != null) {
                     callback.onFail("系统错误");
                 }
