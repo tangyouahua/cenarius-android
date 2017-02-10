@@ -76,7 +76,7 @@ public class InternalCache {
      * @param bytes 数据
      */
     public boolean saveCache(Route route, byte[] bytes) {
-        if (null == bytes || bytes.length == 0) {
+        if (null == bytes) {
             return false;
         }
         // 如果存在，则先删掉之前的缓存
@@ -97,9 +97,6 @@ public class InternalCache {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            if (null != saveFile && saveFile.exists()) {
-                saveFile.exists();
-            }
         }
         return false;
     }
@@ -107,7 +104,7 @@ public class InternalCache {
     /**
      * 创建文件夹
      */
-    public void createWWW(){
+    public void createWWW() {
         File htmlDir = fileDir();
         if (!htmlDir.exists()) {
             htmlDir.mkdirs();
@@ -145,7 +142,7 @@ public class InternalCache {
     public File fileDir() {
         if (fileDir == null) {
 //            fileDir = new File(AppContext.getInstance().getDir(Constants.CACHE_HOME_DIR, Context.MODE_PRIVATE), Constants.DEFAULT_DISK_INTERNAL_FILE_PATH);
-    fileDir = new File(wwwCachePath());
+            fileDir = new File(wwwCachePath());
         }
         return fileDir;
     }
@@ -171,7 +168,7 @@ public class InternalCache {
     /**
      * 获取www目录
      */
-    public String wwwCachePath(){
+    public String wwwCachePath() {
         String cachePath = cachePath() + Constants.DEFAULT_ASSET_FILE_PATH;
         return cachePath;
     }

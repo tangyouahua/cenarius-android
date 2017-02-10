@@ -752,10 +752,9 @@ public class RouteManager {
     private boolean downloadFile(final Route route, final DownloadService downloadService) {
         Call<ResponseBody> call = downloadService.downloadFile(route.file);
         try {
-            ResponseBody responseBody = call.execute().body();
-            if (responseBody != null) {
+            Response<ResponseBody> response = call.execute();
+            if (response.isSuccessful() && InternalCache.getInstance().saveCache(route, response.body().bytes())) {
                 // 下载成功，保存
-                InternalCache.getInstance().saveCache(route, responseBody.bytes());
                 liteOrm.save(route);
                 downloadFileSuccess();
             } else {
