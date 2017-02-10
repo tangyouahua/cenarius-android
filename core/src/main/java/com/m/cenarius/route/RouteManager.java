@@ -594,7 +594,13 @@ public class RouteManager {
                         routes = GsonHelper.getInstance().gson.fromJson(routesString, new TypeToken<List<Route>>() {
                         }.getType());
                         downloadRoutes = getDownloadRoutes();
-                        downloadFiles();
+                        if (downloadRoutes.size() > 0) {
+                            // 需要下载文件
+                            downloadFiles();
+                        } else {
+                            // 不需要下载文件
+                            saveRouteAndConfig();
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                         //下载route失败
