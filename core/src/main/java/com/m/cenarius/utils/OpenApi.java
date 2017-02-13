@@ -11,6 +11,7 @@ import org.xutils.http.RequestParams;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.Date;
@@ -249,22 +250,26 @@ public class OpenApi {
         String query = null;
         if (list != null) {
             for (KeyValue keyValue : list) {
-                if (query == null) {
-                    query = keyValue.key + "=" + keyValue.value;
-                } else {
-                    query = query + "&" + keyValue.key + "=" + keyValue.value;
+                try {
+                    if (query == null) {
+                        query = URLEncoder.encode(keyValue.key.toString(), "UTF-8") + "=" + URLEncoder.encode(keyValue.value.toString(), "UTF-8");
+                    } else {
+                        query = query + "&" + URLEncoder.encode(keyValue.key.toString(), "UTF-8") + "=" + URLEncoder.encode(keyValue.value.toString(), "UTF-8");
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
                 }
             }
         }
 
-        if (query != null) {
-            try {
-                // 原 query, 需要 decode
-                query = URLDecoder.decode(query, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (query != null) {
+//            try {
+//                // 原 query, 需要 decode
+//                query = URLDecoder.decode(query, "UTF-8");
+//            } catch (UnsupportedEncodingException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         return query;
     }
