@@ -17,7 +17,7 @@
        under the License.
 */
 
-package org.apache.cordova.whitelist;
+package com.m.cenarius.example.whitelist;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.ConfigXmlParser;

@@ -272,7 +272,7 @@ public class OpenApi {
     /**
      * 获取匿名token
      */
-    private static String getAnonymousToken() {
+    public static String getAnonymousToken() {
         String token = createRandom(false, 8) + "##ANONYMOUS";
         token = Base64.encodeToString(token.getBytes(), Base64.NO_WRAP);
         return token;
