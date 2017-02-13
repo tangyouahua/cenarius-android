@@ -7,17 +7,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.m.cenarius.R;
+import com.m.cenarius.utils.Utils;
 import com.m.cenarius.view.CenariusWebChromeClient;
 import com.m.cenarius.view.CenariusWebViewClient;
 import com.m.cenarius.view.WebViewSettings;
+import com.m.cenarius.widget.ToastWidget;
 
-public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnClickListener{
+public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnClickListener {
 
     private WebView webView;
     private TextView titleView;
@@ -90,13 +94,31 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
                 if (TextUtils.isEmpty(title)) {
                     title = "";
                 }
-                 titleView.setText(title + "");
+                titleView.setText(title + "");
             }
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);   //在当前的webview中跳转到新的url
                 return super.shouldOverrideUrlLoading(view, url);
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                if (Utils.hasM()) {
+                    if (error.getErrorCode() == -2) {
+                        ToastWidget.showToast(view.getContext(), "网络请求失败，请检查您的网络");
+                    }
+                }
+            }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                super.onReceivedError(view, errorCode, description, failingUrl);
+                if (errorCode == -2) {
+                    ToastWidget.showToast(view.getContext(), "网络请求失败，请检查您的网络");
+                }
             }
         });
         webView.setWebChromeClient(new CenariusWebChromeClient() {
@@ -125,33 +147,31 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_BACK){
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             back();
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    public void back(){
+    public void back() {
         if (webView.canGoBack()) {
             webView.goBack();
             closeTv.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             finish();
         }
     }
 
     @Override
     public void onClick(View v) {
-        if (v == back){
-           back();
-        }
-        else if (v == closeTv)
-        {
+        if (v == back) {
+            back();
+        } else if (v == closeTv) {
             finish();
-        }
-        else if (v == refresh) {
+        } else if (v == refresh) {
             webView.reload();
         }
     }
+
 }

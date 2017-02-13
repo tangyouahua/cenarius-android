@@ -1,5 +1,6 @@
 package com.m.cenarius.widget;
 
+import android.content.Context;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,13 +25,18 @@ public class ToastWidget implements CenariusWidget {
     @Override
     public boolean handle(View view, String url) {
         HashMap dataMap = GsonHelper.getDataMap(url, getPath());
-        if (dataMap != null){
+        if (dataMap != null) {
             String message = (String) dataMap.get(KEY_MESSAGE);
             String level = (String) dataMap.get(KEY_LEVEL);
-            Toast.makeText(view.getContext(), message, Toast.LENGTH_LONG).show();
+            showToast(view.getContext(), message);
             LogUtils.i(TAG, String.format("handle toast success, message = %1$s ", message));
             return true;
         }
         return false;
     }
+
+    public static void showToast(Context context, String text) {
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+    }
+
 }

@@ -50,7 +50,7 @@ public class MainActivity extends CNRSViewActivity {
     }
 
     public void openLight(View view) {
-        openLightApp("https://wechat-dev.infinitus.com.cn/wechat-front/html5/build/magazineAddress/index.html?staffNum=220023706#modify", null);
+        openLightApp("https://www.baidu.com", null);
     }
 
     public void openH5(View view){

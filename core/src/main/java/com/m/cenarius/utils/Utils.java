@@ -29,6 +29,11 @@ public class Utils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
+    public static boolean hasM() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+    }
+
+
 //    public static String hash(String source) {
 //        try {
 //            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
