@@ -16,6 +16,7 @@ import com.m.cenarius.utils.AppContext;
 import com.m.cenarius.utils.BusProvider;
 import com.m.cenarius.utils.FilesUtility;
 import com.m.cenarius.utils.GsonHelper;
+import com.m.cenarius.utils.OkHttpClientHelper;
 import com.m.cenarius.utils.Utils;
 import com.m.cenarius.utils.io.FileUtils;
 import com.m.cenarius.utils.io.IOUtils;
@@ -507,7 +508,7 @@ public class RouteManager {
      */
     private void downloadConfig() {
         setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_CONFIG, 0);
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).client(OkHttpClientHelper.getDefaultClient()).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
         Call<ResponseBody> call = downloadService.downloadConfig(configUrl);
         call.enqueue(new Callback<ResponseBody>() {
@@ -581,7 +582,7 @@ public class RouteManager {
         setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_ROUTES, 0);
         loadLocalConfig();
         loadLocalRoutes();
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).client(OkHttpClientHelper.getDefaultClient()).build();
         DownloadService downloadService = retrofit.create(DownloadService.class);
         Call<ResponseBody> call = downloadService.downloadRoute(routeUrl);
         call.enqueue(new Callback<ResponseBody>() {
@@ -719,7 +720,7 @@ public class RouteManager {
 //        deleteCachedRoutes();
 //        deleteCachedConfig();
 
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).client(OkHttpClientHelper.getDefaultClient()).build();
         final DownloadService downloadService = retrofit.create(DownloadService.class);
 
         // 智能并发调度控制器：设置[最大并发数]，和[等待队列]大小
