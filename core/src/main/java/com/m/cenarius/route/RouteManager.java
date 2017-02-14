@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -275,8 +276,6 @@ public class RouteManager {
         config = null;
         process = 0;
         copyFileCount = 0;
-        downloadFileCount = 0;
-        isDownloadFileError = false;
         routeRefreshCallback = callback;
 
         if (liteOrm == null) {
@@ -644,8 +643,8 @@ public class RouteManager {
         // 正在拷贝www
         copyFileCount++;
         process = copyFileCount * 100 / resourceRoutes.size();
-        if (process > 99) {
-            process = 99;
+        if (process > 100) {
+            process = 100;
         }
         if (shouldDownloadWWW) {
             process = process / 2;
@@ -681,16 +680,17 @@ public class RouteManager {
     /**
      * 下载事件
      */
-    private synchronized void downloadFileSuccess() {
+    private synchronized void downloadFileSuccess(Route route) {
         // 单个下载成功
-        if (isDownloadFileError){
+        if (isDownloadFileError) {
             return;
         }
+        liteOrm.save(route);
         downloadFileCount++;
         if (downloadFileCount == downloadRoutes.size()) {
             // 所有下载成功
             saveRouteAndConfig();
-        } else {
+        } else if (downloadRoutes.size() > 0) {
             int copyProcess = process;
             int downloadProcess = downloadFileCount * (100 - copyProcess) / downloadRoutes.size();
             process = copyProcess + downloadProcess;
@@ -705,8 +705,7 @@ public class RouteManager {
 
     protected synchronized void downloadFileError() {
         // 下载失败
-        if (!isDownloadFileError)
-        {
+        if (!isDownloadFileError) {
             isDownloadFileError = true;
             setStateAndProcess(RouteRefreshCallback.State.DOWNLOAD_FILES_ERROR, 0);
         }
@@ -716,17 +715,13 @@ public class RouteManager {
      * 下载文件
      */
     private void downloadFiles() {
-//        // 为了保证www的完整性，必须在下载时把原来的删掉
-//        deleteCachedRoutes();
-//        deleteCachedConfig();
-
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).client(OkHttpClientHelper.getDefaultClient()).build();
+        final Retrofit retrofit = new Retrofit.Builder().baseUrl(remoteFolderUrl).client(OkHttpClientHelper.getDefaultClient()).build();
         final DownloadService downloadService = retrofit.create(DownloadService.class);
 
         // 智能并发调度控制器：设置[最大并发数]，和[等待队列]大小
         final SmartExecutor smallExecutor = new SmartExecutor();
         // 开发者均衡性能和业务场景，自己调整同一时段的最大并发数量
-        smallExecutor.setCoreSize(4);
+        smallExecutor.setCoreSize(2);
         // 开发者均衡性能和业务场景，自己调整最大排队线程数量
         smallExecutor.setQueueSize(downloadRoutes.size());
         // 任务数量超出[最大并发数]后，自动进入[等待队列]，等待当前执行任务完成后按策略进入执行状态：先进先执行。
@@ -734,11 +729,13 @@ public class RouteManager {
         // 后续添加新任务数量超出[等待队列]大小时，执行过载策略：抛出异常
         smallExecutor.setOverloadPolicy(OverloadPolicy.ThrowExecption);
 
+        downloadFileCount = 0;
+        isDownloadFileError = false;
         for (final Route route : downloadRoutes) {
             smallExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    boolean success = downloadFile(route, downloadService);
+                    boolean success = downloadFile(route, downloadService, 5);
                     if (!success) {
                         smallExecutor.cancelWaitingTask(null);
                     }
@@ -750,26 +747,29 @@ public class RouteManager {
     /**
      * 下载文件
      */
-    private boolean downloadFile(final Route route, final DownloadService downloadService) {
+    private boolean downloadFile(final Route route, final DownloadService downloadService, int retry) {
         Call<ResponseBody> call = downloadService.downloadFile(route.file);
         try {
             Response<ResponseBody> response = call.execute();
             if (response.isSuccessful() && InternalCache.getInstance().saveCache(route, response.body().bytes())) {
                 // 下载成功，保存
-                liteOrm.save(route);
-                downloadFileSuccess();
-            } else {
-                // 下载失败
-                downloadFileError();
-                return false;
+                downloadFileSuccess(route);
+                return true;
             }
         } catch (IOException e) {
-            // 下载失败
             e.printStackTrace();
+        }
+        // 下载失败
+        return downloadFileRetry(route, downloadService, retry);
+    }
+
+    private boolean downloadFileRetry(final Route route, final DownloadService downloadService, int retry) {
+        retry--;
+        if (retry == -1) {
             downloadFileError();
             return false;
         }
-        return true;
+        return downloadFile(route, downloadService, retry);
     }
 
     /**

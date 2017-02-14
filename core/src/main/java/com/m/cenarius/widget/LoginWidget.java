@@ -2,6 +2,7 @@ package com.m.cenarius.widget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -14,6 +15,7 @@ import com.m.cenarius.utils.LogUtils;
 import com.m.cenarius.utils.OpenApi;
 import com.m.cenarius.view.CenariusWidget;
 
+import org.apache.cordova.engine.SystemWebViewEngine;
 import org.xutils.common.Callback;
 import org.xutils.common.util.LogUtil;
 import org.xutils.http.RequestParams;
@@ -35,6 +37,14 @@ public class LoginWidget implements CenariusWidget {
 
     private static final String PREF_FILE_NAME = "cenarius_login";
     private static final String TOKEN_KEY = "access_token";
+
+    public static  boolean isX86;
+
+    static {
+        if(Build.CPU_ABI.toLowerCase().contains("x86") || Build.CPU_ABI2.toLowerCase().contains("x86") ){
+            isX86 = true;
+        }
+    }
 
     public interface LoginCallback {
         void onSuccess(String accessToken);
@@ -154,18 +164,25 @@ public class LoginWidget implements CenariusWidget {
         //以下注释了防上出现cookie更新不同步问题
 //		cookieManager.removeSessionCookie();
         String domainName="";
-        XWalkCookieManager xwalkCookieManager =  new XWalkCookieManager();;
-        xwalkCookieManager.setAcceptCookie(true);
-        xwalkCookieManager.removeAllCookie();
+        XWalkCookieManager xwalkCookieManager =  null;
+        if(!isX86){
+            xwalkCookieManager =  new XWalkCookieManager();
+            xwalkCookieManager.setAcceptCookie(true);
+            xwalkCookieManager.removeAllCookie();
+        }
         for(int i=0;i<cookiesAll.size();i++){
             HttpCookie cookie=cookiesAll.get(i);
             String cookieString = cookie.getName() + "=" + cookie.getValue() + "; path=/";// +cookie.getDomain();
             domainName=cookie.getDomain();
             cookieManager.setCookie(cookie.getDomain(), cookieString);
-            xwalkCookieManager.setCookie(cookie.getDomain(), cookieString);
+            if(xwalkCookieManager != null){
+                xwalkCookieManager.setCookie(cookie.getDomain(), cookieString);
+            }
             domainName="https://"+domainName;
             cookieManager.setCookie(domainName, cookieString);
-            xwalkCookieManager.setCookie(domainName, cookieString);
+            if(xwalkCookieManager != null){
+                xwalkCookieManager.setCookie(domainName, cookieString);
+            }
             LogUtil.d( domainName+"__"+cookieString);
         }
 
