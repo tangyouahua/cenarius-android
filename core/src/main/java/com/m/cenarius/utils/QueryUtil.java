@@ -101,7 +101,12 @@ public class QueryUtil {
         if (url == null) {
             return null;
         }
-        return Uri.parse(url).getQuery();
+//        return Uri.parse(url).getQuery();
+        int index = url.indexOf("?");
+        if (index > 0){
+            return url.substring(index+1);
+        }
+        return null;
     }
 
     /**
