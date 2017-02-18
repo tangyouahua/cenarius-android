@@ -77,7 +77,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     public static CordovaWebViewEngine createEngine(Context context, CordovaPreferences preferences) {
         String className = preferences.getString("webview", SystemWebViewEngine.class.getCanonicalName());
-        if(Build.CPU_ABI.toLowerCase().contains("x86") || Build.CPU_ABI2.toLowerCase().contains("x86") || Utils.hasLollipop()){
+        if(Build.CPU_ABI.toLowerCase().contains("x86") || Build.CPU_ABI2.toLowerCase().contains("x86") || Utils.hasKitkat()){
             className =  SystemWebViewEngine.class.getCanonicalName();
         }
         try {
