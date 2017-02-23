@@ -1,11 +1,13 @@
 package com.m.cenarius.view;
 
+import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.alibaba.fastjson.JSON;
+import com.m.cenarius.activity.CNRSViewActivity;
 import com.m.cenarius.resourceproxy.network.InterceptJavascriptInterface;
 import com.m.cenarius.utils.Utils;
 
@@ -48,6 +50,15 @@ public class CenariusWebViewClient extends WebViewClient {
         }
     }
 
+    public List<CenariusWidget> getCenariusWidgets(View view) {
+        if (mWidgets == null || mWidgets.size() == 0) {
+            if (null != view && view.getContext() instanceof CNRSViewActivity) {
+                mWidgets = ((CNRSViewActivity) view.getContext()).widgets;
+            }
+        }
+        return mWidgets;
+    }
+
     public List<CenariusWidget> getCenariusWidgets() {
         return mWidgets;
     }
@@ -59,6 +70,7 @@ public class CenariusWebViewClient extends WebViewClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        mWidgets = getCenariusWidgets(view);
         if (CenariusHandleRequest.handleWidgets(view, url, mWidgets)) {
             return true;
         }

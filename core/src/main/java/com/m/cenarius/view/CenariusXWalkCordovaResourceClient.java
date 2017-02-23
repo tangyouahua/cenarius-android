@@ -20,6 +20,7 @@ import org.xwalk.core.XWalkWebResourceResponse;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClient {
@@ -38,11 +39,11 @@ public class CenariusXWalkCordovaResourceClient extends XWalkCordovaResourceClie
         handler.removeCallbacksAndMessages(null);
     }
 
-    private ArrayList<CenariusWidget> mWidgets;
+    private List<CenariusWidget> mWidgets;
 
 
-    public ArrayList<CenariusWidget> getCenariusWidgets(View view) {
-        if (mWidgets == null) {
+    public List<CenariusWidget> getCenariusWidgets(View view) {
+        if (mWidgets == null || mWidgets.size() == 0) {
             if (null != view && view.getContext() instanceof CNRSViewActivity) {
                 mWidgets = ((CNRSViewActivity) view.getContext()).widgets;
             }
