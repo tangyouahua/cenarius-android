@@ -3,6 +3,8 @@ package com.m.cenarius.activity;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -53,6 +55,17 @@ public class CNRSViewActivity extends AppCompatActivity {
         intent.putExtra("uri", uri);
         intent.putExtra("parameters", parameters);
         startActivity(intent);
+    }
+
+    @Override
+    public Resources getResources() {
+        Resources res = super.getResources();
+        Configuration config = new Configuration();
+        config.setToDefaults();
+        config.fontScale = 1.0f;
+        res.updateConfiguration(config,res.getDisplayMetrics());
+        return res;
+
     }
 
     /**

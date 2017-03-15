@@ -1,11 +1,16 @@
 package com.m.cenarius.utils;
 
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
 import com.m.cenarius.R;
+
+import java.util.List;
 
 public class Utils {
 
@@ -62,6 +67,24 @@ public class Utils {
             e.printStackTrace();
         }
         return null;
+    }
+
+
+    public static boolean isRunningForeground(Activity activity) {
+        android.app.ActivityManager activityManager = (android.app.ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcessInfos = activityManager.getRunningAppProcesses();
+        // 枚举进程
+        if(appProcessInfos != null && appProcessInfos.size() > 0){
+            for (android.app.ActivityManager.RunningAppProcessInfo appProcessInfo : appProcessInfos) {
+                if (appProcessInfo.importance == android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    if (appProcessInfo.processName.equals(activity.getApplicationInfo().processName)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
 }

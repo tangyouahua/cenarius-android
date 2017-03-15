@@ -1,12 +1,17 @@
 package com.m.cenarius.activity;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -19,22 +24,28 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.m.cenarius.R;
+import com.m.cenarius.event.ReStartEvent;
 import com.m.cenarius.utils.Utils;
 import com.m.cenarius.view.CenariusWebChromeClient;
 import com.m.cenarius.view.CenariusWebViewClient;
 import com.m.cenarius.view.WebViewSettings;
 import com.m.cenarius.widget.ToastWidget;
 
+import org.apache.cordova.engine.SystemWebView;
+import org.crosswalk.engine.XWalkCordovaView;
+import org.greenrobot.eventbus.EventBus;
+import org.xutils.common.util.LogUtil;
 import org.xwalk.core.XWalkView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -44,7 +55,7 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
     private TextView closeTv;
     private TextView refresh;
     private ProgressBar bar;
-    private ImageView close_img;
+    private TextView closeBtn;
 
     /**
      * 是否己经执行过一次返加
@@ -54,6 +65,7 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
     private String origin;
 
     private GeolocationPermissions.Callback callback;
+
 
     /**
      * 定位权限请求码
@@ -73,8 +85,8 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
         closeTv = (TextView) findViewById(R.id.close_tv);
         refresh = (TextView) findViewById(R.id.refresh);
         back = (RelativeLayout) findViewById(R.id.relate_back);
-        close_img = (ImageView)findViewById(R.id.close_img);
-        close_img.setOnClickListener(this);
+        closeBtn = (TextView)findViewById(R.id.close_btn);
+        closeBtn.setOnClickListener(this);
         closeTv.setOnClickListener(this);
         refresh.setOnClickListener(this);
         back.setOnClickListener(this);
@@ -86,88 +98,8 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
         }
         titleView.setText(title + "");
 
-//        WebSettings webSettings = webviewddd.getSettings();
-//        webSettings.setJavaScriptEnabled(true);
-//        // 设置可以访问文件
-//        webSettings.setAllowFileAccess(true);
-//        // 设置可以支持缩放
-//        webSettings.setSupportZoom(true);
-//        // 设置默认缩放方式尺寸是far
-//        webSettings.setDefaultZoom(WebSettings.ZoomDensity.MEDIUM);
-//        // 设置出现缩放工具
-//        webSettings.setBuiltInZoomControls(false);
-//        webSettings.setDefaultFontSize(20);
-//        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-//        // 访问assets目录下的文件
-//        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-//        webSettings.setUseWideViewPort(true);
-//        webSettings.setLoadWithOverviewMode(true);
-//
-//        // enable navigator.geolocation
-//        webSettings.setGeolocationEnabled(true);
-//        webSettings.setGeolocationDatabasePath("/data/data/" + this.getPackageName() + "/databases/");
-//        // enable Web Storage: localStorage, sessionStorage
-//        webSettings.setDomStorageEnabled(true);
 
         WebViewSettings.setupWebSettings(webView.getSettings());
-        webView.requestFocus();
-        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        // mWebView.setInitialScale(50);//为50%，最小缩放等级
-
-        WebSettings mWebSettings = webView.getSettings();
-        /**
-         * webview使用ajax解决跨域问题
-         *
-         * @author liuguangdan
-         * @date 2015年8月12日14:44:55
-         */
-        try {
-            if (Build.VERSION.SDK_INT >= 16) {
-                Class<?> clazz = webView.getSettings().getClass();
-                Method method = clazz.getMethod("setAllowUniversalAccessFromFileURLs", boolean.class);
-                if (method != null) {
-                    method.invoke(webView.getSettings(), true);
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        mWebSettings.setBlockNetworkImage(false); // 是否阻止网络图像
-        mWebSettings.setBlockNetworkLoads(false); // 是否阻止网络请求
-        mWebSettings.setJavaScriptEnabled(true); // 是否加载JS
-        mWebSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-        // mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE); // 覆盖方式启动缓存
-//        mWebSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK); // 本地有用本地，否则网络
-        mWebSettings.setAppCacheEnabled(true);
-        mWebSettings.setUseWideViewPort(false); // 使用广泛视窗
-        mWebSettings.setLoadWithOverviewMode(false);
-        mWebSettings.setRenderPriority(WebSettings.RenderPriority.NORMAL); // 渲染优先级
-        mWebSettings.setDomStorageEnabled(true);
-        mWebSettings.setBuiltInZoomControls(false);
-        mWebSettings.setSupportZoom(true);
-
-       //设置可以支持缩放
-//        mWebSettings.setSupportZoom(true);
-//        // 设置默认缩放方式尺寸是far
-//        mWebSettings.setDefaultZoom(WebSettings.ZoomDensity.MEDIUM);
-//        // 设置出现缩放工具
-//        mWebSettings.setBuiltInZoomControls(true);
-
-        if (Build.VERSION.SDK_INT >= 16) {
-            mWebSettings.setAllowFileAccessFromFileURLs(true);
-        }
-        mWebSettings.setDatabaseEnabled(true);
-        String dir = this.getApplicationContext().getDir("database", Context.MODE_PRIVATE).getPath();
-        // 设置数据库路径
-        mWebSettings.setDatabasePath(dir);
-
-        mWebSettings.setUserAgentString(mWebSettings.getUserAgentString() + ";native-android");// 获得浏览器的环境
         webView.setWebViewClient(new CenariusWebViewClient(webView) {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -184,14 +116,23 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
                 if (TextUtils.isEmpty(title)) {
                     title = "";
                 }
-                titleView.setText(title + "");
-                if(isDoneReturn && webView.canGoBack()){
-                    setCloseImgVisibility(View.VISIBLE);
-                }else{
-                    setCloseImgVisibility(View.GONE);
+
+                if(!title.toLowerCase().startsWith("http")){
+                    titleView.setText(title + "");
+                }
+
+                if (isDoneReturn && webView.canGoBack()) {
+                    setCloseBtnVisibility(View.VISIBLE);
+                    if(!title.toLowerCase().startsWith("http")){
+                        titleView.setText(title + "");
+                    }
+                    if (isDoneReturn && webView.canGoBack()) {
+                        setCloseBtnVisibility(View.VISIBLE);
+                    } else {
+                        setCloseBtnVisibility(View.GONE);
+                    }
                 }
             }
-
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);   //在当前的webview中跳转到新的url
@@ -226,7 +167,12 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
             @Override
             public void onReceivedTitle(WebView view, String title) {
                 super.onReceivedTitle(view, title);
-                titleView.setText(title + "");
+                if(TextUtils.isEmpty(title)){
+                    title = "";
+                }
+                if(!title.toLowerCase().startsWith("http")){
+                    titleView.setText(title + "");
+                }
             }
 
 
@@ -267,6 +213,12 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
     }
 
     @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        EventBus.getDefault().post(new ReStartEvent());
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         webView.onPause();
@@ -299,7 +251,7 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
             finish();
         } else if (v == refresh) {
             webView.reload();
-        }else if (v == close_img){
+        }else if (v == closeBtn){
             finish();
         }
     }
@@ -307,10 +259,21 @@ public class CNRSLightAPPActivity extends AppCompatActivity implements View.OnCl
      * 根据WebView是否有goBack记录设置左上角的叉按钮
      * @param visibility
      */
-    public void setCloseImgVisibility(int visibility) {
-        if (close_img != null && close_img.getVisibility() != visibility) {
-            close_img.setVisibility(visibility);
+    public void setCloseBtnVisibility(int visibility) {
+        if (closeBtn != null && closeBtn.getVisibility() != visibility) {
+            closeBtn.setVisibility(visibility);
         }
+    }
+
+    @Override
+    public Resources getResources() {
+        Resources res = super.getResources();
+        Configuration config = new Configuration();
+        config.setToDefaults();
+        config.fontScale = 1.0f;
+        res.updateConfiguration(config,res.getDisplayMetrics());
+        return res;
+
     }
 
 }

@@ -25,7 +25,10 @@ public class WebViewSettings {
         ws.setGeolocationEnabled(true);
         ws.setBuiltInZoomControls(true);
         ws.setDisplayZoomControls(false);
-
+        //大页面的缩放兼容  让页面适应手机屏幕的分辨率，完整的显示在屏幕上，可以放大缩小
+        ws.setLoadWithOverviewMode(true);
+        ws.setUseWideViewPort(true);
+        
         ws.setAllowFileAccess(true);
         if (Utils.hasJellyBean()) {
             ws.setAllowFileAccessFromFileURLs(true);
@@ -53,6 +56,8 @@ public class WebViewSettings {
         if (Utils.hasLollipop()) {
             ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
+
+        ws.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
     }
 
 }

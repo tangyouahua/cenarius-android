@@ -60,7 +60,12 @@ public class CallbackContext {
                 finished = !pluginResult.getKeepCallback();
             }
         }
-        webView.sendPluginResult(pluginResult, callbackId);
+        try {
+            //处理因为页面关闭导致的空指针问题
+            webView.sendPluginResult(pluginResult, callbackId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
