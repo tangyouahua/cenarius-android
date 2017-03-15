@@ -800,7 +800,7 @@ public class RouteManager {
      */
     private boolean hasMinVersion(Config config) {
         String versionName = Utils.getAppVersionName();
-        if (versionName != null && config.android_min_version != null && versionName.compareTo(config.android_min_version) >= 0) {
+        if (versionName != null && config.android_min_version != null && Utils.compareVersion(versionName,config.android_min_version) >= 0) {
             // 满足最小版本要求
             return true;
         } else {
@@ -813,7 +813,7 @@ public class RouteManager {
      * 是否需要安装www文件夹
      */
     private boolean isWWwFolderNeedsToBeInstalled() {
-        if (cacheConfig == null || cacheConfig.release.compareTo(resourceConfig.release) < 0) {
+        if (cacheConfig == null || Utils.compareVersion(cacheConfig.release, resourceConfig.release) < 0) {
             //没有缓存或者缓存比预置低
             return true;
         }
@@ -827,9 +827,9 @@ public class RouteManager {
         if (hasMinVersion(config)) {
             // 满足最小版本要求
             if (isWWwFolderNeedsToBeInstalled()) {
-                return config.release.compareTo(resourceConfig.release) > 0;
+                return Utils.compareVersion(config.release, resourceConfig.release) > 0;
             } else {
-                return config.release.compareTo(cacheConfig.release) > 0;
+                return Utils.compareVersion(config.release, cacheConfig.release) > 0;
             }
         }
         return false;
