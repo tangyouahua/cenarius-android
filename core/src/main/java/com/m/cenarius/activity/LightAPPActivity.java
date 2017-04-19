@@ -32,6 +32,8 @@ public class LightAPPActivity extends CNRSWebViewActivity implements View.OnClic
         Intent intent = getIntent();
         String title = intent.getStringExtra("title");
         String url = intent.getStringExtra("url");
+
+        
 //        loadUrl(url);
         titleView = (TextView) findViewById(R.id.textView);
         x = (TextView) findViewById(R.id.xx);
